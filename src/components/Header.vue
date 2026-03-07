@@ -1,0 +1,625 @@
+<template>
+  <header class="header">
+    <div class="header-left">
+      <button class="mobile-menu-btn" @click="$emit('toggle-sidebar')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+      <h1 class="page-title">{{ pageTitle }}</h1>
+    </div>
+    
+    <div class="header-right">
+      <button class="upgrade-btn">
+        {{ t('header.upgrade') }}
+      </button>
+      
+      <!-- User Menu -->
+      <div class="user-menu-wrapper" ref="userMenuRef">
+        <div class="user-avatar" @click="toggleUserMenu">
+          <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="36" />
+          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        
+        <!-- Language Selector Popup -->
+        <transition name="language-popup">
+          <div v-if="isLanguageSelectorOpen" class="language-popup" @click.stop>
+            <div class="language-popup-header">
+              <button class="back-btn-small" @click="closeLanguageSelector">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <span class="language-popup-title">{{ t('header.selectLanguage') }}</span>
+            </div>
+            <div class="language-list">
+              <button
+                v-for="lang in languages"
+                :key="lang.code"
+                class="language-option"
+                :class="{ active: currentLocale === lang.code }"
+                @click="selectLanguage(lang.code)"
+              >
+                <span class="language-flag"> <span :class="`fi fi-${lang.flagClass}`"></span></span>
+                <span class="language-name">{{ lang.name }}</span>
+                <svg v-if="currentLocale === lang.code" class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </transition>
+
+        <!-- User Dropdown Menu -->
+        <transition name="dropdown">
+          <div v-if="isUserMenuOpen && !isLanguageSelectorOpen" class="user-dropdown">
+            <!-- User Info -->
+            <div class="user-info" @click="navigateTo('/profile')">
+              <div class="user-avatar-large">
+                <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="48" />
+                <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="user-details">
+                <span class="user-email">{{ userStore.userInfo?.nickname }}</span>
+                <span class="user-badge">{{ t('header.regularAccount') }}</span>
+              </div>
+            </div>
+            
+            <!-- Menu Items -->
+            <div class="menu-section">
+              <button class="menu-item" @click="handleUpgrade">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span>{{ t('header.upgradePro') }}</span>
+              </button>
+              <button class="menu-item" @click="navigateTo('/tools/api')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                <span>{{ t('header.api') }}</span>
+              </button>
+              <button class="menu-item" @click="navigateTo('/tools/blender')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
+                </svg>
+                <span>{{ t('header.blender') }}</span>
+              </button>
+              <button class="menu-item" @click="navigateTo('/tools/tutorial')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>{{ t('header.tutorial') }}</span>
+              </button>
+              <button class="menu-item" @click="navigateTo('/tools/settings')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                </svg>
+                <span>{{ t('header.settings') }}</span>
+              </button>
+              <button class="menu-item" @click="navigateTo('/tools/feedback')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+                <span>{{ t('header.feedback') }}</span>
+              </button>
+            </div>
+            
+            <!-- Language -->
+            <div class="menu-section">
+              <button class="menu-item language-item" @click="showLanguageSelector">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                </svg>
+                <span>{{ t('header.language') }}</span>
+                <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Logout -->
+            <div class="menu-section">
+              <button class="menu-item logout-item" @click="handleLogout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>{{ t('header.logout') }}</span>
+              </button>
+            </div>
+          </div>
+        </transition>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useUserStore } from '../stores/user'
+import { languages } from '../i18n'
+import "/node_modules/flag-icons/css/flag-icons.min.css";
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const { t, locale } = useI18n()
+
+const emit = defineEmits<{
+  'toggle-sidebar': []
+}>()
+
+const isUserMenuOpen = ref(false)
+const isLanguageSelectorOpen = ref(false)
+const userMenuRef = ref<HTMLElement | null>(null)
+const currentLocale = ref(locale.value)
+
+const pageTitle = computed(() => {
+  const titles: Record<string, string> = {
+    '/': t('header.home'),
+    '/profile': "个人中心",
+    '/projects': t('sidebar.explore'),
+    '/explore': t('header.explore3d'),
+    '/explore4d': t('header.explore4d'),
+    '/create': t('home.startCreate')
+  }
+  return titles[route.path] || t('header.home')
+})
+
+const userEmail = computed(() => {
+  return userStore.userInfo?.email || 'user@example.com'
+})
+
+const hasAvatar = computed(() => {
+  const img = userStore.userInfo?.headimg
+  return img != null && img !== ''
+})
+
+const currentLanguageName = computed(() => {
+  const lang = languages.find(l => l.code === currentLocale.value)
+  return lang?.name || '中文'
+})
+
+const toggleUserMenu = () => {
+  isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+const closeUserMenu = () => {
+  isUserMenuOpen.value = false
+}
+
+const navigateTo = (path: string) => {
+  closeUserMenu()
+  router.push(path)
+}
+
+const handleUpgrade = () => {
+  closeUserMenu()
+  console.log('Upgrade to Pro')
+}
+
+const handleLogout = async () => {
+  closeUserMenu()
+  
+  // 调用 store 的登出方法
+  userStore.logout()
+  
+  // 清除本地存储
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  
+  // 跳转到登录页
+  router.push('/login')
+}
+
+const showLanguageSelector = () => {
+  isLanguageSelectorOpen.value = true
+}
+
+const closeLanguageSelector = () => {
+  isLanguageSelectorOpen.value = false
+}
+
+const selectLanguage = (code: string) => {
+  currentLocale.value = code
+  locale.value = code
+  localStorage.setItem('language', code)
+  closeLanguageSelector()
+  closeUserMenu() // 选择语言后关闭整个菜单
+}
+
+// 点击外部关闭菜单
+const handleClickOutside = (event: MouseEvent) => {
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target as Node)) {
+    isUserMenuOpen.value = false
+    isLanguageSelectorOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
+
+<style scoped>
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upgrade-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upgrade-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+}
+
+/* User Menu */
+.user-menu-wrapper {
+  position: relative;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+}
+
+/* Dropdown Menu */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* Dropdown Animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+
+/* Language Popup */
+.language-popup {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+}
+
+.language-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.back-btn-small {
+  width: 32px;
+  height: 32px;
+  background: var(--glass-surface);
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.back-btn-small:hover {
+  background: var(--glass-surface-hover);
+  color: var(--text-primary);
+}
+
+.language-popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.language-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.language-option:hover {
+  background: var(--glass-surface);
+}
+
+.language-option.active {
+  background: rgba(0, 198, 255, 0.1);
+}
+
+.language-flag {
+  width: 24px;
+  height: 16px; /* 国旗标准比例 3:2，视觉更协调 */
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.language-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.check-icon {
+  color: var(--accent-blue);
+}
+
+/* Language Popup Animation */
+.language-popup-enter-active,
+.language-popup-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.language-popup-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.language-popup-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 12px;;
+}
+
+.user-info:hover {
+  background: var(--glass-surface);
+  cursor: pointer;
+}
+
+
+.user-avatar-large {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-email {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.user-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  width: fit-content;
+}
+
+/* Menu Sections */
+.menu-section {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.menu-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: var(--glass-surface);
+}
+
+.menu-item svg {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.language-item {
+  justify-content: space-between;
+}
+
+.language-item span {
+  flex: 1;
+}
+
+.arrow-icon {
+  transform: rotate(90deg);
+  color: var(--text-tertiary);
+}
+
+.logout-item {
+  color: #ff4757;
+}
+
+.logout-item svg {
+  color: #ff4757;
+}
+
+.logout-item:hover {
+  background: rgba(255, 71, 87, 0.1);
+}
+
+.mobile-menu-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+:deep(.fi) {
+  background-size: cover;
+  width: 100%;
+  display: block;
+  height: 100%;
+  background-position: center;
+}
+
+/* Tablet & Mobile */
+@media (max-width: 1023px) {
+  .header {
+    padding: 12px 16px;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .upgrade-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .user-dropdown {
+    width: 260px;
+    right: -8px;
+  }
+}
+</style>

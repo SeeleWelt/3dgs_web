@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaST - Apple Liquid Glass Style</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-tertiary: rgba(255, 255, 255, 0.4);
+            --glass-surface: rgba(255, 255, 255, 0.05);
+            --glass-surface-hover: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-border-hover: rgba(255, 255, 255, 0.2);
+            --accent-blue: #0A84FF;
+            --accent-purple: #BF5AF2;
+            --accent-pink: #FF375F;
+            --accent-orange: #FF9F0A;
+            --accent-green: #30D158;
+            --gradient-primary: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            --gradient-warm: linear-gradient(135deg, var(--accent-orange), var(--accent-pink));
+            --gradient-cool: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .background::before {
+            content: '';
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(10, 132, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(191, 90, 242, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(255, 55, 95, 0.1) 0%, transparent 50%);
+            animation: backgroundPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* Floating Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: floatOrb 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-blue), transparent);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-purple), transparent);
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--accent-pink), transparent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.9); }
+            75% { transform: translate(30px, 50px) scale(1.05); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: var(--glass-surface-hover);
+            border-color: var(--glass-border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+                        0 0 60px rgba(10, 132, 255, 0.1);
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(10, 132, 255, 0.3);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--glass-surface-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            background: rgba(10, 132, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 20px rgba(10, 132, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(10, 132, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+        }
+
+        .btn-secondary:hover {
+            background: var(--glass-surface-hover);
+            border-color: var(--glass-border-hover);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 160px 0 80px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: clamp(18px, 2.5vw, 24px);
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Features Grid */
+        .features {
+            padding: 80px 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.03) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            background: var(--glass-surface);
+            border: 1px solid var(--glass-border);
+        }
+
+        .feature-card:nth-child(1) .feature-icon {
+            background: rgba(10, 132, 255, 0.15);
+            border-color: rgba(10, 132, 255, 0.3);
+            color: var(--accent-blue);
+        }
+
+        .feature-card:nth-child(2) .feature-icon {
+            background: rgba(191, 90, 242, 0.15);
+            border-color: rgba(191, 90, 242, 0.3);
+            color: var(--accent-purple);
+        }
+
+        .feature-card:nth-child(3) .feature-icon {
+            background: rgba(255, 55, 95, 0.15);
+            border-color: rgba(255, 55, 95, 0.3);
+            color: var(--accent-pink);
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Model Showcase */
+        .showcase {
+            padding: 80px 0;
+        }
+
+        .showcase-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .showcase-header h2 {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .showcase-header p {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .model-card {
+            aspect-ratio: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .model-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 50%, var(--accent-pink) 100%);
+            opacity: 0.1;
+            transition: opacity 0.4s ease;
+        }
+
+        .model-card:hover::before {
+            opacity: 0.2;
+        }
+
+        .model-card-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .model-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.3));
+            transition: transform 0.4s ease;
+        }
+
+        .model-card:hover .model-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .model-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .model-meta {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        .model-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(10, 132, 255, 0.9);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 80px 0;
+        }
+
+        .stats-card {
+            padding: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 32px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 120px 0;
+            text-align: center;
+        }
+
+        .cta-card {
+            padding: 64px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: var(--gradient-primary);
+            border-radius: 24px;
+            opacity: 0.5;
+            filter: blur(20px);
+            z-index: -1;
+        }
+
+        .cta h2 {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 48px 0;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .footer p {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 120px 0 60px;
+            }
+
+            .features-grid,
+            .model-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-card {
+                flex-direction: column;
+                padding: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container nav-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                        <circle cx="12" cy="12" r="3" fill="white"/>
+                    </svg>
+                </div>
+                <span class="logo-text">MetaST</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active">首页</a>
+                <a href="#features" class="nav-link">功能</a>
+                <a href="#showcase" class="nav-link">探索</a>
+                <a href="#" class="nav-link">API</a>
+            </div>
+            <div class="nav-actions">
+                <a href="#" class="btn btn-secondary">登录</a>
+                <a href="#" class="btn btn-primary">开始使用</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>照片级真实的<br>3D 模型生成</h1>
+            <p>使用 MetaST 的先进 AI 技术，从照片或视频一键生成高保真 3D 模型。支持 3D Gaussian Splatting，让创意瞬间变为现实。</p>
+            <div class="hero-cta">
+                <a href="#" class="btn btn-primary">
+                    免费开始
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="#showcase" class="btn btn-secondary">查看示例</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="glass-card feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>照片扫描</h3>
+                    <p>从普通照片生成 3D 模型，无需专业设备。支持 20-500 张照片，自动优化细节。</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>3DGS 渲染</h3>
+                    <p>3D Gaussian Splatting 技术，实现照片级真实的实时渲染，嵌入网页和游戏引擎。</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>PBR 材质</h3>
+                    <p>自动提取物理材质属性，生成包含反照率、粗糙度、法线等 PBR 贴图的完整模型。</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="feature-icon">🔬</div>
+                    <h3>无特征物体</h3>
+                    <p>专业的神经表面重建技术，针对简单颜色或反光物体进行高精度 3D 扫描。</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>实时处理</h3>
+                    <p>云端 GPU 加速，平均 5-10 分钟完成处理。优先队列和专用服务器带来更快体验。</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>多格式导出</h3>
+                    <p>支持 OBJ、STL、GLTF、USD 等多种格式，无缝对接 Blender、Maya 等 3D 软件。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase -->
+    <section id="showcase" class="showcase">
+        <div class="container">
+            <div class="showcase-header">
+                <h2>探索社区作品</h2>
+                <p>来自全球创作者的精彩 3D 模型</p>
+            </div>
+            <div class="model-grid">
+                <div class="glass-card model-card">
+                    <div class="model-card-content">
+                        <div class="model-icon">🐅</div>
+                        <h3 class="model-title">白虎雕塑</h3>
+                        <p class="model-meta">by ric</p>
+                    </div>
+                    <span class="model-badge">3DGS</span>
+                </div>
+                <div class="glass-card model-card">
+                    <div class="model-card-content">
+                        <div class="model-icon">🚂</div>
+                        <h3 class="model-title">老式火车</h3>
+                        <p class="model-meta">by remi</p>
+                    </div>
+                    <span class="model-badge">Mesh</span>
+                </div>
+                <div class="glass-card model-card">
+                    <div class="model-card-content">
+                        <div class="model-icon">🏰</div>
+                        <h3 class="model-title">古堡遗迹</h3>
+                        <p class="model-meta">by Axseru</p>
+                    </div>
+                    <span class="model-badge">3DGS</span>
+                </div>
+                <div class="glass-card model-card">
+                    <div class="model-card-content">
+                        <div class="model-icon">🎸</div>
+                        <h3 class="model-title">电吉他</h3>
+                        <p class="model-meta">by emovere</p>
+                    </div>
+                    <span class="model-badge">Mesh</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats">
+        <div class="container">
+            <div class="glass-card stats-card">
+                <div class="stat-item">
+                    <div class="stat-number">100K+</div>
+                    <div class="stat-label">用户</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1M+</div>
+                    <div class="stat-label">模型生成</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">可用性</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.9★</div>
+                    <div class="stat-label">用户评分</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <div class="glass-card cta-card">
+                <h2>准备好开始了吗？</h2>
+                <p>加入 MetaST，体验最先进的 3D 模型生成技术。免费试用，随时升级。</p>
+                <a href="#" class="btn btn-primary" style="padding: 16px 40px; font-size: 17px;">
+                    立即开始
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 MetaST. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
