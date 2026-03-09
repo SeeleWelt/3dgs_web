@@ -22,9 +22,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, computed } from 'vue'
+import { h, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { message } from 'ant-design-vue'
 import CreateCard from './CreateCard.vue'
 
 const router = useRouter()
@@ -89,7 +90,11 @@ const cards = computed<CreateCardData[]>(() => [
 ])
 
 const handleClick = (id: string) => {
-  router.push('/create')
+  if(id === '3dgs-scan') {
+    router.push('/create/3dgs-scan')
+  } else if(id === 'ai-scan' || id === '4dgs-scan') {
+    message.info('功能未实现')
+  }
 }
 </script>
 

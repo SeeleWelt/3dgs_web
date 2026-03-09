@@ -1,3 +1,4 @@
+
 import {
     math,
     DualGestureSource,
@@ -239,11 +240,18 @@ class CameraControls {
         // 监听触摸事件，用于检测单纯点击和摇杆控制
         this._setupTouchEventListeners();
 
-        // 创建虚拟摇杆UI（固定左下角）
-        this._createJoystickUI();
+        // 移动端检测只做一次
+        this.isMobile = this._isMobileDevice();
+        console.log('是否移动端设备:', this.isMobile);
+        // 只在移动端创建摇杆UI
+        if (this.isMobile) {
+            this._createJoystickUI();
+        }
 
         // 初始化摇杆固定中心位置
-        this._updateJoystickFixedCenter();
+        if (this.isMobile) {
+            this._updateJoystickFixedCenter();
+        }
 
         // pose
         
@@ -283,6 +291,11 @@ class CameraControls {
             this._currentSplatEntity = entity;
         }
         return this._splat;
+    }
+
+    // 模式切换回调
+    setModeChangeCallback(cb) {
+        this._modeChangeCallback = typeof cb === 'function' ? cb : null;
     }
 
     // 私有方法：更新摇杆固定中心位置（适配屏幕旋转和窗口大小）
@@ -391,9 +404,16 @@ class CameraControls {
         joystick.background = backgroundEl;
         joystick.thumb = thumbEl;
     }
-
+            // 4. 计算小球相对圆圈中心的偏移（核心：限制在圆圈内）
+            // 判断是否为移动端
+    _isMobileDevice() {
+        // 只用于构造时检测
+        return /Mobi|Android|iPhone|iPad|iPod|Mobile|Tablet|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+    
     // 私有方法：更新摇杆UI位置和状态（飞行模式自动显示，固定左下角）
     _updateJoystickUI() {
+        if (!this.isMobile) return;
         const joystick = this._joystick;
         const config = this._joystickConfig;
         const halfRadius = config.radius;
@@ -422,7 +442,6 @@ class CameraControls {
             return;
         }
 
-        // 4. 计算小球相对圆圈中心的偏移（核心：限制在圆圈内）
         const center = joystick.centerPos;
         const current = joystick.currentPos;
         // 转换为相对摇杆容器的本地坐标（容器左上角为原点）
@@ -788,9 +807,9 @@ class CameraControls {
         const targetDistance = fitDistance * padding;
 
         // 更新缩放范围：最小值为刚好看到物体的距离
-        const currentZoomRange = this._orbitController.zoomRange || new Vec2(4, 50);
+        const currentZoomRange = this._orbitController.zoomRange || new Vec2(fitDistance, 50);
         const maxZoom = Math.max(currentZoomRange.y, targetDistance * 3);
-        this.zoomRange = new Vec2(fitDistance, maxZoom);
+        this.zoomRange = new Vec2(0, maxZoom);
 
         const modelYHeight = halfExtents.y * 2; 
         const yOffset = modelYHeight * 0.2; 
@@ -2129,7 +2148,6 @@ class CameraControls {
 
         return false;
     }
-
     // 更新方法
     update(dt, isLoopPlaying, isVideoPlaying) {
         // console.log(this._camera.entity.getPosition());
@@ -2181,6 +2199,10 @@ class CameraControls {
         // 键盘输入时切换到飞行模式
         if (this._mode !== 'fly' && this._state.axis.length() > 0) {
             this.mode = 'fly';
+            // 回调通知
+            if (this._modeChangeCallback) {
+                this._modeChangeCallback('fly');
+            }
         }
 
         const orbit = Number(this._mode === 'orbit');
@@ -2285,9 +2307,10 @@ class CameraControls {
         if (this._cameraResetTransition) {
             const transition = this._cameraResetTransition;
             transition.elapsed = Math.min(transition.elapsed + dt, transition.duration);
-            const t = transition.duration > 0 ? transition.elapsed / transition.duration : 1;
-            this._pose.position.lerp(transition.startPosition, transition.endPosition, t);
-
+            let t = transition.duration > 0 ? transition.elapsed / transition.duration : 1;
+            // 常见先快后慢的 ease-out（如 cubic）
+            t = 1 - Math.pow(1 - t, 1); // cubic ease-out
+            this._pose.position.lerp(transition.startPosition, transition.endPosition, t);  
             transition.currentFocus.lerp(transition.startFocus, transition.endFocus, t);
             this._pose.look(this._pose.position, transition.currentFocus);
 

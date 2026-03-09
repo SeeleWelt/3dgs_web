@@ -104,6 +104,7 @@
             :rules="registerRules"
             layout="vertical"
             class="form-fields"
+            @keydown.enter.prevent="handleRegister"
           >
             <a-form-item
               name="email"
@@ -476,24 +477,9 @@ const handleLogin = async () => {
 
   isLoading.value = true
   try {
-    await userStore.emailLogin(loginForm.value.email, loginForm.value.password)
-    router.push('/')
-  } catch (err: any) {
-    if (err && err.isNetworkError) {
-      message.error(t('login.networkError') || '网络错误，请检查您的网络连接')
-    } else {
-      const status = getStatusCode(err)
-      if (status === 400) {
-        message.error('邮件格式错误')
-      } else if (status === 401) {
-        message.error('错误的邮箱或密码')
-      } else if (status === 430) {
-        message.error('账号已被封禁')
-      } else if (status === 432) {
-        message.error('账号已注销，无法登录')
-      } else {
-        message.error(err?.message || t('login.loginFailed') || '登录失败，请检查您的邮箱和密码')
-      }
+    const success = await userStore.emailLogin(loginForm.value.email, loginForm.value.password)
+    if (success) {
+      router.push('/')
     }
   } finally {
     isLoading.value = false
@@ -506,7 +492,13 @@ const handleRegister = async () => {
   try {
     const values = await registerFormRef.value.validate()
 
-    isLoading.value = true
+    pendingRegister.value = {
+      email: values.email,
+      password: values.password
+    }
+    emailCode.value = ''
+    isEmailCodeStep.value = true
+
     await ApiServer.request({
       url: API.SEND_EMAIL,
       method: 'post',
@@ -514,13 +506,6 @@ const handleRegister = async () => {
         email: values.email
       }
     })
-
-    pendingRegister.value = {
-      email: values.email,
-      password: values.password
-    }
-    emailCode.value = ''
-    isEmailCodeStep.value = true
     message.success('验证码已发送，请查收邮箱')
   } catch (error) {
     const err: any = error
@@ -537,8 +522,6 @@ const handleRegister = async () => {
     } else {
       message.error(err?.message || '验证码发送失败，请稍后重试')
     }
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -552,30 +535,14 @@ const submitEmailRegister = async (code: string) => {
 
   isLoading.value = true
   try {
-    await userStore.emailRegister(pendingRegister.value.email, pendingRegister.value.password, code)
-    message.success(t('login.registerSuccess') || '注册成功，请登录')
-    currentView.value = 'login'
-    loginForm.value.email = pendingRegister.value.email
-    loginForm.value.password = ''
-    isEmailCodeStep.value = false
-    emailCode.value = ''
-    pendingRegister.value = { email: '', password: '' }
-  } catch (error: any) {
-    if (error && error.isNetworkError) {
-      message.error(t('login.networkError') || '网络错误，请检查您的网络连接')
-    } else {
-      const status = getStatusCode(error)
-      if (status === 400) {
-        message.error('邮件格式错误')
-      } else if (status === 401) {
-        message.error('验证码错误或已过期')
-      } else if (status === 402) {
-        message.error('邮箱已注册')
-      } else if (status === 421) {
-        message.error('密码必须至少8个字符，包含大写字母、小写字母和数字')
-      } else {
-        message.error(error?.message || t('login.registerFailed') || '注册失败，请稍后再试')
-      }
+    const success = await userStore.emailRegister(pendingRegister.value.email, pendingRegister.value.password, code)
+    if (success) {
+      currentView.value = 'login'
+      loginForm.value.email = pendingRegister.value.email
+      loginForm.value.password = ''
+      isEmailCodeStep.value = false
+      emailCode.value = ''
+      pendingRegister.value = { email: '', password: '' }
     }
   } finally {
     isLoading.value = false
