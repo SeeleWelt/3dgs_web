@@ -14,6 +14,7 @@
     "@playcanvas/splat-transform": "^1.8.0",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.13.6",
+    "cropperjs": "^1.6.2",
     "flag-icons": "^7.5.0",
     "pinia": "^2.1.7",
     "playcanvas": "^2.16.2",

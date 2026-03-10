@@ -6,7 +6,7 @@
         class="viewer-container fullscreen"
         :style="{ backgroundColor: viewerControls.backgroundColor }"
       >
-        <canvas id="application-canvas"></canvas>
+        <canvas id="application-canvas" ref="canvasRef" @keydown="handleEscKey" tabindex="0"></canvas>
         
         <div v-if="isViewerLoading" class="loading-overlay">
           <div class="loading-spinner" :class="{ 'success': loading_status === 'success', 'fail': loading_status === 'fail' }"></div>
@@ -209,7 +209,7 @@
       </div>
 
       <div class="feature-control-item">
-        <a-tooltip :title="isAnnotationEditMenuOpen ? '退出' : '标注'" placement="left">
+        <a-tooltip title="标注" placement="left">
           <a-button class="feature-btn" :type="isAnnotationEditMenuOpen ? 'primary' : 'default'" size="middle" :disabled="isRecordingVideo || isEncodingVideo" :style="isAnnotationEditMenuOpen ? 'color:white;' : 'color:#1d1d1f;'" @click.stop="openAnnotationEditMenu($event)">
             <template #icon><EditOutlined /></template>{{ isAnnotationEditMenuOpen ? '退出' : '标注' }}
           </a-button>
@@ -305,7 +305,7 @@
         <div class="control-btn-item" @click.stop="handleEmbedCodePlaceholder($event)">
           <a-tooltip title="嵌入代码">
             <a-button class="primary-action-btn" type="default" size="middle" :disabled="isRecordingVideo || isEncodingVideo">
-              <template #icon><CodeOutlined /></template>代码
+              <template #icon><CodeOutlined /></template>嵌入
             </a-button>
           </a-tooltip>
         </div>
@@ -335,6 +335,7 @@
           :step="0.1"
           :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
           @change="handleOrbitProgressChange"
+          @afterChange="toggleLoopPlay"
         />
       </div>
     </div>
@@ -498,9 +499,9 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { createFFmpeg } from '@ffmpeg/ffmpeg';
 import API from '@/utils/api';
+import { ApiServer } from '@/utils/taskService';
 import * as pc from 'playcanvas';
 import CameraControls from '@/utils/controller';
 import { Picker } from '@/utils/picker';
@@ -525,6 +526,7 @@ import {
 import { createEffect, GsplatEffectType, removeAllEffects } from '@/utils/revel';
 import { loadGsplat } from '@/utils/load';
 import { Annotation,AnnotationManager } from '../../scripts/esm/annotations.mjs';
+import { onMounted, onUnmounted } from 'vue';
 import ShareDialog from '@/components/ShareDialog.vue';
 import ExportDialog from '@/components/ExportDialog.vue';
 import EmbedCodeDialog from '@/components/EmbedCodeDialog.vue';
@@ -561,6 +563,29 @@ const showToast = (input) => {
   }
 }
 
+const resolveRequestErrorMessage = (error, defaultMessage) => {
+  if (error?.message && String(error.message).length > 0) {
+    return String(error.message)
+  }
+
+  switch (error?.statusCode) {
+    case 400:
+      return '请求错误，请检查输入'
+    case 401:
+      return '登录已过期，请重新登录'
+    case 403:
+      return '没有权限执行此操作'
+    case 404:
+      return '请求资源不存在'
+    case 429:
+      return '请求过于频繁，请稍后重试'
+    case 500:
+      return '服务器处理失败，请稍后重试'
+    default:
+      return defaultMessage
+  }
+}
+
 const token = localStorage.getItem('token')
 
 const pickDepthGlsl = /* glsl */ `
@@ -581,6 +606,38 @@ const pickDepthWgsl = /* wgsl */ `
         return packFloat(pcPosition.z);
     }
 `;
+
+function handleEscKey(e) {
+  if (e.key === 'Escape') {
+    // 退出所有模式和板块
+    if (typeof closeAllPanels === 'function') closeAllPanels();
+    if (typeof viewerControls !== 'undefined') viewerControls.showInfo = false;
+    if (typeof isSettingsMenuOpen !== 'undefined') isSettingsMenuOpen = false;
+    if (typeof isEditMenuOpen !== 'undefined') isEditMenuOpen = false;
+    if (typeof isAnnotationEditMenuOpen !== 'undefined') isAnnotationEditMenuOpen = false;
+    if (typeof showVideoEffectDialog !== 'undefined') showVideoEffectDialog = false;
+    if (typeof isAnnotationDialogOpen !== 'undefined') isAnnotationDialogOpen = false;
+    if (typeof showExportDialog !== 'undefined') showExportDialog = false;
+    if (typeof showEmbedCodeDialog !== 'undefined') showEmbedCodeDialog = false;
+    if (typeof showShareDialog !== 'undefined') showShareDialog = false;
+    // 可补充其他自定义关闭逻辑
+  }
+}
+
+onMounted(() => {
+  // 绑定ESC事件到canvas
+  const canvas = document.getElementById('application-canvas');
+  if (canvas) {
+    canvas.addEventListener('keydown', handleEscKey);
+  }
+});
+onUnmounted(() => {
+  const canvas = document.getElementById('application-canvas');
+  if (canvas) {
+    canvas.removeEventListener('keydown', handleEscKey);
+  }
+});
+
 const DEFAULT_SETTINGS = {
   showInfo: false,
   isOrbitMode: true,
@@ -730,7 +787,7 @@ export default {
       videoFrameList: [],      // 存储捕获的帧数据（base64）
       videoRecordProgress: 0,  // 帧捕获进度
       encodeProgress: 0,       // FFmpeg编码进度
-      targetRotateAngle: 370,  // 目标旋转角度
+      targetRotateAngle: 360,  // 目标旋转角度
       currentRotateAngle: 0,   // 当前旋转角度
       showVideoSuccessModal: false, // 视频成功弹窗
       generatedVideoBlob: null, // 最终MP4 Blob
@@ -759,6 +816,7 @@ export default {
       annotationsSnapshot: null,
       annotationsSnapshotSerialized: '',
       effectOptions: EFFECT_OPTIONS,
+      mouseDownPos: { x: 0, y: 0 }, 
     };
   },
   watch:{
@@ -777,6 +835,13 @@ export default {
         else
            this.cameraControls.mode = 'orbit';
       }
+      // 监听键盘飞行，切换模式
+      window.addEventListener('keydown', (e) => {
+        if (["w","a","s","d","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) {
+          this.viewerControls.isOrbitMode = false;
+          this.cameraControls.mode = 'fly';
+        }
+      });
     }
   },
   methods: {
@@ -1437,9 +1502,13 @@ export default {
         showToast('正在保存标注...');
         console.log("保存", annotationsData);
         try{
-          const response = await axios.post(`${API.BASE_URL}${API.CREATE_ANNOTATION}`, {
+          const response = await ApiServer.request({
+            method: 'post',
+            url: API.CREATE_ANNOTATION,
+            data: {
             taskId: this.task_id,
             data: annotationsData
+            }
           });
           console.log(response.data);
           this.annotataions.forEach(item => {
@@ -1448,7 +1517,7 @@ export default {
           showToast('标注保存成功');
         }catch(error){
           console.error('保存标注失败：', error);
-          showToast('标注保存失败');
+          showToast(resolveRequestErrorMessage(error, '标注保存失败'));
         }
         
     },
@@ -1817,6 +1886,12 @@ export default {
         this.cameraEntity.camera.requestSceneColorMap(true);
         this.cameraControls = new CameraControls(this.app, this.cameraEntity.camera, null);
         this.cameraControls.setSogProgressHandler(this.handleSogConvertProgress);
+        // 设置模式切换回调
+        this.cameraControls.setModeChangeCallback((mode) => {
+          // this.cameraControls.mode = mode;
+          // 可同步其它状态
+          this.viewerControls.isOrbitMode = (mode === 'orbit');
+        });
         this.updateCameraControls();
         this.lightEntity = new pc.Entity('light');
         this.lightEntity.addComponent('light', {
@@ -1833,7 +1908,16 @@ export default {
         });
         this.app.scene.layers.push(gizmoLayer);
         const picker = new Picker(this.app, this.cameraEntity);
+         this.canvas.addEventListener('mousedown', (event) => {
+          this.mouseDownPos = { x: event.clientX, y: event.clientY };
+        });
          this.canvas.addEventListener('click', async (event) => {
+          if (this.mouseDownPos) {
+            const dx = event.clientX - this.mouseDownPos.x;
+            const dy = event.clientY - this.mouseDownPos.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 5) return; // 超过5px认为是拖拽，不处理点击
+          }
           if (this.viewerControls.isOrbitMode && event.target === this.canvas && !this.isRecordingVideo && !this.isEncodingVideo) {
               // 确保bicycle和拾取器都已初始化
               if (!this.skullEntity || !picker) return;
@@ -1985,24 +2069,29 @@ export default {
       }
     },
     async getTargetModel(mode = 'view', format = 'sog') {
-      const requestUrl = `${API.BASE_URL}${API.TASK_DETAIL}/${this.task_id}/download-token`;
       try {
-        const response = await axios.post(requestUrl, null, { headers: { 'Authorization': `Bearer ${this.token}` } });
+        const response = await ApiServer.request({
+          method: 'post',
+          url: `${API.TASK_DETAIL}/${this.task_id}/download-token`
+        }, this.token);
         const download_token = response.data.token;
         if(mode === 'view')
         {
           this.isViewerLoading = true;
-          const url = `${API.BASE_URL}${API.DOWNLOAD_MODEL}/${this.task_id}?format=sog&token=${download_token}`;
-          const response1 = await axios({
-            method: 'get', url: url,
-            headers: { 'Authorization': `Bearer ${this.token}` },
+          const response1 = await ApiServer.request({
+            method: 'get',
+            url: `${API.DOWNLOAD_MODEL}/${this.task_id}`,
+            params: {
+              format,
+              token: download_token
+            },
             responseType: 'arraybuffer',
             onDownloadProgress: (progressEvent) => {
               if (progressEvent.lengthComputable) {
                 this.loading_progress = Number.parseFloat((progressEvent.loaded / progressEvent.total * 100).toFixed(2));
               }
             }
-          });
+          }, this.token);
           const data = response1.data;
           console.log(data);
           const fileName = `${this.task_name || 'model'}.${format}`;
@@ -2013,16 +2102,22 @@ export default {
       } catch (error) {
         let errMsg = "获取下载token失败";
         console.log(error)
-        if (!error.response) {
-          if (error.message.includes('Invalid URL')) showToast('请求地址格式错误');
-          else showToast('网络异常，无法连接服务器');
+        if (error?.message && String(error.message).length > 0) {
+          showToast(error.message);
           return null;
         }
-        const { status } = error.response;
-        switch (status) {
-          case 401: showToast('登录已过期，请重新登录'); window.localStorage.removeItem('api_token'); setTimeout(() => { window.location.href = '/login'; }, 1500); break;
-          case 500: errMsg = '服务器处理失败，请稍后重试'; break;
-          default: errMsg = "获取下载token失败";
+        switch (error?.statusCode) {
+          case 401:
+            showToast('登录已过期，请重新登录');
+            window.localStorage.removeItem('api_token');
+            setTimeout(() => { window.location.href = '/login'; }, 1500);
+            return null;
+          case 500:
+            errMsg = '服务器处理失败，请稍后重试';
+            break;
+          default:
+            errMsg = '获取下载token失败';
+            break;
         }
         showToast(errMsg);
         return null;
@@ -2051,7 +2146,13 @@ export default {
       this.skullEntity.addComponent('gsplat', { asset: splatAsset});
       this.skullEntity.setLocalEulerAngles(180, 0, 0);
       // annotation.enabled = false; // 默认隐藏
-      const response = await axios.get(`${API.BASE_URL}${API.GET_ANNOTATIONS}?taskId=${this.task_id}`);
+      const response = await ApiServer.request({
+        method: 'get',
+        url: API.GET_ANNOTATIONS,
+        params: {
+          taskId: this.task_id
+        }
+      });
       console.log("data", response.data);
       const annotationsData = response.data.data;
       this.app.root.addChild(this.skullEntity);
@@ -2269,6 +2370,7 @@ export default {
         this.ffmpeg = createFFmpeg({
           log: false, // 开启日志，方便调试
           corePath: '/ffmpeg-core.js', // FFmpeg核心文件路径（public目录）
+          wasmPath: '/ffmpeg-core.wasm', // FFmpeg wasm文件路径（public目录）
         });
         this.ffmpeg.setLogger(parseFfmpegProgress)
         // 加载FFmpeg核心（必须等待加载完成才能使用）
@@ -2289,8 +2391,8 @@ export default {
       
       if (this.currentRotateAngle >= this.targetRotateAngle) {
         // 旋转完成，停止捕获帧，开始FFmpeg编码MP4
-        this.stopVideoRecord();
-        // this.encodeVideoToMP4();
+        this.stopVideoRecord(); 
+        this.encodeVideoToMP4();
         return;
       }
       this.videoRecordProgress = (this.currentRotateAngle / this.targetRotateAngle) * 100;
@@ -2371,11 +2473,13 @@ export default {
           const frameName = `frame_${String(i + 1).padStart(4, '0')}.jpg`;
           ffmpeg.FS('writeFile', `/${frameName}`, frameBuffer);
         }
-        // 执行FFmpeg转码命令`
+
+        // 执行FFmpeg转码命令`  
         await ffmpeg.run(
           '-r', this.videoFps.toString(),
           '-f', 'image2',
           '-i', '/frame_%04d.jpg',
+          '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
           '-c:v', 'libx264',
           '-pix_fmt', 'yuv420p',
           '-y', // 强制覆盖输出文件
@@ -2383,7 +2487,7 @@ export default {
         );
         // 读取转码后的MP4文件
         const mp4Data = ffmpeg.FS('readFile', '/output.mp4');
-        this.generatedVideoBlob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
+        this.generatedVideoBlob = new Blob([mp4Data], { type: 'video/mp4' });
         this.clearLoopPlayStartTimer();
         this.isLoopPlaying = false;
         // 编码完成

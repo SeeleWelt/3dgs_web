@@ -14,6 +14,7 @@ const messages = {
       tutorial: '教程',
       settings: '设置',
       feedback: '意见与反馈',
+      profile: '个人中心',
       language: '中文',
       logout: '登出',
       selectLanguage: '选择语言',
@@ -33,6 +34,7 @@ const messages = {
       tutorial: '教程',
       settings: '设置',
       feedback: '意见与反馈',
+      profile: '个人中心',
       downloadApp: '下载App',
       joinCommunity: '加入社区'
     },
@@ -192,6 +194,7 @@ const messages = {
       tutorial: 'Tutorial',
       settings: 'Settings',
       feedback: 'Feedback',
+      profile: 'Profile',
       language: 'English',
       logout: 'Logout',
       selectLanguage: 'Select Language',
@@ -211,6 +214,7 @@ const messages = {
       tutorial: 'Tutorial',
       settings: 'Settings',
       feedback: 'Feedback',
+      profile: 'Profile',
       downloadApp: 'Download App',
       joinCommunity: 'Join Community'
     },
@@ -370,6 +374,7 @@ const messages = {
       tutorial: 'Tutorial',
       settings: 'Einstellungen',
       feedback: 'Feedback',
+      profile: 'Profil',
       language: 'Deutsch',
       logout: 'Abmelden',
       selectLanguage: 'Sprache wählen',
@@ -389,6 +394,7 @@ const messages = {
       tutorial: 'Tutorial',
       settings: 'Einstellungen',
       feedback: 'Feedback',
+      profile: 'Profil',
       downloadApp: 'App herunterladen',
       joinCommunity: 'Community beitreten'
     },

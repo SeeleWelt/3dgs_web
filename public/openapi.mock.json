@@ -1,0 +1,1377 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "3DGS 外部 API（训练接口）",
+    "version": "1.0.0",
+    "description": "仅展示“对外可用”的训练类接口：即需要 `Authorization: Bearer \u003Ctoken\u003E` 的接口集合。\n\n说明：模型下载 `/api/model/:task_id` 使用一次性 token（query 参数），不属于本集合；如需查看全量接口请访问 `/api-docs/`。"
+  },
+  "servers": [
+    {
+      "url": "https://{host}:{port}",
+      "variables": {
+        "host": {
+          "default": "localhost"
+        },
+        "port": {
+          "default": "6026"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "训练接口",
+      "description": "与任务上传、训练流程、模型下载/编辑、相机数据、标注相关的接口。"
+    },
+    {
+      "name": "任务(Task)",
+      "description": "任务/训练流程相关。"
+    },
+    {
+      "name": "模型(Model)",
+      "description": "模型下载、公开状态、编辑保存等。"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "在请求头携带：`Authorization: Bearer \u003Ctoken\u003E`。普通用户 token 由 `/api/login` 或 `/api/phoneLogin` 获取。"
+      },
+      "adminBearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "后台 token 由 `/api/admin/login` 获取（payload 通常包含 `isAdmin: true`）。"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "CodeMessage": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 123
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 7
+          }
+        }
+      },
+      "TaskId": {
+        "type": "string",
+        "description": "UUID v4",
+        "example": "b3f2d0ee-6b4b-4f59-9e0d-5bbd4d3d3e0a"
+      }
+    }
+  },
+  "paths": {
+    "/api/upload": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "uploadTask",
+        "summary": "上传视频并创建训练任务",
+        "description": "使用 `multipart/form-data`：字段 `videos` 为视频文件数组（最多 10 个）；字段 `params` 为 JSON 字符串（见示例）。需要登录态（Bearer token）。\n\n文件类型白名单：.mp4 / .avi / .mov / .mkv / .webm。\n\n限流：10 次/分钟。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "params": {
+                    "type": "string",
+                    "description": "JSON 字符串。示例：`{\"task_name\":\"demo\",\"fps\":30,\"lightning_reconstruction\":false,\"bg_remove\":false}`"
+                  },
+                  "videos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "视频文件数组（字段名必须为 `videos`）"
+                  }
+                },
+                "required": [
+                  "params",
+                  "videos"
+                ]
+              },
+              "examples": {
+                "upload": {
+                  "summary": "示例 params",
+                  "value": {
+                    "params": "{\"task_name\":\"demo_task\",\"fps\":30,\"lightning_reconstruction\":false,\"bg_remove\":false,\"user_object_description\":\"一个杯子\",\"device_model\":\"iPhone\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "value": {
+                      "task_id": "b3f2d0ee-6b4b-4f59-9e0d-5bbd4d3d3e0a",
+                      "task_name": "demo_task"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数校验失败（params 解析/字段不合法等）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "420": {
+            "description": "算力点不足（自定义状态码）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "达到并发任务限制/上传过于频繁",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "上传失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "507": {
+            "description": "磁盘配额超限（自定义）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "getTasks",
+        "summary": "获取任务列表（我的 / 公开）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "my",
+                "public"
+              ],
+              "default": "my"
+            },
+            "description": "默认 my。public 返回公开且已完成的任务列表。"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "all"
+            },
+            "description": "筛选类型：all/completed/public/private/failed/nsfw_blocked/in_progress"
+          },
+          {
+            "name": "deleteStatus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "删除状态：1 未删除；0 删除队列中；2 已删除（getTaskDetail 会返回 421/422）"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "value": {
+                      "tasks": [
+                        {
+                          "task_id": "b3f2d0ee-6b4b-4f59-9e0d-5bbd4d3d3e0a",
+                          "task_name": "demo_task",
+                          "status": "completed",
+                          "created_at": "2026-03-04T00:00:00.000Z",
+                          "fps": 30,
+                          "video_count": 2,
+                          "lightning": false,
+                          "progress_stage": "none",
+                          "paused_at": null,
+                          "preview_image_path": "preview/00001.jpg",
+                          "is_public": true,
+                          "is_owner": true,
+                          "delete_status": 1,
+                          "isLike": false,
+                          "owner_username": "demo_user",
+                          "main_object": "",
+                          "object_description": "",
+                          "nsfw_blocked": false,
+                          "likes_count": 0,
+                          "views_count": 0,
+                          "downloads_count": 0,
+                          "shares_count": 0
+                        }
+                      ],
+                      "mode": "my",
+                      "pagination": {
+                        "total": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/{task_id}": {
+      "get": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "getTaskDetail",
+        "summary": "获取任务详情",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功（含进度/日志片段/权限标记等）",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "value": {
+                      "task_id": "b3f2d0ee-6b4b-4f59-9e0d-5bbd4d3d3e0a",
+                      "task_name": "demo_task",
+                      "status": "reconstructing_3dgs",
+                      "fps": 30,
+                      "video_count": 2,
+                      "progress": {
+                        "step": 1200,
+                        "total": 30000,
+                        "percent": 4
+                      },
+                      "log_sample": "Waiting for training to start...",
+                      "error": null,
+                      "lightning": false,
+                      "progress_stage": "training",
+                      "completed_stages": [],
+                      "paused_at": null,
+                      "can_pause": true,
+                      "can_resume": false,
+                      "is_public": false,
+                      "is_owner": true,
+                      "owner_username": "demo_user",
+                      "can_share": false,
+                      "main_object": "",
+                      "object_description": "",
+                      "nsfw_blocked": false,
+                      "likes_count": 0,
+                      "views_count": 0,
+                      "downloads_count": 0,
+                      "shares_count": 0,
+                      "user_object_description": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "task_id 格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在/无权限访问（非本人且非公开）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "421": {
+            "description": "任务已被删除（自定义）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "任务删除中（自定义）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/{task_id}/pause": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "pauseTask",
+        "summary": "暂停任务",
+        "description": "仅在 slicing / reconstructing_colmap / reconstructing_3dgs / reconstructing_lightning 状态允许暂停。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "message": "Task paused successfully",
+                      "paused_stage": "training"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "状态不允许暂停/task_id 格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "非任务拥有者",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "暂停失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/{task_id}/resume": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "resumeTask",
+        "summary": "恢复任务（从 paused/failed）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "message": "Task resumed successfully",
+                      "resume_stage": "training"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "任务不处于 paused/failed 或 task_id 格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "非任务拥有者",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "恢复失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/{task_id}/share": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "toggleShare",
+        "summary": "切换公开状态（is_public）",
+        "description": "仅任务拥有者可操作，且任务必须为 completed。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "is_public": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "任务未完成/task_id 格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "非任务拥有者",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/{task_id}/download-token": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "模型(Model)"
+        ],
+        "operationId": "generateDownloadToken",
+        "summary": "生成一次性下载令牌",
+        "description": "普通访问：需要 Bearer token。\n\n共享链接访问：在 query 带上 `shareId` 时，认证中间件会将请求视为“共享链接用户”（无需 Bearer），并走共享链接校验逻辑。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskId"
+            }
+          },
+          {
+            "name": "shareId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "共享链接 ID（存在时会走共享用户逻辑）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "token": "a3d9...32byteshex",
+                      "expiresAt": 1700000000000
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "task_id/shareId 格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证（无 Bearer 且非 shareId 访问）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限/分享链接失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "421": {
+            "description": "任务已被删除（共享逻辑也会返回）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/getList": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "getQueueStatus",
+        "summary": "查询队列长度/某任务在队列中的位置",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "task_id": {
+                    "$ref": "#/components/schemas/TaskId"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "queueLength": {
+                    "value": {
+                      "code": 200,
+                      "length": 7
+                    }
+                  },
+                  "position": {
+                    "value": {
+                      "code": 200,
+                      "length": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "task_id 存在但任务未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/checkUserQuota": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "getUserQuota",
+        "summary": "查询用户配额（并发任务/磁盘占用）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "code": 200,
+                      "quota": {
+                        "canCreateTask": true,
+                        "activeTasks": 1,
+                        "diskUsageMB": "12.34",
+                        "quotaExceeded": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/delete": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "deleteTask",
+        "summary": "删除任务（标记为待删除）",
+        "description": "会将 `delete_status` 标记为 0（删除队列中），并设置 `delete_time`（约 7 天后物理删除）。处理中任务不允许删除。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "task_id": {
+                    "$ref": "#/components/schemas/TaskId"
+                  }
+                },
+                "required": [
+                  "task_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "message": "任务已标记为删除"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "任务状态不允许删除/已在删除队列/已删除/参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/cancelDeleteTask": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "cancelDeleteTask",
+        "summary": "取消删除（从删除队列中恢复）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "task_id": {
+                    "$ref": "#/components/schemas/TaskId"
+                  }
+                },
+                "required": [
+                  "task_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "code": 200,
+                      "message": "任务删除已取消"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "任务未处于删除队列/参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "任务已删除（自定义）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/task/getModelRules": {
+      "post": {
+        "tags": [
+          "训练接口",
+          "模型(Model)"
+        ],
+        "operationId": "getModelRules",
+        "summary": "获取重建算力点规则",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "code": 200,
+                      "data": {
+                        "bg_remove": 20,
+                        "lightning_reconstruction": 10,
+                        "base": 50
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/camera/getData": {
+      "get": {
+        "tags": [
+          "训练接口",
+          "任务(Task)"
+        ],
+        "operationId": "getCameraData",
+        "summary": "获取相机数据（cameras.json 转换）",
+        "description": "仅非快速重建（lightning=false）的任务支持；会从任务目录读取并转换 cameras.json。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "code": 200,
+                      "data": "{...converted cameras...}"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误/快速重建无相机数据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "任务不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

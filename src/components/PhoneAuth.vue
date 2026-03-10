@@ -94,13 +94,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 // 引入验证码输入插件
 import SmsCodeInput from './SmsCodeInput.vue'
-import axios from 'axios'
 import API from '@/utils/api'
+import { ApiServer } from '@/utils/taskService'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
@@ -116,6 +116,27 @@ const selectedAreaCode = ref('+86')
 // 验证码存储（独立于phoneForm，因为插件是独立输入）
 const verificationCode = ref('')
 const conuntTime = 60
+
+const resolveRequestErrorMessage = (err: any, defaultMessage: string) => {
+  if (err?.message && String(err.message).length > 0) {
+    return String(err.message)
+  }
+
+  switch (err?.statusCode) {
+    case 400:
+      return '请求错误，请检查输入'
+    case 401:
+      return '未授权，请重新登录'
+    case 402:
+      return '验证码错误'
+    case 429:
+      return '请求过于频繁，请稍后再试'
+    case 500:
+      return '服务器错误，请稍后重试'
+    default:
+      return defaultMessage
+  }
+}
 
 const phoneForm = ref({
   phone: '',    
@@ -210,23 +231,26 @@ const sendVerificationCode = async () => {
       message.error(t('login.invalidPhone') || '请输入有效的手机号')
       return
     }
-    isLoading.value = true
-    await axios.post(`${API.BASE_URL}${API.SEND_CODE}`, { phone: phoneForm.value.phone })
-    message.success(t('login.codeSentSuccess') || '验证码已发送')
     currentStep.value = 'code'
     // 启动倒计时
     countdown.value = conuntTime
+    await ApiServer.request({
+      method: 'post',
+      url: API.SEND_CODE,
+      data: { phone: phoneForm.value.phone }
+    })
+    message.success(t('login.codeSentSuccess') || '验证码已发送')
+    currentStep.value = 'code'
+    
     const timer = setInterval(() => {
       countdown.value--
       if (countdown.value <= 0) {
         clearInterval(timer)
       }
     }, 1000)
-  } catch (error) {
-    message.error(t('login.phoneValidateFailed') || '手机号验证失败，请检查输入')
+  } catch (error: any) {
+    message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed') || '手机号验证失败，请检查输入'))
     return
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -244,11 +268,15 @@ const resendVerificationCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
-    await axios.post(`${API.BASE_URL}${API.SEND_CODE}`, { phone: phoneForm.value.phone })
+    await ApiServer.request({
+      method: 'post',
+      url: API.SEND_CODE,
+      data: { phone: phoneForm.value.phone }
+    })
     message.success(t('login.codeSentSuccess') || '验证码已发送')
     
-  } catch (error) {
-    message.error(t('login.phoneValidateFailed') || '手机号验证失败，请检查输入')
+  } catch (error: any) {
+    message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed') || '手机号验证失败，请检查输入'))
   } finally {
     isLoading.value = false
   }
@@ -270,12 +298,10 @@ const handlePhoneAuth = async () => {
       code: verificationCode.value
     }
     console.log('提交验证数据：', submitData)
-    await userStore.phoneLogin(submitData.areaCode, submitData.phone, submitData.code)
-    message.success(t('login.loginSuccess') || '登录成功')
-    router.push('/') // 登录成功后跳转到首页或其他页面
-  } catch (error: any) {
-    console.log(error?.message || '验证失败')
-    message.error(error?.message || t('login.verificationFailed') || '验证失败，请检查验证码')
+    const success = await userStore.phoneLogin(submitData.areaCode, submitData.phone, submitData.code)
+    if (success) {
+      router.push('/') // 登录成功后跳转到首页或其他页面
+    }
   } finally {
     isLoading.value = false
   }
@@ -422,6 +448,8 @@ defineExpose({
 /* 验证码输入区域样式 */
 .code-input-section {
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .code-label {
@@ -433,7 +461,16 @@ defineExpose({
 }
 
 :deep(.verification-input) {
-  width: 80%;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+:deep(.verification-input .sms-code-input) {
+  margin: 0 auto;
+}
+
+:deep(.verification-input .code-input-wrapper) {
   margin: 0 auto;
 }
 

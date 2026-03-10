@@ -31,6 +31,8 @@
 </template>
 
 <script>
+import { ApiServer } from '@/utils/taskService'
+
 export default {
   name: 'WxQrcodeLogin',
   data() {
@@ -67,15 +69,18 @@ export default {
         
         // 1. 调用后端接口获取微信二维码参数（实际项目中替换为你的后端接口）
         // 注：微信扫码登录需要后端先调用微信接口获取ticket，前端仅负责展示和轮询
-        const res = await this.$axios.get('/api/wx/getQrcode', {
+        const res = await ApiServer.request({
+          method: 'get',
+          url: '/api/wx/getQrcode',
           params: {
             appId: this.appId,
             redirectUri: this.redirectUri,
             state: this.state
           }
         });
+        const payload = res?.data || {}
 
-        if (res.code === 200) {
+        if (payload.code === 200) {
           // 2. 拼接二维码图片地址（微信官方二维码接口）
           this.qrcodeUrl = `https://open.weixin.qq.com/connect/qrconnect?appid=${this.appId}&redirect_uri=${encodeURIComponent(this.redirectUri)}&response_type=code&scope=snsapi_login&state=${this.state}#wechat_redirect`;
           this.statusText = '请使用微信扫码登录';
@@ -83,11 +88,28 @@ export default {
           // 3. 启动轮询，监听扫码状态
           this.startPolling();
         } else {
-          this.statusText = '获取二维码失败：' + res.msg;
+          this.statusText = '获取二维码失败：' + (payload.msg || '未知错误');
         }
       } catch (error) {
         console.error('初始化二维码失败：', error);
-        this.statusText = '网络异常，请刷新重试';
+        if (error?.message && String(error.message).length > 0) {
+          this.statusText = error.message;
+        } else {
+          switch (error?.statusCode) {
+            case 401:
+              this.statusText = '登录已过期，请重新登录';
+              break;
+            case 429:
+              this.statusText = '请求过于频繁，请稍后重试';
+              break;
+            case 500:
+              this.statusText = '服务器错误，请稍后重试';
+              break;
+            default:
+              this.statusText = '网络异常，请刷新重试';
+              break;
+          }
+        }
       } finally {
         this.isLoading = false;
       }
@@ -105,20 +127,23 @@ export default {
       // 每3秒查询一次扫码状态
       this.pollTimer = setInterval(async () => {
         try {
-          const res = await this.$axios.get('/api/wx/checkLoginStatus', {
+          const res = await ApiServer.request({
+            method: 'get',
+            url: '/api/wx/checkLoginStatus',
             params: {
               state: this.state // 用state标识当前登录会话
             }
           });
+          const payload = res?.data || {}
 
-          switch (res.data.status) {
+          switch (payload.status) {
             case 'waiting': // 未扫码
               break;
             case 'scanned': // 已扫码未确认
               this.statusText = '已扫码，请在微信中确认登录';
               break;
             case 'success': // 登录成功
-              this.handleLoginSuccess(res.data);
+              this.handleLoginSuccess(payload);
               break;
             case 'expired': // 二维码过期
               this.statusText = '二维码已过期，请刷新重试';
@@ -131,6 +156,25 @@ export default {
           }
         } catch (error) {
           console.error('查询登录状态失败：', error);
+          if (error?.message && String(error.message).length > 0) {
+            this.statusText = error.message;
+          } else {
+            switch (error?.statusCode) {
+              case 401:
+                this.statusText = '登录已过期，请重新登录';
+                clearInterval(this.pollTimer);
+                break;
+              case 429:
+                this.statusText = '请求过于频繁，请稍后重试';
+                break;
+              case 500:
+                this.statusText = '服务器错误，请稍后重试';
+                break;
+              default:
+                this.statusText = '查询登录状态失败';
+                break;
+            }
+          }
         }
       }, 3000);
     },

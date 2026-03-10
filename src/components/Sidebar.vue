@@ -65,10 +65,10 @@
       </div>
 
       <!-- Divider -->
-      <div class="nav-divider"></div>
+      <div class="nav-divider" v-if="false"></div>
 
       <!-- Download App -->
-      <button class="download-app-btn">
+      <button class="download-app-btn" v-if="false">
         <span>{{ t('sidebar.downloadApp') }}</span>
         <div class="platform-icons">
           <svg class="apple-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -81,7 +81,7 @@
       </button>
 
       <!-- Community -->
-      <div class="community-section">
+      <div class="community-section" v-if="false">
         <span class="community-label">{{ t('sidebar.joinCommunity') }}</span>
         <div class="social-links">
           <a href="#" class="social-link">
@@ -184,17 +184,23 @@ const FeedbackIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke
   h('path', { d: 'M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z' })
 ])
 
+const ProfileIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+  h('path', { d: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2' }),
+  h('circle', { cx: '12', cy: '7', r: '4' })
+])
+
 const mainMenu = computed(() => [
   { name: 'home', label: t('sidebar.home'), path: '/', icon: HomeIcon },
   { name: 'explore3d', label: t('sidebar.explore3d'), path: '/explore', icon: Explore3DIcon },
-  { name: 'explore4d', label: t('sidebar.explore4d'), path: '/explore4d', icon: Explore4DIcon }
+  // { name: 'explore4d', label: t('sidebar.explore4d'), path: '/explore4d', icon: Explore4DIcon }
 ])
 
 const toolsMenu = computed(() => [
+  { name: 'profile', label: '个人中心', path: '/tools/profile', icon: ProfileIcon },
   { name: 'api', label: t('sidebar.api'), path: '/tools/api', icon: APIIcon },
-  { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },
-  { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },
-  { name: 'unreal', label: t('sidebar.unreal'), path: '/tools/unreal', icon: UnrealIcon },
+  // { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },
+  // { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },
+  // { name: 'unreal', label: t('sidebar.unreal'), path: '/tools/unreal', icon: UnrealIcon },
   { name: 'tutorial', label: t('sidebar.tutorial'), path: '/tools/tutorial', icon: TutorialIcon },
   { name: 'settings', label: t('sidebar.settings'), path: '/tools/settings', icon: SettingsIcon },
   { name: 'feedback', label: t('sidebar.feedback'), path: '/tools/feedback', icon: FeedbackIcon }
