@@ -71,18 +71,10 @@
             <span>{{ t('login.or') }}</span>
           </div>
 
-          <div class="social-login">
-            <button class="social-btn google" @click="handleGoogleLogin">
-              <img src="https://www.google.com/favicon.ico" alt="Google" class="social-icon">
-              <span class="social-text">{{ t('login.continueWithGoogle', { name: savedGoogleUser?.name || t('login.user') }) }}</span>
-            </button>
-            <button class="social-btn apple" @click="handleAppleLogin" v-if="false">
-              <svg class="social-icon apple-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              <span class="social-text">{{ t('login.continueWithApple') }}</span>
-            </button>
-          </div>
+          <SocialLogin
+            @google-success="handleGoogleCredential"
+            @google-error="handleGoogleError"
+          />
 
           <p class="terms">
             {{ t('login.terms') }} <a href="#">{{ t('login.termsLink') }}</a> {{ t('login.and') }} <a href="#">{{ t('login.privacyLink') }}</a>
@@ -179,18 +171,10 @@
             <span>{{ t('login.or') }}</span>
           </div>
 
-          <div class="social-login">
-            <button class="social-btn google" @click="handleGoogleLogin">
-              <img src="https://www.google.com/favicon.ico" alt="Google" class="social-icon">
-              <span class="social-text">{{ t('login.continueWithGoogle', { name: savedGoogleUser?.name || t('login.user') }) }}</span>
-            </button>
-            <button class="social-btn apple" @click="handleAppleLogin" v-if="false">
-              <svg class="social-icon apple-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              <span class="social-text">{{ t('login.continueWithApple') }}</span>
-            </button>
-          </div>
+          <SocialLogin
+            @google-success="handleGoogleCredential"
+            @google-error="handleGoogleError"
+          />
         </div>
 
         <!-- Login View -->
@@ -253,18 +237,10 @@
             <span>{{ t('login.or') }}</span>
           </div>
 
-          <div class="social-login">
-            <button class="social-btn google" @click="handleGoogleLogin">
-              <img src="https://www.google.com/favicon.ico" alt="Google" class="social-icon">
-              <span class="social-text">{{ t('login.continueWithGoogle', { name: savedGoogleUser?.name || t('login.user') }) }}</span>
-            </button>
-            <button class="social-btn apple" @click="handleAppleLogin" v-if="false">
-              <svg class="social-icon apple-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              <span class="social-text">{{ t('login.continueWithApple') }}</span>
-            </button>
-          </div>
+          <SocialLogin
+            @google-success="handleGoogleCredential"
+            @google-error="handleGoogleError"
+          />
         </div>
 
         <!-- Phone Auth View -->
@@ -277,18 +253,10 @@
             <span>{{ t('login.or') }}</span>
           </div>
 
-          <div class="social-login">
-            <button class="social-btn google" @click="handleGoogleLogin">
-              <img src="https://www.google.com/favicon.ico" alt="Google" class="social-icon">
-              <span class="social-text">{{ t('login.continueWithGoogle', { name: savedGoogleUser?.name || t('login.user') }) }}</span>
-            </button>
-            <button class="social-btn apple" @click="handleAppleLogin" v-if="false">
-              <svg class="social-icon apple-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              <span class="social-text">{{ t('login.continueWithApple') }}</span>
-            </button>
-          </div>
+          <SocialLogin
+            @google-success="handleGoogleCredential"
+            @google-error="handleGoogleError"
+          />
         </div>  
       </div>
 
@@ -317,6 +285,7 @@ import {
 import PhoneAuth from '@/components/PhoneAuth.vue'
 import WechatQrLogin from '@/components/WechatQrLogin.vue'
 import EmailInputCode from '@/components/EmailInputCode.vue'
+import SocialLogin from '@/components/SocialLogin.vue'
 import API from '@/utils/api'
 import { ApiServer } from '@/utils/taskService'
 
@@ -332,7 +301,7 @@ const isLoading = ref(false)
 const isEmailCodeStep = ref(false)
 const emailCode = ref('')
 const pendingRegister = ref<{ email: string; password: string }>({ email: '', password: '' })
-const savedGoogleUser = ref<{ name: string; email: string }>({ name: '珂', email: 'lakerman523@gmail.com' })
+const googleAuthUrl = 'https://localhost:6026/api/auth/google/verify'
 
 // 表单引用
 const registerFormRef = ref()
@@ -597,16 +566,48 @@ const backToEmailForm = () => {
   pendingRegister.value = { email: '', password: '' }
 }
 
-const handleGoogleLogin = () => {
-  localStorage.setItem('token', 'google_mock_token')
-  localStorage.setItem('user', JSON.stringify({ name: '珂', email: 'lakerman523@gmail.com' }))
-  router.push('/')
+const persistGoogleUser = (payload: { token?: string; user?: Record<string, any> }) => {
+  const token = payload?.token
+  const user = { ...(payload?.user || {}), ...(token ? { token } : {}) }
+
+  if (token) {
+    localStorage.setItem('token', token)
+  }
+
+  localStorage.setItem('user', JSON.stringify(user))
+  userStore.init()
 }
 
-const handleAppleLogin = () => {
-  localStorage.setItem('token', 'apple_mock_token')
-  localStorage.setItem('user', JSON.stringify({ name: 'Apple User', email: 'user@icloud.com' }))
-  router.push('/')
+const handleGoogleCredential = async ({ credential }: { credential: string }) => {
+  if (!credential || isLoading.value) return
+
+  isLoading.value = true
+  try {
+    const response = await fetch(googleAuthUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    })
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}))
+      throw new Error(payload?.message || `Google login failed (${response.status})`)
+    }
+
+    const payload = await response.json()
+    persistGoogleUser(payload)
+    router.push('/')
+  } catch (error: any) {
+    message.error(error?.message || t('login.loginFailed') || '登录失败')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleGoogleError = ({ message: errorMessage }: { message: string }) => {
+  if (errorMessage) {
+    message.error(errorMessage)
+  }
 }
 
 onMounted(() => {
@@ -934,48 +935,6 @@ onUnmounted(() => {
 
 .divider span {
   padding: 0 16px;
-}
-
-/* Social Login */
-.social-login {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.social-btn {
-  width: 100%;
-  padding: 12px 16px;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.social-btn:hover {
-  background: #f9f9f9;
-  border-color: #d0d0d0;
-}
-
-.social-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.social-text {
-  flex: 1;
-  text-align: left;
-  font-size: 14px;
-  color: #333;
-}
-
-.apple-icon {
-  color: #000;
 }
 
 /* Terms */
