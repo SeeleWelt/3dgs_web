@@ -1,18 +1,5 @@
 <template>
   <div class="settings-page">
-    <!-- 页面头部 -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-icon">
-          <SettingOutlined />
-        </div>
-        <div class="header-text">
-          <h1>设置</h1>
-          <p>自定义您的使用体验</p>
-        </div>
-      </div>
-    </div>
-
     <div class="settings-container">
       <!-- 外观设置 -->
       <div class="settings-section">
@@ -94,28 +81,6 @@
           <span>其他</span>
         </div>
 
-        <div class="settings-cards">
-          <div class="setting-card">
-            <div class="setting-info">
-              <div class="setting-icon language">
-                <GlobalOutlined />
-              </div>
-              <div class="setting-text">
-                <h3>语言</h3>
-                <p>选择界面显示语言</p>
-              </div>
-            </div>
-            <a-select
-              v-model:value="language"
-              size="large"
-              class="setting-select"
-              style="width: 140px"
-            >
-              <a-select-option value="zh-CN">简体中文</a-select-option>
-              <a-select-option value="en-US">English</a-select-option>
-            </a-select>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -161,11 +126,10 @@ watch(fontFamily, changeFontFamily, { immediate: true })
 
 /* 页面头部 */
 .page-header {
-  max-width: 720px;
-  margin: 0 auto 32px;
-  padding: 40px;
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 40px 24px;
   background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-  border-radius: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -196,6 +160,8 @@ watch(fontFamily, changeFontFamily, { immediate: true })
   display: flex;
   align-items: center;
   gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
   position: relative;
   z-index: 1;
 }
@@ -236,6 +202,15 @@ watch(fontFamily, changeFontFamily, { immediate: true })
 /* 设置区块 */
 .settings-section {
   margin-bottom: 32px;
+  animation: slideUp 0.5s ease backwards;
+}
+
+.settings-section:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.settings-section:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
 .section-header {
@@ -270,11 +245,14 @@ watch(fontFamily, changeFontFamily, { immediate: true })
   align-items: center;
   justify-content: space-between;
   transition: all 0.3s ease;
+  animation: slideUp 0.5s ease backwards;
 }
+
+.setting-card:nth-child(1) { animation-delay: 0.15s; }
+.setting-card:nth-child(2) { animation-delay: 0.25s; }
 
 .setting-card:hover {
   border-color: var(--glass-border-hover);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 
@@ -292,7 +270,11 @@ watch(fontFamily, changeFontFamily, { immediate: true })
   align-items: center;
   justify-content: center;
   font-size: 22px;
+  animation: bounceIn 0.5s ease backwards;
 }
+
+.setting-card:nth-child(1) .setting-icon { animation-delay: 0.2s; }
+.setting-card:nth-child(2) .setting-icon { animation-delay: 0.3s; }
 
 .setting-icon.theme {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -333,6 +315,32 @@ watch(fontFamily, changeFontFamily, { immediate: true })
   gap: 8px;
 }
 
+/* 动画定义 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
   .page-header {
@@ -362,6 +370,10 @@ watch(fontFamily, changeFontFamily, { immediate: true })
 
   .setting-select {
     width: 100% !important;
+  }
+
+  .settings-container {
+    padding: 0 16px;
   }
 }
 </style>

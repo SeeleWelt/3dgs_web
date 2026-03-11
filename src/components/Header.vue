@@ -56,20 +56,20 @@
       <!-- User Menu -->
       <div class="user-menu-wrapper" ref="userMenuRef">
         <div class="user-avatar" @click="toggleUserMenu">
-          <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="36" />
+          <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="36" @loadError="handleAvatarError" />
           <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        
+
         <!-- User Dropdown Menu -->
         <transition name="dropdown">
           <div v-if="isUserMenuOpen && !isLanguageSelectorOpen" class="user-dropdown">
             <!-- User Info -->
             <div class="user-info" @click="navigateTo('/tools/profile')">
               <div class="user-avatar-large">
-                <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="48" />
+                <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="48" :loadError="handleAvatarError" />
                 <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
@@ -77,7 +77,15 @@
               </div>
               <div class="user-details">
                 <span class="user-email">{{ userStore.userInfo?.nickname }}</span>
-                <span class="user-badge">{{ t('header.regularAccount') }}</span>
+                <div class="user-info-bottom">
+                  <span class="user-badge">{{ t('header.regularAccount') }}</span>
+                  <span class="user-points">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    {{ currentPoints }}
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -150,9 +158,11 @@ import { useI18n } from 'vue-i18n'
 import { useUserStore } from '../stores/user'
 import { languages } from '../i18n'
 import "/node_modules/flag-icons/css/flag-icons.min.css";
+import { usePointsStore } from '@/stores/points'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const userPointsStore = usePointsStore()
 const { t, locale } = useI18n()
 
 const emit = defineEmits<{
@@ -162,8 +172,10 @@ const emit = defineEmits<{
 const isUserMenuOpen = ref(false)
 const isLanguageSelectorOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
+const avatarError = ref(false)
 const languageMenuRef = ref<HTMLElement | null>(null)
 const currentLocale = ref(locale.value)
+const currentPoints = computed(() => userPointsStore.current_points)
 
 const pageTitle = computed(() => {
   if (route.path.startsWith('/create')) {
@@ -189,8 +201,13 @@ const userEmail = computed(() => {
 
 const hasAvatar = computed(() => {
   const img = userStore.userInfo?.headimg
-  return img != null && img !== ''
+  return img != null && img !== '' && !avatarError.value
 })
+
+const handleAvatarError = () => {
+  console.log("加载失败")
+  avatarError.value = true
+}
 
 const currentLanguageName = computed(() => {
   const lang = languages.find(l => l.code === currentLocale.value)
@@ -263,8 +280,16 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted( async () =>  {
   document.addEventListener('click', handleClickOutside)
+  // 重置头像错误状态
+  avatarError.value = false
+  try {
+    await userPointsStore.getPoints();
+    await userPointsStore.getPointsAllLogs();
+  } catch (error) {
+    console.error('获取算力点信息失败:', error)
+  }
 })
 
 onUnmounted(() => {
@@ -551,6 +576,21 @@ onUnmounted(() => {
   border-radius: 12px;
   color: var(--text-secondary);
   width: fit-content;
+}
+
+.user-info-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-points {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #fbbf24;
+  font-weight: 500;
 }
 
 /* Menu Sections */

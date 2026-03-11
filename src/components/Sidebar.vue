@@ -125,7 +125,7 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const { t } = useI18n()
-const activeRoute = ref('/')
+const activeRoute = computed(() => router.currentRoute.value.path)
 
 // Home Icon
 const HomeIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
@@ -210,8 +210,8 @@ const handleNewProject = () => {
   router.push('/create')
 }
 
+
 const handleNavClick = (path: string) => {
-  activeRoute.value = path
   router.push(path)
   if (props.isOpen !== undefined) {
     emit('update:isOpen', false)

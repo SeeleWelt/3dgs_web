@@ -7,6 +7,7 @@ import { message } from 'ant-design-vue'
 type UserInfoState = {
   headimg: string | null
   logoutTime: string | null
+  loginTime: string | null
   nickname: string | null
   phone: string | null
   point: number
@@ -34,6 +35,7 @@ export const useUserStore = defineStore('user', () => {
   const buildUserFromResponse = (data: any, account: string): UserInfoState => ({
     headimg: data?.headimg ?? '/default.svg',
     logoutTime: data?.logoutTime ?? null,
+    loginTime: new Date().toISOString(),
     nickname: normalizeNickname(data?.nickname),
     phone: data?.phone ?? null,
     point: typeof data?.point === 'number' ? data.point : 0,
@@ -249,6 +251,7 @@ export const useUserStore = defineStore('user', () => {
       userInfo.value = {
         headimg: null,
         logoutTime: null,
+        loginTime: null,
         nickname: null,
         phone: null,
         point: 0,

@@ -18,7 +18,7 @@ import {
 import * as pc from 'playcanvas';
 import { Splat, State } from './splat';
 import { gsplatDataToSog } from './sog/sog1.cpu';
-
+import { message } from 'ant-design-vue';
 // 移除 TypeScript type 定义，直接使用对象/数组
 const tmpV1 = new Vec3();
 const tmpV2 = new Vec3();
@@ -161,7 +161,7 @@ class CameraControls {
 
         // 可配置属性（移除类型注解）
         this.moveSpeed = 3;
-        this.orbitSpeed = 18;
+        this.orbitSpeed = 5;
         this.pinchSpeed = 0.4;
         this.wheelSpeed = 0.06;
         this.gamepadDeadZone = new Vec2(0.3, 0.6);
@@ -173,7 +173,8 @@ class CameraControls {
         this._cameraResetTransition = null;
         this._lastResetFocus = null;
         this.hasUserInteracted = false;
-        
+        this._lastCantFlyWarningTime = 0; // 上次无法进入飞行模式提示的时间
+
         this.isFirstTouchRecorded = false; // 首次触摸记录标记
         this.pixelToAngleRatio = 3.33; // 初始默认值，首次触摸后会自动更新
 
@@ -2149,7 +2150,7 @@ class CameraControls {
         return false;
     }
     // 更新方法
-    update(dt, isLoopPlaying, isVideoPlaying) {
+    update(dt, isLoopPlaying, isVideoPlaying, cantFly = true) {
         // console.log(this._camera.entity.getPosition());
         if(this.stopNormal) return; 
         const keyCode = KeyboardMouseSource.keyCode;
@@ -2197,11 +2198,19 @@ class CameraControls {
         this._state.touches += count[0];
 
         // 键盘输入时切换到飞行模式
-        if (this._mode !== 'fly' && this._state.axis.length() > 0) {
+        if (!cantFly && this._mode !== 'fly' && this._state.axis.length() > 0) {
             this.mode = 'fly';
             // 回调通知
             if (this._modeChangeCallback) {
                 this._modeChangeCallback('fly');
+            }
+        }else if(cantFly && this._state.axis.length() > 0 )
+        {
+            // 节流：1秒内只提示一次
+            const now = Date.now();
+            if (now - this._lastCantFlyWarningTime >= 3000) {
+                message.warn("编辑模式下无法进入飞行模式");
+                this._lastCantFlyWarningTime = now;
             }
         }
 

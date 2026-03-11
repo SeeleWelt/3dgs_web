@@ -15,18 +15,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, h } from 'vue'
 import { useThemeStore } from '../stores/theme'
-
+import { usePointsStore } from '../stores/points'
+import { SmileOutlined } from '@ant-design/icons-vue';
 import AnimatedBackground from '../components/AnimatedBackground.vue'
 import Sidebar from '../components/Sidebar.vue'
 import Header from '../components/Header.vue'
+import { notification } from 'ant-design-vue'
 
 const themeStore = useThemeStore()
+const userPointsStore = usePointsStore()
 const isSidebarOpen = ref(false)
 const isMobile = ref(false)
 
 const currentTheme = computed(() => themeStore.appliedTheme)
+const daylyPointsLog = computed(() => userPointsStore.points_dayly_log)
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
@@ -36,8 +40,20 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
-onMounted(() => {
+onMounted(async () => {
   checkMobile()
+  try {
+    await userPointsStore.getPointsDaylyLogs();
+    notification.open({
+      message: '每日签到',
+      description:
+        daylyPointsLog.value,
+      icon: () => h(SmileOutlined, { style: 'color: #108ee9' }),
+      duration:0
+    });
+  } catch (error) {
+    console.error('Failed to fetch points:', error)
+  }
   window.addEventListener('resize', checkMobile)
 })
 

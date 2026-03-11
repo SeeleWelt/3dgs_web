@@ -1,18 +1,5 @@
 <template>
   <div class="feedback-page">
-    <!-- 页面头部 -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-icon">
-          <MessageOutlined />
-        </div>
-        <div class="header-text">
-          <h1>意见反馈</h1>
-          <p>您的建议对我们很重要</p>
-        </div>
-      </div>
-    </div>
-
     <div class="feedback-container">
       <!-- 反馈表单 -->
       <div class="feedback-form">
@@ -29,25 +16,6 @@
             class="form-input"
           />
           <div class="form-hint">便于我们回复您（选填）</div>
-        </div>
-
-        <!-- 反馈类型 -->
-        <div class="form-card">
-          <div class="form-label">
-            <TagsOutlined class="label-icon" />
-            <span>反馈类型</span>
-          </div>
-          <div class="type-tags">
-            <span
-              v-for="type in feedbackTypes"
-              :key="type.value"
-              class="type-tag"
-              :class="{ active: selectedType === type.value }"
-              @click="selectedType = type.value"
-            >
-              {{ type.label }}
-            </span>
-          </div>
         </div>
 
         <!-- 反馈内容 -->
@@ -77,6 +45,28 @@
         >
           <SendOutlined /> 提交反馈
         </a-button>
+      </div>
+
+      <!-- 常见问题 -->
+      <div class="faq-section">
+        <div class="faq-header">
+          <QuestionCircleOutlined class="faq-icon" />
+          <div class="faq-title">
+            <h2>常见问题</h2>
+            <p>关于 MetaST 您需要知道的一切</p>
+          </div>
+        </div>
+
+        <a-collapse v-model:activeKey="activeFaqKeys" :bordered="false" class="faq-collapse">
+          <a-collapse-panel
+            v-for="faq in faqList"
+            :key="faq.id"
+            :header="faq.question"
+            class="faq-item"
+          >
+            <div class="faq-answer" v-html="faq.answer"></div>
+          </a-collapse-panel>
+        </a-collapse>
       </div>
     </div>
 
@@ -109,26 +99,55 @@ import { message } from 'ant-design-vue'
 import {
   MessageOutlined,
   UserOutlined,
-  TagsOutlined,
   FileTextOutlined,
   SendOutlined,
-  CheckCircleFilled
+  CheckCircleFilled,
+  QuestionCircleOutlined
 } from '@ant-design/icons-vue'
 import { ApiServer } from '@/utils/taskService'
 import API from '@/utils/api'
 
 const phone = ref('')
 const content = ref('')
-const selectedType = ref('suggest')
 const loading = ref(false)
 const successModal = ref(false)
 
-const feedbackTypes = [
-  { value: 'suggest', label: '功能建议' },
-  { value: 'bug', label: '问题反馈' },
-  { value: 'experience', label: '体验建议' },
-  { value: 'other', label: '其他' }
-]
+// 常见问题
+const activeFaqKeys = ref<string[]>([])
+
+interface FaqItem {
+  id: string
+  question: string
+  answer: string
+}
+
+const faqList = ref<FaqItem[]>([
+  {
+    id: '1',
+    question: 'MetaST 支持哪些文件格式？',
+    answer: 'MetaST 支持视频格式（mp4, mov）和图片格式（jpg, png, webp）。视频时长最长支持80秒，图片最多可上传150张。'
+  },
+  {
+    id: '2',
+    question: '如何获取算力点？',
+    answer: '算力点可以通过充值获得，用于支付模型生成费用。新用户注册可获得一定数量的免费算力点。'
+  },
+  {
+    id: '3',
+    question: '模型生成需要多长时间？',
+    answer: '模型生成时间取决于输入素材的复杂程度，一般视频素材需要5-15分钟，图片素材需要3-10分钟。'
+  },
+  {
+    id: '4',
+    question: '生成的模型可以商用吗？',
+    answer: '您拥有生成模型的完整使用权，可以用于个人或商业用途，但我们保留对技术的最终解释权。'
+  },
+  {
+    id: '5',
+    question: '如何查看我的任务进度？',
+    answer: '在"项目"页面可以查看所有任务的进度状态，包括等待中、处理中、已完成等状态。'
+  }
+])
 
 const feedbackTip = '请详细描述您的建议或问题，避免纯数字、无意义内容。我们会认真处理每一条反馈！'
 
@@ -167,7 +186,7 @@ async function submitFeedback() {
     const res = await ApiServer.request({
       url: API.BASE_URL + API.FEEDBACK,
       method: 'POST',
-      data: { content: content.value, phone: phone.value, type: selectedType.value },
+      data: { content: content.value, phone: phone.value },
       headers: { 'Content-Type': 'application/json' }
     })
     loading.value = false
@@ -175,7 +194,6 @@ async function submitFeedback() {
       successModal.value = true
       content.value = ''
       phone.value = ''
-      selectedType.value = 'suggest'
     } else {
       message.error(res?.data?.msg || '提交失败，请稍后再试')
     }
@@ -195,11 +213,10 @@ async function submitFeedback() {
 
 /* 页面头部 */
 .page-header {
-  max-width: 720px;
-  margin: 0 auto 32px;
-  padding: 40px;
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 40px 24px;
   background: linear-gradient(135deg, #f97316 0%, #ef4444 50%, #ec4899 100%);
-  border-radius: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -219,6 +236,8 @@ async function submitFeedback() {
   display: flex;
   align-items: center;
   gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
   position: relative;
   z-index: 1;
 }
@@ -269,11 +288,15 @@ async function submitFeedback() {
   border-radius: 16px;
   padding: 24px;
   transition: all 0.3s ease;
+  animation: slideUp 0.5s ease backwards;
 }
+
+.form-card:nth-child(1) { animation-delay: 0.1s; }
+.form-card:nth-child(2) { animation-delay: 0.15s; }
+.form-card:nth-child(3) { animation-delay: 0.2s; }
 
 .form-card:hover {
   border-color: var(--glass-border-hover);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .form-label {
@@ -350,6 +373,8 @@ async function submitFeedback() {
   border: none !important;
   box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3);
   transition: all 0.3s ease;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.25s;
 }
 
 .submit-btn:hover {
@@ -434,6 +459,106 @@ async function submitFeedback() {
   .type-tag {
     padding: 6px 12px;
     font-size: 13px;
+  }
+
+  .feedback-container {
+    padding: 0 16px;
+  }
+}
+
+/* 常见问题 */
+.faq-section {
+  margin-top: 48px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.2s;
+}
+
+.faq-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.faq-icon {
+  font-size: 32px;
+  color: var(--accent-blue);
+}
+
+.faq-title h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.faq-title p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.faq-collapse {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-collapse :deep(.ant-collapse-header) {
+  padding: 16px 20px !important;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary) !important;
+  background: var(--glass-surface);
+  border: none;
+  border-radius: 12px !important;
+  animation: slideUp 0.5s ease backwards;
+}
+
+.faq-collapse :deep(.ant-collapse-item:nth-child(1) .ant-collapse-header) { animation-delay: 0.25s; }
+.faq-collapse :deep(.ant-collapse-item:nth-child(2) .ant-collapse-header) { animation-delay: 0.3s; }
+.faq-collapse :deep(.ant-collapse-item:nth-child(3) .ant-collapse-header) { animation-delay: 0.35s; }
+.faq-collapse :deep(.ant-collapse-item:nth-child(4) .ant-collapse-header) { animation-delay: 0.4s; }
+.faq-collapse :deep(.ant-collapse-item:nth-child(5) .ant-collapse-header) { animation-delay: 0.45s; }
+
+.faq-collapse :deep(.ant-collapse-item-active .ant-collapse-header) {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+:deep(..ant-collapse-item) {
+  border: none;
+}
+
+.faq-collapse :deep(.ant-collapse-content-box) {
+  padding: 16px 20px !important;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  background: var(--glass-surface);
+  border: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.faq-collapse :deep(.ant-collapse-expand-icon) {
+  color: var(--accent-blue);
+}
+
+.faq-answer {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* 动画定义 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

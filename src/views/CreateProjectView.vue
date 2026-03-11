@@ -18,90 +18,94 @@
       </div>
 
       <!-- Upload Area -->
-      <FileUpload @upload="handleUpload" />
+      <FileUpload @upload="handleUpload" :max-image-count="MAX_IMAGE_COUNT" :max-video-duration-seconds="MAX_VIDEO_DURATION_SECONDS" />
 
       <!-- Upload Progress -->
       <UploadProgress
-        v-if="uploadTask"
+        v-if="uploadTask || imageFiles.length > 0"
         :task="uploadTask"
+        :image-files="imageFiles"
+        :current-points="currentPoints"
+        :consumed-points="consumedPoints"
         @open-advanced="openAdvancedDrawer"
         @remove="removeFile"
         @cancel="cancelUpload"
         @submit="submitProject"
+        @remove-image="removeImage"
       />
 
       <a-drawer
         :open="showAdvancedOptions"
         title="高级选项"
         placement="right"
-        :width="420"
+        :width="380"
         @close="closeAdvancedDrawer"
       >
         <div class="advanced-panel">
-          <div class="advanced-section">
-            <div class="section-name">基础信息</div>
-            <a-card class="option-card" size="small">
-              <div class="card-line">
-                <FileTextOutlined class="field-icon" />
-                <span class="card-line-label">任务名称</span>
-              </div>
-              <a-input
-                v-model:value="advancedForm.taskName"
-                placeholder="默认取视频文件名"
-                allow-clear
-              />
-
-              <div class="card-line card-line-top">
-                <ProfileOutlined class="field-icon" />
-                <span class="card-line-label">模型描述</span>
-              </div>
-              <a-textarea
-                v-model:value="advancedForm.userObjectDescription"
-                :rows="4"
-                placeholder="可选，默认为空"
-                show-count
-                :maxlength="300"
-              />
-            </a-card>
+          <!-- 基础信息 -->
+          <div class="form-group">
+            <label class="form-label">
+              <FileTextOutlined />
+              任务名称
+            </label>
+            <a-input
+              v-model:value="advancedForm.taskName"
+              placeholder="默认取视频文件名"
+              allow-clear
+            />
           </div>
 
-          <div class="advanced-section">
-            <div class="section-name">生成选项</div>
-            <a-card class="option-card" size="small">
-              <div class="switch-item">
-                <div class="switch-meta">
-                  <ThunderboltOutlined class="switch-icon" />
-                  <div>
-                    <div class="switch-title">快速重建</div>
-                    <div class="switch-desc">生成速度更快，适合快速预览</div>
-                  </div>
-                </div>
-                <a-switch v-model:checked="advancedForm.lightningReconstruction" />
-              </div>
-
-              <div class="switch-divider"></div>
-
-              <div class="switch-item">
-                <div class="switch-meta">
-                  <BgColorsOutlined class="switch-icon" />
-                  <div>
-                    <div class="switch-title">背景移除</div>
-                    <div class="switch-desc">自动分离主体，减少环境干扰</div>
-                  </div>
-                </div>
-                <a-switch v-model:checked="advancedForm.bgRemove" />
-              </div>
-            </a-card>
+          <div class="form-group">
+            <label class="form-label">
+              <ProfileOutlined />
+              模型描述
+            </label>
+            <a-textarea
+              v-model:value="advancedForm.userObjectDescription"
+              :rows="3"
+              placeholder="可选，默认为空"
+              show-count
+              :maxlength="300"
+            />
           </div>
 
-          <div class="advanced-section">
-            <div class="section-name">说明</div>
-            <a-card class="option-card" size="small">
-              <p class="option-tip">
-                <InfoCircleOutlined />
-                <span>`bg_remove_paras` 使用默认参数上传；FPS 固定为 10。</span>
-              </p>
-            </a-card>
+          <!-- 生成选项 -->
+          <div class="options-group">
+            <div class="switch-row">
+              <div class="switch-left">
+                <BgColorsOutlined class="option-icon bg" />
+                <div class="switch-info">
+                  <span class="switch-label">背景移除</span>
+                  <span class="switch-desc">自动分离主体，减少环境干扰</span>
+                </div>
+              </div>
+              <a-switch v-model:checked="advancedForm.bgRemove" />
+            </div>
+          </div>
+
+          <!-- 算力点消耗 -->
+          <div class="points-consume">
+            <div class="points-header">
+              <span class="points-label">
+                <ThunderboltOutlined />
+                算力点消耗
+              </span>
+              <span class="points-total">-{{ consumedPoints }}</span>
+            </div>
+            <div class="points-detail">
+              <span>基础重建</span>
+              <span class="point-value">-{{ getRuleValue('base') }}</span>
+            </div>
+            <div class="points-detail" v-if="advancedForm.bgRemove">
+              <span>背景移除</span>
+              <span class="point-value">-{{ getRuleValue('bg_remove') }}</span>
+            </div>
+          </div>
+
+          <!-- 说明 -->
+          <div class="info-tip">
+            <InfoCircleOutlined />
+            <span>bg_remove_paras 使用默认参数上传；FPS 固定为 10</span>
           </div>
         </div>
       </a-drawer>
@@ -110,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
@@ -122,6 +126,7 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons-vue'
 import { useThemeStore } from '../stores/theme'
+import { usePointsStore } from '@/stores/points'
 import AnimatedBackground from '../components/AnimatedBackground.vue'
 import FileUpload from '../components/FileUpload.vue'
 import UploadProgress from '../components/UploadProgress.vue'
@@ -131,8 +136,10 @@ import { ApiServer } from '@/utils/taskService'
 const router = useRouter()
 const { t } = useI18n()
 const themeStore = useThemeStore()
+const pointsStore = usePointsStore()
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
+type UploadType = 'video' | 'image'
 
 interface UploadTask {
   id: string
@@ -144,9 +151,19 @@ interface UploadTask {
   status: UploadTaskStatus
   progress: number
   abortController: AbortController | null
+  uploadType: UploadType
+}
+
+interface ImageFile {
+  id: string
+  name: string
+  size: number
+  file: File
+  previewUrl: string
 }
 
 const uploadTask = ref<UploadTask | null>(null)
+const imageFiles = ref<ImageFile[]>([])
 
 const showAdvancedOptions = ref(false)
 
@@ -160,13 +177,46 @@ const DEFAULT_BG_REMOVE_PARAMS = {
 
 const advancedForm = ref({
   taskName: '',
-  lightningReconstruction: false,
   bgRemove: true,
   userObjectDescription: '',
 })
 
-const MAX_VIDEO_DURATION_SECONDS = 180
-const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/quicktime']
+const MAX_VIDEO_DURATION_SECONDS =80
+const MAX_IMAGE_COUNT = 150
+
+// 获取积分规则和当前积分
+onMounted(async () => {
+  try {
+    await Promise.all([
+      pointsStore.getPointsRules(),
+      pointsStore.getPoints()
+    ])
+  } catch (error) {
+    console.error('获取积分信息失败:', error)
+  }
+})
+
+// 当前剩余积分
+const currentPoints = computed(() => pointsStore.current_points)
+
+// 计算将消耗的积分
+const consumedPoints = computed(() => {
+  const rules = pointsStore.points_rules as Record<string, number> | null
+  if (!rules || typeof rules !== 'object') return 0
+
+  let total = rules.base || 0 // 基础重建需要算力点
+  if (advancedForm.value.bgRemove) {
+    total += rules.bg_remove || 0
+  }
+  return total
+})
+
+// 获取规则值
+const getRuleValue = (key: string) => {
+  const rules = pointsStore.points_rules as Record<string, number> | null
+  if (!rules || typeof rules !== 'object') return 0
+  return rules[key] || 0
+}
 
 const goBack = () => {
   router.back()
@@ -201,46 +251,78 @@ const resolveVideoDuration = (file: File): Promise<number> => {
   })
 }
 
-const handleUpload = async (file: File) => {
+const handleUpload = async (files: File[]) => {
+  const file = Array.isArray(files) ? files[0] : files
+  console.log('Selected file:', file)
   if (!file) return
-
-  const isAcceptedType = ACCEPTED_VIDEO_TYPES.includes(file.type) || /\.(mp4|mov)$/i.test(file.name)
-  if (!isAcceptedType) {
-    message.warning('仅支持 MP4 或 MOV 视频')
-    return
-  }
-
-  try {
-    const durationSec = await resolveVideoDuration(file)
-    if (!Number.isFinite(durationSec) || durationSec <= 0) {
-      message.error('无法识别视频时长，请更换文件重试')
-      return
-    }
-    if (durationSec > MAX_VIDEO_DURATION_SECONDS) {
-      message.warning('视频时长不能超过 3 分钟')
+  if(file.type.startsWith('image/')) {
+    if(files?.length > MAX_IMAGE_COUNT) {
+      message.warning(`最多支持上传${MAX_IMAGE_COUNT}张图片`)
       return
     }
 
+    // 处理图片上传 - 清空视频
     if (uploadTask.value?.status === 'uploading' && uploadTask.value.abortController) {
       uploadTask.value.abortController.abort()
     }
     revokePreviewUrl()
+    uploadTask.value = null
 
-    uploadTask.value = {
-      id: Math.random().toString(36).slice(2),
-      name: file.name,
-      size: file.size,
-      file,
-      durationSec,
-      previewUrl: URL.createObjectURL(file),
-      status: 'pending',
-      progress: 0,
-      abortController: null,
+    // 处理图片列表
+    imageFiles.value = files.map(f => ({
+      id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+      name: f.name,
+      size: f.size,
+      file: f,
+      previewUrl: URL.createObjectURL(f),
+    }))
+
+    // 默认任务名称为第一张图片的名称
+    if (files.length > 0) {
+      advancedForm.value.taskName = getTaskNameFromFile(files[0].name)
     }
+    return
+  }else if (file.type.startsWith('video/')) {
 
-    advancedForm.value.taskName = getTaskNameFromFile(file.name)
-  } catch (error: any) {
-    message.error(error?.message || '读取视频信息失败')
+    // 处理视频上传 - 清空图片
+    imageFiles.value.forEach(img => {
+      URL.revokeObjectURL(img.previewUrl)
+    })
+    imageFiles.value = []
+
+    try {
+      const durationSec = await resolveVideoDuration(file)
+      if (!Number.isFinite(durationSec) || durationSec <= 0) {
+        message.error('无法识别视频时长，请更换文件重试')
+        return
+      }
+      if (durationSec > MAX_VIDEO_DURATION_SECONDS) {
+        message.warning(`视频时长不能超过 ${MAX_VIDEO_DURATION_SECONDS / 60} 分钟`)
+        return
+      }
+
+      if (uploadTask.value?.status === 'uploading' && uploadTask.value.abortController) {
+        uploadTask.value.abortController.abort()
+      }
+      revokePreviewUrl()
+
+      uploadTask.value = {
+        id: Math.random().toString(36).slice(2),
+        name: file.name,
+        size: file.size,
+        file,
+        durationSec,
+        previewUrl: URL.createObjectURL(file),
+        status: 'pending',
+        progress: 0,
+        abortController: null,
+        uploadType: 'video',
+      }
+
+      advancedForm.value.taskName = getTaskNameFromFile(file.name)
+    } catch (error: any) {
+      message.error(error?.message || '读取视频信息失败')
+    }
   }
 }
 
@@ -251,17 +333,38 @@ const removeFile = () => {
   }
   revokePreviewUrl()
   uploadTask.value = null
+  // 同时清理图片
+  imageFiles.value.forEach(img => {
+    URL.revokeObjectURL(img.previewUrl)
+  })
+  imageFiles.value = []
   showAdvancedOptions.value = false
 }
 
+const removeImage = (imageId: string) => {
+  const index = imageFiles.value.findIndex(img => img.id === imageId)
+  if (index !== -1) {
+    URL.revokeObjectURL(imageFiles.value[index].previewUrl)
+    imageFiles.value.splice(index, 1)
+    // 如果删除了所有图片，清空任务名称
+    if (imageFiles.value.length === 0) {
+      advancedForm.value.taskName = ''
+    }
+  }
+}
+
 const openAdvancedDrawer = () => {
-  if (!uploadTask.value) return
+  console.log("打开高级选项")
+  if (!uploadTask.value && imageFiles.value.length === 0) return
   showAdvancedOptions.value = true
 }
 
 const closeAdvancedDrawer = () => {
   if (uploadTask.value && !advancedForm.value.taskName.trim()) {
     advancedForm.value.taskName = getTaskNameFromFile(uploadTask.value.name)
+  }
+  if(imageFiles.value.length > 0 && !advancedForm.value.taskName.trim()) {
+    advancedForm.value.taskName = getTaskNameFromFile(imageFiles.value[0].name)
   }
   showAdvancedOptions.value = false
 }
@@ -289,7 +392,6 @@ const submitProject = async () => {
   const params = {
     task_name: normalizedTaskName,
     fps: 10,
-    lightning_reconstruction: !!advancedForm.value.lightningReconstruction,
     bg_remove: !!advancedForm.value.bgRemove,
     bg_remove_paras: DEFAULT_BG_REMOVE_PARAMS,
     public: false,
@@ -413,95 +515,209 @@ onBeforeUnmount(() => {
 .advanced-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-.advanced-section {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.section-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  padding-left: 2px;
-}
-
-.option-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 10px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-}
-
-.card-line {
+.form-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.card-line-top {
-  margin-top: 12px;
-  margin-bottom: 10px;
-}
-
-.card-line-label {
-  font-size: 12px;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
-.field-icon {
-  font-size: 14px;
+.form-label :deep(.anticon) {
   color: var(--accent-blue);
 }
 
-.switch-item {
+.options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+
+.switch-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 8px 0;
+}
+
+.switch-left {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.switch-divider {
-  height: 1px;
-  background: var(--glass-border);
-  margin: 12px 0;
+.option-icon {
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
 }
 
-.switch-meta {
+.option-icon.bg {
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.switch-info {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.switch-icon {
-  font-size: 15px;
-  color: var(--accent-blue);
-  margin-top: 2px;
-}
-
-.switch-title {
-  font-size: 13px;
+.switch-label {
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-primary);
-  font-weight: 600;
 }
 
 .switch-desc {
   font-size: 12px;
   color: var(--text-tertiary);
-  margin-top: 2px;
 }
 
-.option-tip {
-  margin: 0;
+.info-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   font-size: 12px;
   color: var(--text-tertiary);
-  display: inline-flex;
+  padding: 12px;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.info-tip :deep(.anticon) {
+  color: #6366f1;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* 算力点消耗 */
+.points-consume {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.points-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(239, 68, 68, 0.2);
+}
+
+.points-label {
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 2px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ef4444;
+}
+
+.points-label :deep(.anticon) {
+  font-size: 14px;
+}
+
+.points-total {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.points-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 6px 0;
+}
+
+.point-value {
+  font-weight: 500;
+  color: #f59e0b;
+}
+
+/* 算力点信息 */
+.points-info {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+
+.points-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.points-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.points-help {
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.points-help:hover {
+  color: var(--accent-blue);
+}
+
+.points-tooltip {
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.points-tooltip p {
+  margin: 0;
+}
+
+.points-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.current-points {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.consumed {
+  color: #ef4444;
+}
+
+.remaining {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.remaining.warning {
+  color: #ef4444;
 }
 
 /* Responsive */

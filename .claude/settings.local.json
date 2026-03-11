@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install qrcode)",
+      "WebFetch(domain:videotoframes.com)"
+    ]
+  }
+}

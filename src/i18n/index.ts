@@ -100,7 +100,7 @@ const messages = {
       phone: '手机号',
       verificationCode: '验证码',
       getCode: '获取验证码',
-      processing: '发送中...',
+      processing: '提交中...',
       phoneAuthTitle: '手机号登录/注册',
       phoneAuthSubtitle: '请输入你的手机号以获取验证码',
       invalidPhone: '请输入有效的手机号',
@@ -142,7 +142,9 @@ const messages = {
     },
     create: {
       title: '上传你的照片或视频以生成你的模型！',
-      subtitle: '专业提示：捕捉物体或场景时，始终以不同角度拍摄是一个好习惯'
+      subtitle: '专业提示：捕捉物体或场景时，始终以不同角度拍摄是一个好习惯',
+      meshTitle: '上传单张图片生成3D模型',
+      meshSubtitle: '专业提示：建议使用背景简洁、主体清晰的人物或物体图片'
     },
     profile: {
       editAvatar: '编辑头像',
@@ -322,7 +324,9 @@ const messages = {
     },
     create: {
       title: 'Upload your photos or videos to generate your model!',
-      subtitle: 'Pro tip: When capturing objects or scenes, it\'s always a good practice to shoot from different angles'
+      subtitle: 'Pro tip: When capturing objects or scenes, it\'s always a good practice to shoot from different angles',
+      meshTitle: 'Upload a single image to generate a 3D model',
+      meshSubtitle: 'Pro tip: Use images with a clean background and clear subject for best results'
     },
     profile: {
       editAvatar: 'Edit Avatar',

@@ -400,7 +400,12 @@ fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   overflow: hidden;
+  animation: slideUp 0.5s ease backwards;
 }
+
+.search-card { animation-delay: 0.1s; }
+.tags-card { animation-delay: 0.15s; }
+.apis-card { animation-delay: 0.2s; }
 
 .search-header, .tags-header, .apis-header {
   display: flex;
@@ -497,7 +502,6 @@ fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console
 .api-item.active {
   background: linear-gradient(90deg, rgba(0, 114, 255, 0.15) 0%, rgba(0, 114, 255, 0.05) 100%);
   margin-left: -3px;
-  box-shadow: 0 2px 8px rgba(0, 114, 255, 0.15);
 }
 
 .method-badge {
@@ -541,6 +545,8 @@ fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console
 /* 主标题 */
 .main-header {
   margin-bottom: 24px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.1s;
 }
 
 .header-title {
@@ -574,6 +580,8 @@ fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console
   border-radius: 12px;
   padding: 80px 40px;
   text-align: center;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.15s;
 }
 
 .empty-icon {
@@ -598,6 +606,8 @@ fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 28px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.15s;
 }
 
 /* 详情头部 */
@@ -760,6 +770,18 @@ fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 13px;
   color: #d4d4d4;
+}
+
+/* 动画定义 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 响应式 */

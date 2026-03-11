@@ -43,6 +43,7 @@ export interface GetTaskListParams {
   mode?: string
   deleteStatus?: number
   type?: TasksType
+  query?: string
 }
 
 interface TaskListResponse {
@@ -55,7 +56,7 @@ interface TaskListResponse {
 export class ApiServer {
   private static readonly http: AxiosInstance = axios.create({
     baseURL: API.BASE_URL,
-    timeout: 60_000
+    timeout: 10_000
   })
   private static interceptorInited = false
 
@@ -84,11 +85,16 @@ export class ApiServer {
             statusCode?: number
             isNetworkError?: boolean
             original?: unknown
+            isCancelled?: boolean
           }
 
           wrappedError.original = error
-
-          if (!error.response) {
+          if(axios.isCancel(error)) {
+            wrappedError.message = '请求已取消'
+            wrappedError.isCancelled = true
+            return Promise.reject(wrappedError)
+          }
+          else if (!error.response) {
             wrappedError.isNetworkError = true
             wrappedError.message =
               error.code === 'ECONNABORTED'
@@ -155,17 +161,9 @@ export class ApiServer {
     } else {
       delete this.http.defaults.headers.common.Authorization
     }
-    
-    const page = Math.max(1, params.page)
-    const pageSize = params.pageSize && params.pageSize > 0 ? params.pageSize : 20
-
-    const query = params.mode
-      ? { page, pageSize, mode: params.mode }
-      : { page, pageSize, deleteStatus: params.deleteStatus ?? 1, type: params.type }
-
     const response = await this.http.get<TaskListResponse>(API.TASK_LIST, {
-      params: query
-    })
+      params: params
+    })  
     const tasks = response.data?.tasks ?? []
     this.totalTasks = response.data?.pagination?.total ?? 0
 

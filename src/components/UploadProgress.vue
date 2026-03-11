@@ -1,13 +1,26 @@
 <template>
   <div class="upload-progress">
     <div class="progress-header">
-      <h3 class="progress-title">视频任务</h3>
-      <button class="advanced-btn" @click="$emit('open-advanced')">
-        <SettingOutlined />
-        <span>高级选项</span>
-      </button>
+      <h3 class="progress-title">{{ task ? '视频任务' : '图片任务' }}</h3>
+      <div class="header-actions">
+        <a-tooltip>
+          <template #title>
+            <div class="points-tooltip-content">
+              <p>当前算力点: {{ currentPoints }}</p>
+              <p>本次消耗: -{{ consumedPoints }}</p>
+              <p>剩余算力点: {{ Math.max(0, currentPoints - consumedPoints) }}</p>
+            </div>
+          </template>
+          <QuestionCircleOutlined class="points-help-icon" />
+        </a-tooltip>
+        <button class="advanced-btn" @click="$emit('open-advanced')">
+          <SettingOutlined />
+          <span>高级选项</span>
+        </button>
+      </div>
     </div>
 
+    <!-- 视频上传展示 -->
     <div v-if="task" class="file-list">
       <div class="file-item" :class="task.status">
         <div class="video-preview" v-if="task.previewUrl">
@@ -49,7 +62,7 @@
 
           <div class="file-status">
             <span v-if="task.status === 'uploading'">上传中... {{ Math.round(task.progress) }}%</span>
-            <span v-else-if="task.status === 'pending'">待上传，点击“开始生成模型”后上传</span>
+            <span v-else-if="task.status === 'pending'">待上传，点击"开始生成模型"后上传</span>
             <span v-else-if="task.status === 'success'" class="completed-text">上传完成</span>
             <span v-else-if="task.status === 'cancelled'" class="cancelled-text">已取消</span>
             <span v-else class="error-text">上传失败</span>
@@ -58,13 +71,42 @@
       </div>
     </div>
 
+    <!-- 图片上传展示 -->
+    <div v-if="imageFiles && imageFiles.length > 0" class="file-list image-list">
+      <div class="image-grid">
+        <div
+          v-for="image in imageFiles"
+          :key="image.id"
+          class="image-item"
+        >
+          <div class="image-preview">
+            <a-image
+              :src="image.previewUrl"
+              :alt="image.name"
+              class="preview-img"
+            />
+            <button
+              class="preview-remove"
+              title="移除图片"
+              @click.stop="$emit('remove-image', image.id)"
+            >
+              <CloseOutlined />
+            </button>
+            <div class="image-overlay">
+              <span class="image-name" :title="image.name">{{ image.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="action-buttons">
       <button
         class="btn btn-secondary"
-        :disabled="!task || task.status === 'uploading'"
+        :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false)"
         @click="$emit('remove')"
       >
-        移除视频
+        {{ task ? '移除视频' : '移除全部图片' }}
       </button>
       <button
         v-if="task?.status === 'uploading'"
@@ -87,7 +129,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined } from '@ant-design/icons-vue'
+import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
 
@@ -101,8 +143,18 @@ interface UploadTaskView {
   status: UploadTaskStatus
 }
 
+interface ImageFile {
+  id: string
+  name: string
+  size: number
+  previewUrl: string
+}
+
 const props = defineProps<{
   task: UploadTaskView | null
+  imageFiles: ImageFile[]
+  currentPoints: number
+  consumedPoints: number
 }>()
 
 const emit = defineEmits<{
@@ -110,11 +162,18 @@ const emit = defineEmits<{
   remove: []
   submit: []
   cancel: []
+  'remove-image': [imageId: string]
 }>()
 
+const hasFiles = computed(() => {
+  return !!props.task || (props.imageFiles && props.imageFiles.length > 0)
+})
+
 const canSubmit = computed(() => {
-  if (!props.task) return false
-  return ['pending', 'failed', 'cancelled'].includes(props.task.status)
+  if (props.task) {
+    return ['pending', 'failed', 'cancelled'].includes(props.task.status)
+  }
+  return props.imageFiles && props.imageFiles.length > 0
 })
 
 const statusTextMap: Record<UploadTaskStatus, string> = {
@@ -165,6 +224,32 @@ const formatDuration = (seconds: number): string => {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 20px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.points-help-icon {
+  font-size: 18px;
+  color: var(--text-secondary);
+  cursor: help;
+  transition: color 0.2s ease;
+}
+
+.points-help-icon:hover {
+  color: var(--accent-blue);
+}
+
+.points-tooltip-content {
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.points-tooltip-content p {
+  margin: 0;
 }
 
 .advanced-btn {
@@ -262,6 +347,91 @@ const formatDuration = (seconds: number): string => {
   height: 124px;
   display: block;
   object-fit: cover;
+}
+
+/* 图片上传样式 */
+.image-list {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--glass-border);
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.image-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.image-preview :deep(.ant-image) {
+  width: 100%;
+  height: 100%;
+}
+
+.image-preview :deep(.ant-image-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-preview .preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.image-item:hover .preview-remove {
+  opacity: 1;
+}
+
+.image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 6px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-item:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-name {
+  font-size: 10px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .file-info {
@@ -457,6 +627,10 @@ const formatDuration = (seconds: number): string => {
 
   .video-preview {
     width: 100%;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 
   .action-buttons {
