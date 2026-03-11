@@ -64,13 +64,13 @@ const messages = {
       share: '分享'
     },
     login: {
-      welcome: '欢迎来到网页版MetaST Engine',
+      welcome: '欢迎来到MetaST Engine',
       register: '注册',
       login: '登录',
       or: '或',
       continueWithGoogle: 'Continue as {name}',
       continueWithApple: 'Continue with Apple',
-      terms: '使用MetaST Engine网页版即表示你同意',
+      terms: '使用MetaST Engine即表示你同意',
       termsLink: 'MetaST Engine 的服务条款',
       privacyLink: '隐私政策',
       and: '和',

@@ -301,7 +301,8 @@ const isLoading = ref(false)
 const isEmailCodeStep = ref(false)
 const emailCode = ref('')
 const pendingRegister = ref<{ email: string; password: string }>({ email: '', password: '' })
-const googleAuthUrl = 'https://localhost:6026/api/auth/google/verify'
+// const googleAuthUrl = 'https://localhost:6026/api/auth/google/verify'
+const googleAuthUrl = 'https://szgm.tenyunn.com:50585/api/auth/google/verify'
 
 // 表单引用
 const registerFormRef = ref()
@@ -568,7 +569,7 @@ const backToEmailForm = () => {
 
 const persistGoogleUser = (payload: { token?: string; user?: Record<string, any> }) => {
   const token = payload?.token
-  const user = { ...(payload?.user || {}), ...(token ? { token } : {}) }
+  const user = { ...(payload?.user || { headimg: payload.headimg, nickname: payload.nickname, point: payload.point, username: payload.username }), ...(token ? { token } : {}) }
 
   if (token) {
     localStorage.setItem('token', token)
@@ -595,6 +596,7 @@ const handleGoogleCredential = async ({ credential }: { credential: string }) =>
     }
 
     const payload = await response.json()
+    console.log('Google login successful, payload:', payload)
     persistGoogleUser(payload)
     router.push('/')
   } catch (error: any) {
