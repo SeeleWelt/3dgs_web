@@ -13,18 +13,17 @@
       <button class="upgrade-btn">
         {{ t('header.upgrade') }}
       </button>
-      
-      <!-- User Menu -->
-      <div class="user-menu-wrapper" ref="userMenuRef">
-        <div class="user-avatar" @click="toggleUserMenu">
-          <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="36" />
-          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+
+      <div class="language-menu-wrapper" ref="languageMenuRef">
+        <button class="header-language-btn" @click="toggleLanguageSelector">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
           </svg>
-        </div>
-        
-        <!-- Language Selector Popup -->
+          <span>{{ currentLanguageName }}</span>
+        </button>
+
         <transition name="language-popup">
           <div v-if="isLanguageSelectorOpen" class="language-popup" @click.stop>
             <div class="language-popup-header">
@@ -52,12 +51,23 @@
             </div>
           </div>
         </transition>
-
+      </div>
+      
+      <!-- User Menu -->
+      <div class="user-menu-wrapper" ref="userMenuRef">
+        <div class="user-avatar" @click="toggleUserMenu">
+          <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="36" />
+          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        
         <!-- User Dropdown Menu -->
         <transition name="dropdown">
           <div v-if="isUserMenuOpen && !isLanguageSelectorOpen" class="user-dropdown">
             <!-- User Info -->
-            <div class="user-info" @click="navigateTo('/profile')">
+            <div class="user-info" @click="navigateTo('/tools/profile')">
               <div class="user-avatar-large">
                 <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="48" />
                 <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -86,7 +96,7 @@
                 </svg>
                 <span>{{ t('header.api') }}</span>
               </button>
-              <button class="menu-item" @click="navigateTo('/tools/blender')">
+              <button class="menu-item" @click="navigateTo('/tools/blender')" v-if="false">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
                 </svg>
@@ -112,21 +122,6 @@
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                 </svg>
                 <span>{{ t('header.feedback') }}</span>
-              </button>
-            </div>
-            
-            <!-- Language -->
-            <div class="menu-section">
-              <button class="menu-item language-item" @click="showLanguageSelector">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-                </svg>
-                <span>{{ t('header.language') }}</span>
-                <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
               </button>
             </div>
             
@@ -167,16 +162,23 @@ const emit = defineEmits<{
 const isUserMenuOpen = ref(false)
 const isLanguageSelectorOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
+const languageMenuRef = ref<HTMLElement | null>(null)
 const currentLocale = ref(locale.value)
 
 const pageTitle = computed(() => {
+  if (route.path.startsWith('/create')) {
+    return t('home.startCreate')
+  }
   const titles: Record<string, string> = {
     '/': t('header.home'),
-    '/profile': "个人中心",
+    '/tools/profile': t('header.profile'),
+    '/tools/settings': t('header.settings'),
+    '/tools/api': t('header.api'),
+    '/tools/tutorial': t('header.tutorial'),
+    '/tools/feedback': t('header.feedback'),
     '/projects': t('sidebar.explore'),
     '/explore': t('header.explore3d'),
-    '/explore4d': t('header.explore4d'),
-    '/create': t('home.startCreate')
+    '/explore4d': t('header.explore4d')
   }
   return titles[route.path] || t('header.home')
 })
@@ -196,6 +198,7 @@ const currentLanguageName = computed(() => {
 })
 
 const toggleUserMenu = () => {
+  isLanguageSelectorOpen.value = false
   isUserMenuOpen.value = !isUserMenuOpen.value
 }
 
@@ -228,7 +231,13 @@ const handleLogout = async () => {
 }
 
 const showLanguageSelector = () => {
+  isUserMenuOpen.value = false
   isLanguageSelectorOpen.value = true
+}
+
+const toggleLanguageSelector = () => {
+  isUserMenuOpen.value = false
+  isLanguageSelectorOpen.value = !isLanguageSelectorOpen.value
 }
 
 const closeLanguageSelector = () => {
@@ -245,7 +254,10 @@ const selectLanguage = (code: string) => {
 
 // 点击外部关闭菜单
 const handleClickOutside = (event: MouseEvent) => {
-  if (userMenuRef.value && !userMenuRef.value.contains(event.target as Node)) {
+  const target = event.target as Node
+  const clickedUserMenu = !!userMenuRef.value?.contains(target)
+  const clickedLanguageMenu = !!languageMenuRef.value?.contains(target)
+  if (!clickedUserMenu && !clickedLanguageMenu) {
     isUserMenuOpen.value = false
     isLanguageSelectorOpen.value = false
   }
@@ -313,6 +325,30 @@ onUnmounted(() => {
   position: relative;
 }
 
+.language-menu-wrapper {
+  position: relative;
+}
+
+.header-language-btn {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  background: var(--glass-surface);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.header-language-btn:hover {
+  background: var(--glass-surface-hover);
+}
+
 .user-avatar {
   width: 36px;
   height: 36px;
@@ -360,7 +396,7 @@ onUnmounted(() => {
 /* Language Popup */
 .language-popup {
   position: absolute;
-  top: 0;
+  top: calc(100% + 8px);
   right: 0;
   width: 280px;
   background: var(--bg-secondary);
@@ -551,19 +587,6 @@ onUnmounted(() => {
 .menu-item svg {
   color: var(--text-secondary);
   flex-shrink: 0;
-}
-
-.language-item {
-  justify-content: space-between;
-}
-
-.language-item span {
-  flex: 1;
-}
-
-.arrow-icon {
-  transform: rotate(90deg);
-  color: var(--text-tertiary);
 }
 
 .logout-item {

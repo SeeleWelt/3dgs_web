@@ -1,5 +1,5 @@
 <template>
-  <div class="explore-view">
+  <div class="explore-view" v-if="false">
     <!-- 4DGS Models Section -->
     <section class="explore-section">
       <div class="section-header">

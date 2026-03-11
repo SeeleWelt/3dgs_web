@@ -31,6 +31,8 @@
   --accent-orange: #FF9500;
   --gradient-primary: linear-gradient(135deg, #00c6ff, #0072ff);
   --orb-opacity: 0.6;
+  --global-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+
 }
 
 /* Dark Theme */
@@ -57,13 +59,13 @@
 
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: var(--global-font-family);
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 

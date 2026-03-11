@@ -149,7 +149,7 @@ const model3DTotal = ref(0)
 const typeTabs = computed(() => [
   { key: 'scan', label: t('home.scan') },
   { key: '3dgs', label: t('home.gs3d') },
-  { key: '4dgs', label: t('home.gs4d') }
+  // { key: '4dgs', label: t('home.gs4d') }
 ])
 
 const displayModels = computed(() => {

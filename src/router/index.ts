@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, RouterView } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import MainView from '../views/MainView.vue'
 
@@ -11,7 +11,7 @@ const router = createRouter({
       component: LoginView,
       meta: { public: true }
     },
-    {
+    { 
       path: '/',
       name: 'main',
       component: MainView,
@@ -39,17 +39,53 @@ const router = createRouter({
           component: () => import('../views/Explore4DView.vue')
         },
         {
-          path: 'profile',
-          name: 'profile',
-          component: () => import('../views/ProfileView.vue')
+          path: 'tools',
+          component: RouterView,
+          children: [
+            {
+              path: 'profile',
+              name: 'profile',
+              component: () => import('../views/ProfileView.vue')
+            }
+            ,{
+              path: 'settings',
+              name: 'settings',
+              component: () => import('../views/SettingsView.vue')
+            }
+            ,{
+              path: 'api',
+              name: 'api',
+              component: () => import('../views/ApiView.vue')
+            }
+            ,{
+              path: 'tutorial',
+              name: 'tutorial',
+              component: () => import('../views/TutorialView.vue')
+            }
+            ,{
+              path: 'feedback',
+              name: 'feedback',
+              component: () => import('../views/FeedbackView.vue')
+            }
+          ]
         }
       ]
     },
     {
       path: '/create',
-      name: 'create',
-      component: () => import('../views/CreateProjectView.vue'),
-      meta: { requiresAuth: true }
+      component: RouterView,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          redirect: '/create/3dgs-scan'
+        },
+        {
+          path: '3dgs-scan',
+          name: 'create-3dgs-scan',
+          component: () => import('../views/CreateProjectView.vue')
+        }
+      ]
     },
     {
       path: '/model/:taskId',
