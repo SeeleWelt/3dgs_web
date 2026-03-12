@@ -52,12 +52,19 @@ const router = createRouter({
               name: 'settings',
               component: () => import('../views/SettingsView.vue')
             }
-            ,{
+            ,
+            {
               path: 'api',
               name: 'api',
               component: () => import('../views/ApiView.vue')
+            },
+            {
+              path: 'developer',
+              name: 'developer',
+              component: () => import('../views/DeveloperView.vue')
             }
-            ,{
+            ,
+            {
               path: 'tutorial',
               name: 'tutorial',
               component: () => import('../views/TutorialView.vue')

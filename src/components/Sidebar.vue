@@ -197,6 +197,7 @@ const mainMenu = computed(() => [
 
 const toolsMenu = computed(() => [
   { name: 'profile', label: '个人中心', path: '/tools/profile', icon: ProfileIcon },
+  { name: 'developer', label: '开发者中心', path: '/tools/developer', icon: APIIcon },
   { name: 'api', label: t('sidebar.api'), path: '/tools/api', icon: APIIcon },
   // { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },
   // { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },

@@ -100,7 +100,16 @@ const API = {
 
   // 标注
   CREATE_ANNOTATION: "/api/task/createAnnotation",
-  GET_ANNOTATIONS: "/api/task/getAnnotation"
+  GET_ANNOTATIONS: "/api/task/getAnnotation",
+
+  // API密钥管理
+  GET_API_KEYS: '/api/apiKey/getKeys',
+  CREATE_API_KEY: '/api/apiKey/createApiKey',
+  DELETE_API_KEY: '/api/apiKey/deleteApiKey',
+  RENAME_API_KEY: '/api/apiKey/renameApiKey',
+  GET_OPEN_CREDITS: '/api/apiKey/getOpenCredits',
+  GET_OPEN_CREDITS_LOGS: '/api/apiKey/getLogs',
+  
 } as const;
 
 export default API;
