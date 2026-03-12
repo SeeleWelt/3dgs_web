@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import API from './api'
 import { useUserStore } from '@/stores/user'
+import { message } from 'ant-design-vue'
 
 export enum TasksType {
   normal = 'all',
@@ -104,6 +105,8 @@ export class ApiServer {
           }
 
           const status = error.response.status
+          console.log("捕获的错误状态码", error.response)
+
           wrappedError.statusCode = status
 
           switch (status) {

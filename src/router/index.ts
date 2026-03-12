@@ -58,13 +58,21 @@ const router = createRouter({
               component: () => import('../views/SettingsView.vue'),
               meta: { title: '设置' }
             }
-            ,{
+            ,
+            {
               path: 'api',
               name: 'api',
               component: () => import('../views/ApiView.vue'),
               meta: { title: 'API' }
+            },
+            {
+              path: 'developer',
+              name: 'developer',
+              meta: { title: '开发者中心' },
+              component: () => import('../views/DeveloperView.vue')
             }
-            ,{
+            ,
+            {
               path: 'tutorial',
               name: 'tutorial',
               component: () => import('../views/TutorialView.vue'),

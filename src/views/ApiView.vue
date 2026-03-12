@@ -1,827 +1,1066 @@
 <template>
-  <div class="api-page">
-    <div class="api-layout">
-      <!-- 左侧浮动搜索卡片 -->
-      <aside class="search-sidebar">
-        <div class="search-card">
-          <div class="search-header">
-            <SearchOutlined />
-            <span>搜索接口</span>
-          </div>
-          <a-input
-            v-model:value="search"
-            placeholder="输入接口路径或描述..."
-            class="search-input"
-          />
-        </div>
+	<div class="api-docs">
 
-        <!-- 标签分类 -->
-        <div class="tags-card">
-          <div class="tags-header">
-            <FilterOutlined />
-            <span>接口分类</span>
-          </div>
-          <div class="tag-list">
-            <div
-              v-for="tag in tags"
-              :key="tag.name"
-              class="tag-item"
-              :class="{ active: activeTag === tag.name }"
-              @click="toggleTag(tag.name)"
-            >
-              <span class="tag-name">{{ tag.name }}</span>
-              <span class="tag-count">{{ getTagCount(tag.name) }}</span>
-            </div>
-          </div>
-        </div>
+		<div class="docs-layout">
+			<aside class="toc">
+				<div class="toc-title">目录</div>
+				<ul>
+					<li v-for="item in toc" :key="item.id" class="toc-item">
+						<a :href="`#${item.id}`">{{ item.label }}</a>
+						<ul v-if="item.children" class="toc-sub">
+							<li v-for="child in item.children" :key="child.id">
+								<a :href="`#${child.id}`">{{ child.label }}</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</aside>
 
-        <!-- 接口列表 -->
-        <div class="apis-card">
-          <div class="apis-header">
-            <ApiOutlined />
-            <span>接口列表</span>
-            <span class="apis-count">{{ filteredApis.length }}</span>
-          </div>
-          <div class="apis-list">
-            <div
-              v-for="item in displayedApis"
-              :key="item.path + item.method"
-              class="api-item"
-              :class="{ active: activeApi?.path === item.path && activeApi?.method === item.method }"
-              @click="selectApi(item)"
-            >
-              <span class="method-badge" :class="item.method.toLowerCase()">{{ item.method }}</span>
-              <span class="api-name" v-html="highlightText(item.path, String(searchKeyword))"></span>
-            </div>
-          </div>
-        </div>
-      </aside>
+			<main class="docs-content">
+				<section id="overview" class="doc-section">
+					<div class="section-header">
+						<h2>3DGS API</h2>
+						<p>这是通过编程方式与 3DGS 系统交互的 API 参考文档。</p>
+					</div>
+					<div class="info-card">
+						<div class="info-title">基础说明</div>
+						<div class="info-body">
+							<div class="info-grid">
+                <div>
+									<div class="info-label">请求地址</div>
+									<div class="info-value">https://szgm.tenyunn.com:50585</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
 
-      <!-- 右侧主体内容 -->
-      <main class="api-main">
-        <!-- 顶部标题 -->
-        <div class="main-header">
-          <div class="header-title">
-            <ApiOutlined class="title-icon" />
+				<section id="quickstart" class="doc-section">
+					<div class="section-header">
+						<h2>快速入门</h2>
+						<p>使用以下流程快速完成 API 调用：创建密钥、上传素材、查询任务并下载模型。</p>
+					</div>
+					<div class="step-grid">
+						<div class="step-card">
+							<div class="step-index">01</div>
+							<div class="step-title">创建 API 密钥</div>
+							<div class="step-desc">在开发者中心生成密钥，保存后用于鉴权。</div>
+						</div>
+						<div class="step-card">
+							<div class="step-index">02</div>
+							<div class="step-title">上传视频或图片</div>
+							<div class="step-desc">提交扫描素材，获取任务 ID。</div>
+						</div>
+						<div class="step-card">
+							<div class="step-index">03</div>
+							<div class="step-title">查询任务状态</div>
+							<div class="step-desc">轮询或通过 Webhook 获取完成状态。</div>
+						</div>
+						<div class="step-card">
+							<div class="step-index">04</div>
+							<div class="step-title">下载 3D 模型</div>
+							<div class="step-desc">使用任务 ID 获取下载链接或直传文件。</div>
+						</div>
+					</div>
+				</section>
+
+				<section id="auth" class="doc-section">
+					<div class="section-header">
+						<h2>验证</h2>
+						<p>使用 API 密钥进行请求鉴权。</p>
+					</div>
+
+					<div id="auth-create-key" class="sub-section">
+						<h3>创建 API 密钥</h3>
+						<p>请前往开发者中心创建密钥。注意生成后仅显示一次。</p>
+					</div>
+
+					<div id="auth-use-key" class="sub-section">
+						<h3>使用 API 密钥</h3>
+						<p>在请求头中携带密钥。</p>
+						<div class="code-card">
+							<div class="code-title">请求头示例</div>
+							<pre><code class="language-http">Authorization: Bearer &lt;API_KEY&gt;</code></pre>
+						</div>
+					</div>
+				</section>
+
+				<section id="scan" class="doc-section">
+					<div class="section-header">
+						<h2>3DGS 扫描</h2>
+						<p>上传视频或图片进行 3DGS 重建。</p>
+					</div>
+
+					<div id="scan-video" class="sub-section">
+						<h3>视频上传</h3>
+						<div class="endpoint-card">
+							<div class="endpoint">POST /v1/open/videoUpload</div>
+							<div class="endpoint-meta">支持 multipart/form-data</div>
+						</div>
+						<div>
+							<h4>Request</h4>
+							<table class="param-table">
+								<thead>
+									<tr>
+										<th>位置</th>
+										<th>字段</th>
+										<th>类型</th>
+										<th>必填</th>
+										<th>说明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Header</td>
+										<td>Authorization</td>
+										<td>String</td>
+										<td>是</td>
+										<td>Bearer &lt;API_KEY&gt;</td>
+									</tr>
+									<tr>
+										<td>Form</td>
+										<td>videos</td>
+										<td>File</td>
+										<td>是</td>
+										<td>上传视频文件，字段名固定为 videos，仅 1 个文件</td>
+									</tr>
+									<tr>
+										<td>Form</td>
+										<td>params</td>
+										<td>String(JSON)</td>
+										<td>是</td>
+										<td>JSON 字符串，见 Attributes</td>
+									</tr>
+								</tbody>
+							</table>
+							<div class="code-card">
+								<div class="code-title">请求示例</div>
+								<pre><code class="language-bash">curl -X POST "https://szgm.tenyunn.com:50585/v1/open/videoUpload" \
+  -H "Authorization: Bearer &lt;API_KEY&gt;" \
+  -F "videos=@/path/to/video.mp4" \
+  -F 'params={"task_name":"my_task","bg_remove":false,"user_object_description":""}'</code></pre>
+							</div>
+						</div>
+						<div>
+							<h4>Response</h4>
+							<div class="code-card">
+								<div class="code-title">成功响应示例</div>
+								<pre><code class="language-json">{
+  "task_id": "b7a21c63-3f23-4b1c-bd2d-8c9d7e1d5c1f",
+  "task_name": "my_task"
+}</code></pre>
+							</div>
+						</div>
+						<div>
+							<h4>Attributes</h4>
+							<table class="param-table">
+								<thead>
+									<tr>
+										<th>字段</th>
+										<th>类型</th>
+										<th>必填</th>
+										<th>说明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>task_name</td>
+										<td>String</td>
+										<td>是</td>
+										<td>1-50 字符，仅中文/字母/数字/下划线</td>
+									</tr>
+									<tr>
+										<td>bg_remove</td>
+										<td>Boolean</td>
+										<td>否</td>
+										<td>是否开启背景移除</td>
+									</tr>
+									<tr>
+										<td>user_object_description</td>
+										<td>String</td>
+										<td>否</td>
+										<td>用户自定义物体描述</td>
+									</tr>
+									<tr>
+										<td>videos</td>
+										<td>File</td>
+										<td>是</td>
+										<td>支持 .mp4/.avi/.mov/.mkv/.webm，单文件；最大 10GB</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+
+					<!-- <div id="scan-image" class="sub-section">
+						<h3>图片上传</h3>
+						<div class="endpoint-card">
+							<div class="endpoint">POST /api/upload</div>
+							<div class="endpoint-meta">支持多图上传（待补充）</div>
+						</div>
+						<div class="placeholder">请求参数与响应示例待补充。</div>
+					</div> -->
+				</section>
+
+				<section id="model" class="doc-section">
+					<div class="section-header">
+						<h2>模型</h2>
+						<p>查询重建任务状态并下载模型。</p>
+					</div>
+
+					<div id="model-status" class="sub-section">
+						<h3>获取重建任务状态</h3>
+						<div class="endpoint-card">
+							<div class="endpoint">GET /v1/open/getModelStatus</div>
+							<div class="endpoint-meta">返回任务状态</div>
+						</div>
+						<div>
+							<h4>Request</h4>
+							<table class="param-table">
+								<thead>
+									<tr>
+										<th>位置</th>
+										<th>字段</th>
+										<th>类型</th>
+										<th>必填</th>
+										<th>说明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Header</td>
+										<td>Authorization</td>
+										<td>String</td>
+										<td>是</td>
+										<td>Bearer &lt;API_KEY&gt;</td>
+									</tr>
+									<tr>
+										<td>Query</td>
+										<td>task_id</td>
+										<td>String</td>
+										<td>是</td>
+										<td>任务 ID</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div>
+							<h4>Response</h4>
+							<div class="code-card">
+								<div class="code-title">成功响应示例</div>
+								<pre><code class="language-json">{
+  "code": 200,
+  "message": "Success",
+  "data": {
+    "status": "received"
+  }
+}</code></pre>
+							</div>
+						</div>
+						<div>
+							<h4>Attributes</h4>
+							<table class="param-table">
+								<thead>
+									<tr>
+										<th>字段</th>
+										<th>类型</th>
+										<th>说明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>code</td>
+										<td>Number</td>
+										<td>200 表示成功</td>
+									</tr>
+									<tr>
+										<td>message</td>
+										<td>String</td>
+										<td>返回消息</td>
+									</tr>
+									<tr>
+										<td>data.status</td>
+										<td>String</td>
+										<td>任务状态</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
             <div>
-              <h1>API Reference</h1>
-              <p>MetaST 3D 模型训练与任务管理接口</p>
+              <h4>任务状态</h4>
+						<table class="param-table">
+							<thead>
+								<tr>
+									<th>状态</th>
+									<th>说明</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>received</td>
+									<td>已接收，等待处理</td>
+								</tr>
+								<tr>
+									<td>slicing</td>
+									<td>视频切片中</td>
+								</tr>
+								<tr>
+									<td>reconstructing_colmap</td>
+									<td>COLMAP 重建中</td>
+								</tr>
+								<tr>
+									<td>reconstructing_3dgs</td>
+									<td>3DGS 训练中</td>
+								</tr>
+								<tr>
+									<td>reconstructing_lightning</td>
+									<td>Lightning 快速重建中</td>
+								</tr>
+								<tr>
+									<td>processing_bg_removal</td>
+									<td>背景去除处理中</td>
+								</tr>
+								<tr>
+									<td>paused</td>
+									<td>已暂停</td>
+								</tr>
+								<tr>
+									<td>resuming</td>
+									<td>恢复中</td>
+								</tr>
+								<tr>
+									<td>completed</td>
+									<td>已完成</td>
+								</tr>
+								<tr>
+									<td>failed</td>
+									<td>失败</td>
+								</tr>
+							</tbody>
+						</table>
             </div>
-          </div>
-        </div>
+					</div>
 
-        <!-- 空状态 -->
-        <div v-if="filteredApis.length === 0" class="empty-state">
-          <div class="empty-card">
-            <FileTextOutlined class="empty-icon" />
-            <h3>没有找到接口</h3>
-            <p>尝试调整搜索条件或分类筛选</p>
-          </div>
-        </div>
+					<div id="model-download" class="sub-section">
+						<h3>下载 3D 模型</h3>
+						<div class="endpoint-card">
+							<div class="endpoint">GET /v1/open/downModel</div>
+						</div>
+						<div>
+							<h4>Request</h4>
+							<table class="param-table">
+								<thead>
+									<tr>
+										<th>位置</th>
+										<th>字段</th>
+										<th>类型</th>
+										<th>必填</th>
+										<th>说明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Header</td>
+										<td>Authorization</td>
+										<td>String</td>
+										<td>是</td>
+										<td>Bearer &lt;API_KEY&gt;</td>
+									</tr>
+									<tr>
+										<td>Query</td>
+										<td>task_id</td>
+										<td>String</td>
+										<td>是</td>
+										<td>任务 ID</td>
+									</tr>
+								</tbody>
+							</table>
+							<div class="code-card">
+								<div class="code-title">请求示例</div>
+								<pre><code class="language-bash">curl -L -o model.sog "https://szgm.tenyunn.com:50585/v1/open/downModel?task_id=YOUR_TASK_ID" \
+  -H "Authorization: Bearer &lt;API_KEY&gt;"</code></pre>
+							</div>
+						</div>
+						<div>
+							<h4>Response</h4>
+							<div class="code-card">
+								<div class="code-title">成功响应说明</div>
+								<pre><code class="language-text">Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="&lt;task_name&gt;.sog"
+Binary file stream</code></pre>
+							</div>
+						</div>
+						<div>
+							<h4>Attributes</h4>
+							<table class="param-table">
+								<thead>
+									<tr>
+										<th>字段</th>
+										<th>类型</th>
+										<th>说明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>task_id</td>
+										<td>String</td>
+										<td>任务 ID，任务需已完成且更新不超过 7 天</td>
+									</tr>
+									<tr>
+										<td>响应文件</td>
+										<td>Binary</td>
+										<td>返回 .sog 文件流</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</section>
 
-        <!-- 所有API列表（未选中时显示全部） -->
-        <template v-else-if="!activeApi">
-          <div
-            v-for="item in filteredApis"
-            :key="item.path + item.method"
-            class="detail-card"
-          >
-            <div class="detail-header">
-              <div class="path-row">
-                <span class="method-badge large" :class="item.method.toLowerCase()">{{ item.method }}</span>
-                <code class="path-text">{{ item.path }}</code>
-              </div>
-              <h2 class="detail-summary">{{ item.summary }}</h2>
-            </div>
+				<section id="quota" class="doc-section">
+					<div class="section-header">
+						<h2>额度</h2>
+						<p>查询剩余算力点额度。</p>
+					</div>
+					<div class="endpoint-card">
+						<div class="endpoint">GET /v1/open/getCredits</div>
+						<div class="endpoint-meta">返回当前算力点余额</div>
+					</div>
+					<div>
+						<h4>Request</h4>
+						<table class="param-table">
+							<thead>
+								<tr>
+									<th>位置</th>
+									<th>字段</th>
+									<th>类型</th>
+									<th>必填</th>
+									<th>说明</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Header</td>
+									<td>Authorization</td>
+									<td>String</td>
+									<td>是</td>
+									<td>Bearer &lt;API_KEY&gt;</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div>
+						<h4>Response</h4>
+						<div class="code-card">
+							<div class="code-title">成功响应示例</div>
+							<pre><code class="language-json">{
+  "code": 200,
+  "data": {
+    "open_credits_total": 1000,
+    "open_credits_available": 680,
+    "open_credits_used": 320
+  }
+}</code></pre>
+						</div>
+					</div>
+					<div>
+						<h4>Attributes</h4>
+						<table class="param-table">
+							<thead>
+								<tr>
+									<th>字段</th>
+									<th>类型</th>
+									<th>说明</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>open_credits_total</td>
+									<td>Number</td>
+									<td>总额度</td>
+								</tr>
+								<tr>
+									<td>open_credits_available</td>
+									<td>Number</td>
+									<td>可用额度</td>
+								</tr>
+								<tr>
+									<td>open_credits_used</td>
+									<td>Number</td>
+									<td>已使用额度</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
 
-            <div v-if="item.description" class="detail-section">
-              <h3 class="section-label">描述</h3>
-              <p class="section-desc">{{ item.description }}</p>
-            </div>
+				<section id="webhook" class="doc-section">
+					<div class="section-header">
+						<h2>使用 Webhook</h2>
+						<p>用于接收任务完成等事件通知。</p>
+					</div>
+					<div class="info-card">
+						<div class="info-title">Webhook 需要满足以下三项要素</div>
+						<ol class="doc-list">
+							<li>
+								Webhook 可在控制台“设置 &gt; Webhooks”中创建与管理。
+							</li>
+							<li>
+								回调地址（Callback URL）：当模型状态变更时，系统会向该地址发送 POST 请求。
+							</li>
+							<li>
+								签名密钥（Signing Secret）：长度 6-40 的随机字符串，用于签名每次请求。
+								请在服务端校验签名以确认请求来自 3DGS。
+							</li>
+						</ol>
+					</div>
 
-            <div v-if="item.parameters?.length" class="detail-section">
-              <h3 class="section-label">
-                <TableOutlined />
-                请求参数
-              </h3>
-              <div class="table-wrap">
-                <table class="param-table">
-                  <thead>
-                    <tr>
-                      <th>参数名</th>
-                      <th>类型</th>
-                      <th>必填</th>
-                      <th>说明</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="p in item.parameters" :key="p.name">
-                      <td><code class="param-name">{{ p.name }}</code></td>
-                      <td><a-tag color="blue">{{ p.type }}</a-tag></td>
-                      <td>
-                        <a-tag v-if="p.required" color="red">必填</a-tag>
-                        <span v-else class="text-muted">可选</span>
-                      </td>
-                      <td class="text-muted">{{ p.description || '-' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+					<div class="sub-section">
+						<h3>重要说明</h3>
+						<ol class="doc-list emphasis">
+							<li>请确保 NotifyUrl 可被公网访问。</li>
+							<li>请使用 POST 方法并以 JSON 形式接收 status 与 serialize 数据。</li>
+							<li>收到通知后请返回 HTTP 200。</li>
+						</ol>
+					</div>
+				</section>
 
-            <div v-if="item.responses?.length" class="detail-section">
-              <h3 class="section-label">
-                <InteractionOutlined />
-                响应状态码
-              </h3>
-              <div class="response-list">
-                <div
-                  v-for="r in item.responses"
-                  :key="r.code"
-                  class="response-row"
-                >
-                  <span class="status-code" :class="getStatusClass(r.code)">{{ r.code }}</span>
-                  <span class="text-muted">{{ r.description || '-' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
+				<section id="errors" class="doc-section">
+					<div class="section-header">
+						<h2>错误</h2>
+						<p>所有错误返回统一格式（待补充）。</p>
+					</div>
+					<div class="code-card">
+						<div class="code-title">错误响应示例</div>
+						<pre><code class="language-json">{
+	"code": "ERROR_CODE",
+	"message": "Human readable message",
+	"requestId": "trace-id"
+}</code></pre>
+					</div>
+				</section>
 
-        <!-- 选中单个API详情 -->
-        <div v-else class="detail-card">
-          <div class="detail-header">
-            <div class="path-row">
-              <span class="method-badge large" :class="activeApi.method.toLowerCase()">{{ activeApi.method }}</span>
-              <code class="path-text">{{ activeApi.path }}</code>
-            </div>
-            <h2 class="detail-summary">{{ activeApi.summary }}</h2>
-          </div>
-
-          <div v-if="activeApi.description" class="detail-section">
-            <h3 class="section-label">描述</h3>
-            <p class="section-desc">{{ activeApi.description }}</p>
-          </div>
-
-          <div v-if="activeApi.parameters?.length" class="detail-section">
-            <h3 class="section-label">
-              <TableOutlined />
-              请求参数
-            </h3>
-            <div class="table-wrap">
-              <table class="param-table">
-                <thead>
-                  <tr>
-                    <th>参数名</th>
-                    <th>类型</th>
-                    <th>必填</th>
-                    <th>说明</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="p in activeApi.parameters" :key="p.name">
-                    <td><code class="param-name">{{ p.name }}</code></td>
-                    <td><a-tag color="blue">{{ p.type }}</a-tag></td>
-                    <td>
-                      <a-tag v-if="p.required" color="red">必填</a-tag>
-                      <span v-else class="text-muted">可选</span>
-                    </td>
-                    <td class="text-muted">{{ p.description || '-' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div v-if="activeApi.responses?.length" class="detail-section">
-            <h3 class="section-label">
-              <InteractionOutlined />
-              响应状态码
-            </h3>
-            <div class="response-list">
-              <div
-                v-for="r in activeApi.responses"
-                :key="r.code"
-                class="response-row"
-              >
-                <span class="status-code" :class="getStatusClass(r.code)">{{ r.code }}</span>
-                <span class="text-muted">{{ r.description || '-' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="detail-section">
-            <h3 class="section-label">
-              <CodeOutlined />
-              请求示例
-            </h3>
-            <div class="code-box">
-              <div class="code-bar">
-                <span>curl</span>
-                <CopyOutlined class="copy-icon" @click="copyCode(curlExample)" />
-              </div>
-              <pre><code>{{ curlExample }}</code></pre>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  </div>
+				<section id="status-codes" class="doc-section">
+					<div class="section-header">
+						<h2>状态码</h2>
+						<p>HTTP 状态码说明（待补充）。</p>
+					</div>
+					<table class="param-table">
+						<thead>
+							<tr>
+								<th>状态码</th>
+								<th>含义</th>
+								<th>说明</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>200</td>
+								<td>OK</td>
+								<td>请求成功</td>
+							</tr>
+							<tr>
+								<td>400</td>
+								<td>Bad Request</td>
+								<td>请求参数错误</td>
+							</tr>
+							<tr>
+								<td>401</td>
+								<td>Unauthorized</td>
+								<td>鉴权失败</td>
+							</tr>
+							<tr>
+								<td>500</td>
+								<td>Server Error</td>
+								<td>服务器错误</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+			</main>
+		</div>
+	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { message } from 'ant-design-vue'
-import {
-  ApiOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  TableOutlined,
-  InteractionOutlined,
-  CodeOutlined,
-  CopyOutlined,
-  FileTextOutlined
-} from '@ant-design/icons-vue'
-
-interface ApiTag { name: string; description?: string }
-interface ApiParameter { name: string; type: string; description: string; required: boolean }
-interface ApiResponse { code: string; description: string }
-interface ApiItem {
-  path: string
-  method: string
-  summary: string
-  description: string
-  tags: string[]
-  parameters: ApiParameter[]
-  responses: ApiResponse[]
+type TocItem = {
+	id: string
+	label: string
+	children?: TocItem[]
 }
 
-const search = ref('')
-const searchKeyword = computed(() => search.value)
-const tags = ref<ApiTag[]>([])
-const apis = ref<ApiItem[]>([])
-const activeTag = ref('')
-const activeApi = ref<ApiItem | null>(null)
-
-function parseOpenApi(json: any) {
-  tags.value = (json.tags || []) as ApiTag[]
-  const apiList: ApiItem[] = []
-
-  Object.entries(json.paths || {}).forEach(([path, methods]: [string, any]) => {
-    Object.entries(methods).forEach(([method, detail]: [string, any]) => {
-      apiList.push({
-        path,
-        method: method.toUpperCase(),
-        summary: detail.summary || '',
-        description: detail.description || '',
-        tags: detail.tags || [],
-        parameters: (detail.parameters || []).map((p: any) => ({
-          name: p.name,
-          type: p.schema?.type || p.type || 'string',
-          description: p.description || '',
-          required: p.required || false
-        })),
-        responses: Object.entries(detail.responses || {}).map(([code, resp]: [string, any]) => ({
-          code,
-          description: resp.description || ''
-        }))
-      })
-    })
-  })
-
-  apis.value = apiList
-  if (tags.value.length) activeTag.value = tags.value[0].name
-}
-
-const filteredApis = computed(() => {
-  return apis.value.filter(item => {
-    const tagMatch = activeTag.value ? item.tags.includes(activeTag.value) : true
-    const searchMatch = search.value.trim() ? (
-      item.path.toLowerCase().includes(search.value.trim()) ||
-      item.summary.toLowerCase().includes(search.value.trim()) ||
-      item.description.toLowerCase().includes(search.value.trim())
-    ) : true
-    return tagMatch && searchMatch
-  })
-})
-
-// 接口列表始终显示所有过滤后的接口
-const displayedApis = computed(() => {
-  return filteredApis.value
-})
-
-function getTagCount(name: string) {
-  return apis.value.filter(i => i.tags.includes(name)).length
-}
-
-function toggleTag(name: string) {
-  activeTag.value = activeTag.value === name ? '' : name
-}
-
-function selectApi(item: ApiItem) {
-  // 如果点击的是当前选中的接口，则取消选中
-  if (activeApi.value?.path === item.path && activeApi.value?.method === item.method) {
-    activeApi.value = null
-  } else {
-    activeApi.value = item
-  }
-}
-
-// 高亮搜索匹配的文本
-function highlightText(text: string, keyword: string): string {
-  if (!keyword.trim()) return text
-  const regex = new RegExp(`(${keyword.trim()})`, 'gi')
-  return text.replace(regex, '<mark style="background: rgba(255, 193, 7, 0.4); padding: 0 2px; border-radius: 2px;">$1</mark>')
-}
-
-function getStatusClass(code: string) {
-  if (code.startsWith('2')) return 'success'
-  if (code.startsWith('4')) return 'warning'
-  if (code.startsWith('5')) return 'error'
-  return 'info'
-}
-
-const curlExample = computed(() => {
-  if (!activeApi.value) return ''
-  const item = activeApi.value
-  let curl = `curl -X ${item.method} "https://api.metast.com${item.path}"`
-  const headers = ['-H "Content-Type: application/json"']
-
-  if (item.parameters?.length) {
-    const required = item.parameters.filter(p => p.required)
-    if (required.length) {
-      const obj: Record<string, string> = {}
-      required.forEach(p => { obj[p.name] = `<${p.name}>` })
-      headers.push(`-d '${JSON.stringify(obj, null, 2)}'`)
-    }
-  }
-
-  if (headers.length > 1) curl += ` \\\n  ${headers.join(' \\\n  ')}`
-  return curl
-})
-
-function copyCode(code: string) {
-  navigator.clipboard.writeText(code)
-  message.success('已复制')
-}
-
-fetch('/openapi.mock.json').then(r => r.json()).then(parseOpenApi).catch(console.error)
+const toc: TocItem[] = [
+	{ id: 'overview', label: '3DGS API' },
+	{ id: 'quickstart', label: '快速入门' },
+	{
+		id: 'auth',
+		label: '验证',
+		children: [
+			{ id: 'auth-create-key', label: '创建 API 密钥' },
+			{ id: 'auth-use-key', label: '使用 API 密钥' }
+		]
+	},
+	{
+		id: 'scan',
+		label: '3DGS 扫描',
+		children: [
+			{ id: 'scan-video', label: '视频上传' },
+			// { id: 'scan-image', label: '图片上传' }
+		]
+	},
+	{
+		id: 'model',
+		label: '模型',
+		children: [
+			{ id: 'model-status', label: '获取重建任务状态' },
+			{ id: 'model-download', label: '下载 3D 模型' }
+		]
+	},
+	{ id: 'quota', label: '额度' },
+	{ id: 'webhook', label: '创建 Webhook' },
+	{ id: 'errors', label: '错误' },
+	{ id: 'status-codes', label: '状态码' }
+]
 </script>
 
 <style scoped>
-.api-page {
-  min-height: calc(100vh - 64px);
-  background: var(--bg-primary);
-  padding: 24px;
+.api-docs {
+	color: var(--text-primary);
+	font-family: 'IBM Plex Sans', 'Noto Sans SC', sans-serif;
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
 }
 
-.api-layout {
-  display: flex;
-  gap: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+.hero {
+	position: relative;
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+	gap: 24px;
+	padding: 32px;
+	border-radius: 24px;
+	background: linear-gradient(140deg, rgba(255, 255, 255, 0.7) 0%, rgba(229, 231, 235, 0.6) 100%);
+	border: 1px solid var(--glass-border);
+	overflow: hidden;
 }
 
-/* 左侧浮动搜索区域 */
-.search-sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: sticky;
-  top: 88px;
-  height: fit-content;
+.hero::before,
+.hero::after {
+	content: '';
+	position: absolute;
+	border-radius: 50%;
+	opacity: 0.5;
+	filter: blur(0px);
+	pointer-events: none;
 }
 
-/* 搜索卡片 */
-.search-card, .tags-card, .apis-card {
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  overflow: hidden;
-  animation: slideUp 0.5s ease backwards;
+.hero::before {
+	width: 280px;
+	height: 280px;
+	right: -80px;
+	top: -120px;
+	background: radial-gradient(circle, rgba(21, 223, 205, 0.35), transparent 70%);
 }
 
-.search-card { animation-delay: 0.1s; }
-.tags-card { animation-delay: 0.15s; }
-.apis-card { animation-delay: 0.2s; }
-
-.search-header, .tags-header, .apis-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 16px;
-  background: var(--glass-surface-hover);
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--glass-border);
+.hero::after {
+	width: 220px;
+	height: 220px;
+	left: -60px;
+	bottom: -100px;
+	background: radial-gradient(circle, rgba(99, 102, 241, 0.25), transparent 70%);
 }
 
-.search-input {
-  padding: 12px 16px;
-  border: none !important;
-  background: transparent !important;
+.hero-content {
+	position: relative;
+	z-index: 1;
 }
 
-.search-input :deep(.ant-input) {
-  background: transparent !important;
+.hero-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: rgba(21, 223, 205, 0.16);
+	color: #0b6e65;
+	font-weight: 600;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
 }
 
-/* 标签卡片 */
-.tag-list {
-  padding: 8px;
+.hero h1 {
+	margin: 16px 0 8px;
+	font-size: 32px;
+	font-weight: 700;
 }
 
-.tag-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
+.hero p {
+	margin: 0 0 20px;
+	color: var(--text-secondary);
+	max-width: 640px;
 }
 
-.tag-item:hover {
-  background: var(--glass-surface-hover);
+.hero-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
 }
 
-.tag-item.active {
-  background: var(--accent-blue);
-  color: white;
+.meta-item {
+	background: rgba(255, 255, 255, 0.7);
+	border: 1px solid rgba(17, 24, 39, 0.08);
+	border-radius: 12px;
+	padding: 10px 14px;
+	min-width: 160px;
 }
 
-.tag-count {
-  font-size: 11px;
-  padding: 2px 8px;
-  background: rgba(0,0,0,0.08);
-  border-radius: 10px;
+.meta-label {
+	display: block;
+	font-size: 12px;
+	color: var(--text-secondary);
 }
 
-.tag-item.active .tag-count {
-  background: rgba(255,255,255,0.2);
+.meta-value {
+	font-weight: 600;
 }
 
-/* 接口列表卡片 */
-.apis-header span:first-child {
-  font-size: 16px;
+.hero-panel {
+	position: relative;
+	z-index: 1;
+	background: rgba(17, 24, 39, 0.92);
+	color: #f9fafb;
+	border-radius: 18px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 }
 
-.apis-count {
-  margin-left: auto;
-  font-size: 12px;
-  padding: 2px 8px;
-  background: var(--accent-blue);
-  color: white;
-  border-radius: 10px;
+.panel-title {
+	font-weight: 600;
+	font-size: 14px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: rgba(249, 250, 251, 0.75);
 }
 
-.apis-list {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 8px;
+.panel-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
 }
 
-.api-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
+.panel-link {
+	padding: 8px 10px;
+	border-radius: 10px;
+	background: rgba(249, 250, 251, 0.08);
+	color: #f9fafb;
+	text-decoration: none;
+	font-size: 13px;
 }
 
-.api-item:hover {
-  background: var(--glass-surface-hover);
+.panel-link:hover {
+	background: rgba(249, 250, 251, 0.16);
 }
 
-.api-item.active {
-  background: linear-gradient(90deg, rgba(0, 114, 255, 0.15) 0%, rgba(0, 114, 255, 0.05) 100%);
-  margin-left: -3px;
+.docs-layout {
+	display: grid;
+	grid-template-columns: 220px minmax(0, 1fr);
+	gap: 24px;
 }
 
-.method-badge {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  flex-shrink: 0;
+.toc {
+	position: sticky;
+	top: 24px;
+	align-self: start;
+	background: var(--glass-surface);
+	border: 1px solid var(--glass-border);
+	border-radius: 18px;
+	padding: 18px;
+	max-height: calc(100vh - 80px);
+	overflow: auto;
 }
 
-.method-badge.get { background: #4096ff; color: white; }
-.method-badge.post { background: #34c759; color: white; }
-.method-badge.put { background: #ff9500; color: white; }
-.method-badge.delete { background: #ff375f; color: white; }
-
-.method-badge.large {
-  font-size: 12px;
-  padding: 6px 14px;
+.toc-title {
+	font-weight: 600;
+	font-size: 14px;
+	margin-bottom: 12px;
+	color: var(--text-secondary);
 }
 
-.api-name {
-  font-size: 13px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.toc ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 10px;
 }
 
-.api-item.active .api-name {
-  color: var(--accent-blue);
-  font-weight: 500;
+.toc-item > a {
+	color: var(--text-primary);
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 }
 
-/* 右侧主体 */
-.api-main {
-  flex: 1;
-  min-width: 0;
+.toc-item > a::before {
+	content: '';
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: rgba(17, 24, 39, 0.35);
 }
 
-/* 主标题 */
-.main-header {
-  margin-bottom: 24px;
-  animation: slideUp 0.5s ease backwards;
-  animation-delay: 0.1s;
+.toc a:hover {
+	color: #0b6e65;
 }
 
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.toc-sub {
+	margin-top: 8px;
+	padding-left: 18px;
+	border-left: 1px solid rgba(15, 23, 42, 0.12);
+	display: grid;
+	gap: 6px;
 }
 
-.title-icon {
-  font-size: 36px;
-  color: var(--accent-blue);
+.toc-sub a {
+	color: var(--text-secondary);
+	font-size: 13px;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 }
 
-.header-title h1 {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+.toc-sub a::before {
+	content: '';
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: rgba(11, 110, 101, 0.45);
 }
 
-.header-title p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 4px 0 0;
+.docs-content {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
 }
 
-/* 空状态 */
-.empty-card {
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 80px 40px;
-  text-align: center;
-  animation: slideUp 0.5s ease backwards;
-  animation-delay: 0.15s;
+.doc-section {
+	background: var(--glass-surface);
+	border: 1px solid var(--glass-border);
+	border-radius: 20px;
+	padding: 28px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 }
 
-.empty-icon {
-  font-size: 56px;
-  color: var(--text-tertiary);
-  margin-bottom: 16px;
+.section-header h2 {
+	margin: 0 0 6px;
+	font-size: 24px;
 }
 
-.empty-card h3 {
-  margin: 0 0 8px;
-  color: var(--text-primary);
+.section-header p {
+	margin: 0;
+	color: var(--text-secondary);
 }
 
-.empty-card p {
-  margin: 0;
-  color: var(--text-secondary);
+.info-card {
+	background: rgba(249, 250, 251, 0.9);
+	border: 1px solid rgba(17, 24, 39, 0.08);
+	border-radius: 16px;
+	padding: 18px;
 }
 
-/* 详情卡片 */
-.detail-card {
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 28px;
-  animation: slideUp 0.5s ease backwards;
-  animation-delay: 0.15s;
+.info-title {
+	font-weight: 600;
+	margin-bottom: 8px;
 }
 
-/* 详情头部 */
-.detail-header {
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--glass-border);
-  margin-bottom: 24px;
+.info-grid {
+	margin-top: 12px;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 12px;
 }
 
-.path-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+.info-label {
+	font-size: 12px;
+	color: var(--text-secondary);
 }
 
-.path-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  font-family: 'Monaco', 'Menlo', monospace;
+.info-value {
+	font-weight: 600;
 }
 
-.detail-summary {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+.step-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 16px;
 }
 
-/* 区块 */
-.detail-section {
-  margin-top: 24px;
+.step-card {
+	background: rgba(17, 24, 39, 0.92);
+	color: #f9fafb;
+	border-radius: 16px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--glass-border);
+.step-index {
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: rgba(249, 250, 251, 0.7);
 }
 
-.section-desc {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin: 0;
+.step-title {
+	font-weight: 600;
 }
 
-/* 表格 */
-.table-wrap {
-  overflow-x: auto;
+.step-desc {
+	font-size: 13px;
+	color: rgba(249, 250, 251, 0.75);
+}
+
+.code-card {
+	border-radius: 16px;
+	border: 1px solid rgba(17, 24, 39, 0.1);
+	background: #0f172a;
+	color: #e2e8f0;
+	overflow: hidden;
+}
+
+.code-title {
+	padding: 12px 16px;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	background: rgba(15, 23, 42, 0.9);
+	border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.code-card pre {
+	margin: 0;
+	padding: 16px;
+	white-space: pre-wrap;
+	font-size: 13px;
+}
+
+.sub-section {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	border-radius: 16px;
+	background: rgba(249, 250, 251, 0.7);
+	border: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.sub-section h3 {
+	margin: 0;
+	font-size: 18px;
+}
+
+.endpoint-card {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 12px 14px;
+	border-radius: 12px;
+	background: rgba(15, 23, 42, 0.08);
+	border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.endpoint {
+	font-weight: 600;
+	font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
+}
+
+.endpoint-meta {
+	font-size: 12px;
+	color: var(--text-secondary);
 }
 
 .param-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+	background: white;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.param-table th,
+.param-table td {
+	text-align: left;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .param-table th {
-  text-align: left;
-  padding: 12px;
-  background: var(--glass-surface-hover);
-  color: var(--text-secondary);
-  font-weight: 600;
-  border-bottom: 1px solid var(--glass-border);
+	background: rgba(15, 23, 42, 0.05);
+	font-weight: 600;
 }
 
-.param-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--glass-border);
-  color: var(--text-primary);
+.placeholder {
+	padding: 12px 14px;
+	border-radius: 12px;
+	border: 1px dashed rgba(15, 23, 42, 0.2);
+	color: var(--text-secondary);
+	background: rgba(255, 255, 255, 0.6);
 }
 
-.param-name {
-  font-family: 'Monaco', 'Menlo', monospace;
-  padding: 2px 8px;
-  background: rgba(0, 114, 255, 0.1);
-  color: var(--accent-blue);
-  border-radius: 4px;
-  font-size: 13px;
+.doc-list {
+	margin: 0;
+	padding-left: 20px;
+	color: var(--text-secondary);
+	display: grid;
+	gap: 8px;
 }
 
-.text-muted {
-  color: var(--text-secondary);
-  font-size: 13px;
+.doc-list.emphasis {
+	color: var(--text-primary);
+	font-weight: 600;
 }
 
-/* 响应 */
-.response-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+@media (max-width: 1024px) {
+	.hero {
+		grid-template-columns: 1fr;
+	}
+
+	.docs-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.toc {
+		position: relative;
+		max-height: none;
+	}
 }
 
-.response-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--glass-surface-hover);
-  border-radius: 8px;
-}
+@media (max-width: 640px) {
+	.hero {
+		padding: 24px;
+	}
 
-.status-code {
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 13px;
-}
+	.hero h1 {
+		font-size: 26px;
+	}
 
-.status-code.success { background: rgba(52, 199, 89, 0.15); color: #34c759; }
-.status-code.warning { background: rgba(255, 149, 0, 0.15); color: #ff9500; }
-.status-code.error { background: rgba(255, 59, 48, 0.15); color: #ff375f; }
-.status-code.info { background: rgba(0, 122, 255, 0.15); color: #007aff; }
+	.doc-section {
+		padding: 20px;
+	}
 
-/* 代码块 */
-.code-box {
-  background: #1e1e1e;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.code-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: #2d2d2d;
-  border-bottom: 1px solid #3d3d3d;
-}
-
-.code-bar span {
-  font-size: 12px;
-  color: #888;
-  text-transform: uppercase;
-}
-
-.copy-icon {
-  color: #888;
-  cursor: pointer;
-}
-
-.copy-icon:hover {
-  color: white;
-}
-
-.code-box pre {
-  margin: 0;
-  padding: 16px;
-  overflow-x: auto;
-}
-
-.code-box code {
-  font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 13px;
-  color: #d4d4d4;
-}
-
-/* 动画定义 */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 响应式 */
-@media (max-width: 992px) {
-  .api-layout {
-    flex-direction: column;
-  }
-
-  .search-sidebar {
-    width: 100%;
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .search-card, .tags-card, .apis-card {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .apis-list {
-    max-height: 200px;
-  }
-}
-
-@media (max-width: 768px) {
-  .api-page {
-    padding: 16px;
-  }
-
-  .header-title h1 {
-    font-size: 22px;
-  }
-
-  .detail-card {
-    padding: 16px;
-  }
-
-  .path-text {
-    font-size: 15px;
-  }
+	.panel-grid {
+		grid-template-columns: 1fr;
+	}
 }
 </style>
