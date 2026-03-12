@@ -46,7 +46,7 @@
 
       <!-- 功能按钮 -->
       <div class="control-buttons">
-        <div class="btn-group">
+        <div class="btn-group left">
           <a-tooltip title="播放/暂停">
             <a-button type="text" class="control-icon-btn" @click.stop="toggleLoopPlay" :disabled="!skullEntity || !viewerControls.isOrbitMode">
               <template #icon>
@@ -60,13 +60,36 @@
               <template #icon><ReloadOutlined /></template>
             </a-button>
           </a-tooltip>
+          <a-tooltip title="操作说明">
+            <a-button type="text" class="control-icon-btn" @click.stop="showGestureModal = true">
+              <template #icon><QuestionCircleOutlined /></template>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <div class="btn-group right">
           <a-tooltip title="嵌入代码">
             <a-button type="text" class="control-icon-btn" @click.stop="handleEmbedCodePlaceholder">
               <template #icon><CodeOutlined /></template>
             </a-button>
           </a-tooltip>
-        </div>
-        <div class="btn-group right">
+          <a-tooltip title="参数设置">
+            <a-button type="text" class="control-icon-btn" @click.stop="toggleSettingsMenu">
+              <template #icon><SettingOutlined /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip :title="viewerControls.isOrbitMode ? '切换飞行模式' : '切换轨道模式'">
+            <a-button type="text" class="control-icon-btn" :class="{ active: !viewerControls.isOrbitMode }" @click.stop="toggleMeshCursor">
+              <template #icon><AimOutlined /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
+            <a-button type="text" class="control-icon-btn" @click.stop="toggleGrid">
+              <template #icon>
+                <BorderOuterOutlined v-if="showGrid" />
+                <BorderOutlined v-else />
+              </template>
+            </a-button>
+          </a-tooltip>
           <a-tooltip :title="isFullscreen ? '退出全屏' : '全屏'">
             <a-button type="text" class="control-icon-btn" @click.stop="toggleFullscreen">
               <template #icon>
@@ -78,6 +101,133 @@
         </div>
       </div>
     </div>
+
+    <!-- 设置面板 -->
+    <div v-if="isSettingsMenuOpen && showContorlWidget" class="feature-panel settings-panel top-right-panel" :class="{ visible: showControls }" @click.stop>
+      <div class="settings-header">
+        <span>参数设置</span>
+        <a-button type="text" size="small" @click.stop="closeSettingsPanel">
+          <template #icon><CloseOutlined /></template>
+        </a-button>
+      </div>
+      <div class="settings-content">
+        <div class="setting-item">
+          <label class="setting-label">飞行速度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
+          </div>
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">轨道速度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.orbitSpeed" :min="1" :max="30" :step="0.5" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
+          </div>
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">旋转速度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
+          </div>
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">缩放灵敏度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <a-button type="primary" size="small" @click.stop="resetAllSettings">重置参数</a-button>
+      </div>
+    </div>
+
+    <!-- 手势操作说明对话框 -->
+    <a-modal
+      v-model:open="showGestureModal"
+      title="操作说明"
+      :footer="null"
+      :mask-closable="true"
+      width="520px"
+      class="gesture-modal"
+    >
+      <div class="gesture-content">
+        <div class="gesture-section">
+          <div class="gesture-section-title">轨道模式（默认）</div>
+          <div class="gesture-list">
+            <div class="gesture-item">
+              <div class="gesture-icon"><SwapOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">旋转视角</div>
+                <div class="gesture-detail">左键拖拽</div>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <div class="gesture-icon"><ZoomInOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">缩放</div>
+                <div class="gesture-detail">鼠标滚轮</div>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <div class="gesture-icon"><DragOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">平移</div>
+                <div class="gesture-detail">右键拖拽</div>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <div class="gesture-icon"><FullscreenExitOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">双击聚焦</div>
+                <div class="gesture-detail">双击模型某处聚焦查看</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="gesture-section">
+          <div class="gesture-section-title">飞行模式</div>
+          <div class="gesture-list">
+            <div class="gesture-item">
+              <div class="gesture-icon"><ArrowUpOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">前进/后退</div>
+                <div class="gesture-detail">W / S 键</div>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <div class="gesture-icon"><ArrowLeftOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">左右移动</div>
+                <div class="gesture-detail">A / D 键</div>
+              </div>
+            </div>
+            <div class="gesture-item">
+              <div class="gesture-icon"><RedoOutlined /></div>
+              <div class="gesture-text">
+                <div class="gesture-action">调整视角方向</div>
+                <div class="gesture-detail">鼠标左键拖拽</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="gesture-section">
+          <div class="gesture-section-title">快捷键</div>
+          <div class="gesture-list">
+            <div class="gesture-item">
+              <div class="gesture-key">Esc</div>
+              <div class="gesture-text">
+                <div class="gesture-action">退出当前模式</div>
+                <div class="gesture-detail">关闭面板、取消编辑等</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a-modal>
 
     <EmbedCodeDialog
       v-model:open="showEmbedCodeDialog"
@@ -100,9 +250,24 @@ import {
   CodeOutlined,
   CaretRightOutlined,
   PauseOutlined,
+  SettingOutlined,
+  CloseOutlined,
+  BorderOuterOutlined,
+  BorderOutlined,
+  QuestionCircleOutlined,
+  SwapOutlined,
+  ZoomInOutlined,
+  DragOutlined,
+  ArrowUpOutlined,
+  ArrowLeftOutlined,
+  RedoOutlined,
+  VerticalAlignTopOutlined,
+  VerticalAlignBottomOutlined,
+  AimOutlined,
 } from '@ant-design/icons-vue';
 import { loadGsplat } from '@/utils/load';
 import { Annotation, AnnotationManager } from '../../scripts/esm/annotations.mjs';
+import { Grid } from '../../scripts/esm/grid.mjs';
 import EmbedCodeDialog from '@/components/EmbedCodeDialog.vue';
 
 const showToast = (input) => {
@@ -169,6 +334,20 @@ export default {
     CodeOutlined,
     CaretRightOutlined,
     PauseOutlined,
+    SettingOutlined,
+    CloseOutlined,
+    BorderOuterOutlined,
+    BorderOutlined,
+    QuestionCircleOutlined,
+    SwapOutlined,
+    ZoomInOutlined,
+    DragOutlined,
+    ArrowUpOutlined,
+    ArrowLeftOutlined,
+    RedoOutlined,
+    VerticalAlignTopOutlined,
+    VerticalAlignBottomOutlined,
+    AimOutlined,
   },
   props: {
     taskId: {
@@ -178,6 +357,7 @@ export default {
   },
   data() {
     return {
+      shareId:"",
       task_id: this.taskId,
       token: token,
       task_name: '',
@@ -200,6 +380,7 @@ export default {
       lightEntity: null,
       rotation: 0,
       showEmbedCodeDialog: false,
+      isSettingsMenuOpen: false,
       forceStartInteractionFlag: false,
       annotationsSnapshot: null,
       annotationsSnapshotSerialized: '',
@@ -220,6 +401,9 @@ export default {
       showControls: true,
       controlsHideTimer: null,
       mouseDownPos: { x: 0, y: 0 },
+      showGrid: true,
+      gridEntity: null,
+      showGestureModal: false,
     };
   },
   watch:{
@@ -331,6 +515,12 @@ export default {
         this.loopPlayStartTimer = null;
       }
     },
+    clearAutoLoopPlayTimer() {
+      if (this.autoLoopPlayTimer) {
+        clearTimeout(this.autoLoopPlayTimer);
+        this.autoLoopPlayTimer = null;
+      }
+    },
     stopLoopPlayback(restoreStart = false) {
       this.clearLoopPlayStartTimer();
       this.isLoopPlaying = false;
@@ -408,6 +598,47 @@ export default {
     },
     handleEmbedCodePlaceholder($event) {
       this.showEmbedCodeDialog = true;
+    },
+    toggleSettingsMenu() {
+      this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
+    },
+    toggleGrid() {
+      this.showGrid = !this.showGrid;
+      if (this.gridEntity) {
+        this.gridEntity.enabled = this.showGrid;
+      }
+    },
+    closeSettingsPanel() {
+      this.isSettingsMenuOpen = false;
+    },
+    resetAllSettings() {
+      const { showInfo, isOrbitMode } = this.viewerControls;
+      this.viewerControls = { ...DEFAULT_SETTINGS, showInfo, isOrbitMode };
+      this.updateCameraControls();
+    },
+    toggleMeshCursor() {
+      this.viewerControls.isOrbitMode = !this.viewerControls.isOrbitMode;
+      this.cameraControls.mode = this.viewerControls.isOrbitMode ? 'orbit' : 'fly';
+      if (!this.viewerControls.isOrbitMode) {
+        this.stopLoopPlayback(false);
+      }
+    },
+    updateCameraControlValue(key, value) {
+      if (!this.cameraControls) return;
+      switch (key) {
+        case 'moveSpeed':
+          this.cameraControls.moveSpeed = value;
+          break;
+        case 'orbitSpeed':
+          this.cameraControls.orbitSpeed = value;
+          break;
+        case 'autoRotateSpeed':
+          this.cameraControls.autoRotateSpeed = value;
+          break;
+        case 'pinchSpeed':
+          this.cameraControls.pinchSpeed = value;
+          break;
+      }
     },
     syncFullscreenState() {
       this.isFullscreen = !!document.fullscreenElement;
@@ -512,6 +743,17 @@ export default {
         });
         this.app.root.addChild(this.lightEntity);
 
+        // 创建网格
+        this.gridEntity = new pc.Entity('grid');
+        this.gridEntity.addComponent('script');
+        this.gridEntity.script.create(Grid, {
+          properties: {
+            resolution: 2,
+          }
+        });
+        this.gridEntity.setLocalScale(1000, 1, 1000);
+        this.app.root.addChild(this.gridEntity);
+
         const picker = new Picker(this.app, this.cameraEntity);
 
         this.canvas.addEventListener('mousedown', (event) => {
@@ -562,14 +804,64 @@ export default {
       if ([r, g, b].some(value => Number.isNaN(value))) return;
       this.cameraEntity.camera.clearColor = new pc.Color(r, g, b, 1);
     },
+    parseServerCameraPose(item) {
+      const candidates = [
+        item?.cameraPose,
+        item?.camera_pose,
+        item?.camera,
+        item?.pose
+      ];
+
+      for (const candidate of candidates) {
+        if (!candidate) continue;
+        if (typeof candidate === 'string') {
+          try {
+            const parsed = JSON.parse(candidate);
+            const normalized = this.normalizeCameraPose(parsed);
+            if (normalized) return normalized;
+          } catch (e) {
+            continue;
+          }
+        } else {
+          const normalized = this.normalizeCameraPose(candidate);
+          if (normalized) return normalized;
+        }
+      }
+
+      return null;
+    },
+    normalizeCameraPose(pose) {
+      const position = pose?.position;
+      const focus = pose?.focus;
+      const valid = [
+        position?.x, position?.y, position?.z,
+        focus?.x, focus?.y, focus?.z
+      ].every(value => Number.isFinite(Number(value)));
+      if (!valid) return null;
+
+      return {
+        position: {
+          x: Number(position.x),
+          y: Number(position.y),
+          z: Number(position.z)
+        },
+        focus: {
+          x: Number(focus.x),
+          y: Number(focus.y),
+          z: Number(focus.z)
+        }
+      };
+    },
     retryLoadModel() {
       this.getTargetModel();
     },
     async getTargetModel() {
+      const downloadTokenUrl = new URL(`${API.TASK_DETAIL}/${this.task_id}/download-token`, API.BASE_URL);
+      downloadTokenUrl.searchParams.append('shareId', this.shareId);
       try {
         const response = await ApiServer.request({
           method: 'post',
-          url: `${API.TASK_DETAIL}/${this.task_id}/download-token`
+          url: downloadTokenUrl.toString(),
         }, this.token);
         const download_token = response.data.token;
 
@@ -631,17 +923,126 @@ export default {
       this.skullEntity.addComponent('gsplat', { asset: splatAsset});
       this.skullEntity.setLocalEulerAngles(180, 0, 0);
 
-      this.app.root.addChild(this.skullEntity);
+      // Fetch annotations from server
+      try {
+        const response = await ApiServer.request({
+          method: 'get',
+          url: API.GET_ANNOTATIONS,
+          params: {
+            taskId: this.task_id
+          }
+        });
+        const annotationsData = response.data.data;
+        console.log('Fetched annotations:', annotationsData);
+        this.app.root.addChild(this.skullEntity);
 
-      if(this.skullEntity) {
-        const center = this.cameraControls?.focusOnEntity(this.skullEntity);
-        this.cameraControls?.resetUserInteractionFlag?.();
+        if (this.skullEntity) {
+          const center = this.cameraControls?.focusOnEntity(this.skullEntity);
+          this.cameraControls?.resetUserInteractionFlag?.();
+
+          // Set up annotation manager
+          this.skullEntity.addComponent('script');
+          this.manager = this.skullEntity.script.create(AnnotationManager);
+
+          // Create default annotation at center
+          const annotation = new pc.Entity('annotation_default');
+          annotation.setLocalPosition(center);
+          this.defaultAnnotationEntity = annotation;
+          annotation.addComponent('script');
+          annotation.script.create(Annotation, {
+            properties: {
+              label: String(0),
+              title: '3D Model',
+              text: 'Auto-generated model',
+              size: 0.01,
+            }
+          });
+          this.app.root.addChild(annotation);
+
+          // Load annotations from server
+          if (annotationsData && annotationsData.length > 0) {
+            annotationsData.forEach((item, index) => {
+              const annotationEntity = new pc.Entity(`annotation_${item.label}`);
+              annotationEntity.setLocalPosition(parseFloat(item.x), parseFloat(item.y), parseFloat(item.z));
+              annotationEntity.__fromServer = true;
+              annotationEntity.addComponent('script');
+              const cameraPose = this.parseServerCameraPose(item);
+              annotationEntity.script.create(Annotation, {
+                properties: {
+                  label: String(index + 1),
+                  title: item.label,
+                  text: item.description,
+                  size: 1,
+                  cameraPose
+                }
+              });
+              this.app.root.addChild(annotationEntity);
+              this.annotataions.push(annotationEntity);
+            });
+          }
+
+          // Set up annotation event handlers
+          this.app.on('annotation:click', this.onAnnotationClick);
+          this.app.on('annotation:remove', this.onAnnotationRemove);
+        }
+      } catch (error) {
+        console.log('Failed to load annotations:', error);
+        this.app.root.addChild(this.skullEntity);
+        if (this.skullEntity) {
+          this.cameraControls?.focusOnEntity(this.skullEntity);
+          this.cameraControls?.resetUserInteractionFlag?.();
+        }
       }
 
       this.app.on('update', this.handleUpdate);
       URL.revokeObjectURL(fileUrl);
       this.loading_status = 'success';
       this.isViewerLoading = false;
+
+      // 更新网格位置
+      if (this.gridEntity && this.skullEntity && this.cameraControls) {
+        const aabb = this.cameraControls.calculateEntityAabb(this.skullEntity);
+        if (aabb) {
+          const bottomPose = aabb.center.clone().sub(new pc.Vec3(0, aabb.halfExtents.y, 0));
+          this.gridEntity.setPosition(bottomPose);
+        }
+      }
+
+      // Auto-play on start
+      this.$nextTick(() => {
+        this.scheduleAutoLoopPlay(500);
+      });
+    },
+    onAnnotationClick(annotationScript) {
+      const entity = annotationScript?.entity;
+      if (!entity) return;
+      this.stopLoopPlayback(false);
+      this.viewerControls.isOrbitMode = true;
+      this.applyAnnotationCameraPose(annotationScript);
+    },
+    onAnnotationRemove(annotationScript) {
+      console.log('onAnnotationRemove', annotationScript);
+    },
+    applyAnnotationCameraPose(annotationScript) {
+      if (!annotationScript || !this.cameraControls) return false;
+      const cameraPose = this.normalizeCameraPose(annotationScript.cameraPose);
+      if (!cameraPose) return false;
+
+      const focus = new pc.Vec3(cameraPose.focus.x, cameraPose.focus.y, cameraPose.focus.z);
+      const position = new pc.Vec3(cameraPose.position.x, cameraPose.position.y, cameraPose.position.z);
+      this.cameraControls.reset(focus, position, { immediate: false });
+      return true;
+    },
+    scheduleAutoLoopPlay(delayMs = 400) {
+      if (this.autoLoopPlayTimer) {
+        clearTimeout(this.autoLoopPlayTimer);
+      }
+      this.autoLoopPlayTimer = setTimeout(() => {
+        this.autoLoopPlayTimer = null;
+        if (this.skullEntity && this.viewerControls.isOrbitMode) {
+          this.toggleLoopPlay();
+        }
+      }, delayMs);
     },
     handleUpdate(dt) {
       const shouldStopByUserInput = !!this.cameraControls?.hasUserInteracted;
@@ -666,6 +1067,11 @@ export default {
         this.skullEntity.destroy();
         this.skullEntity = null;
       }
+      if (this.gridEntity && this.app) {
+        this.app.root.removeChild(this.gridEntity);
+        this.gridEntity.destroy();
+        this.gridEntity = null;
+      }
       if (this.app) {
         this.app.destroy();
         this.app = null;
@@ -685,11 +1091,17 @@ export default {
   async mounted() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.addEventListener('fullscreenchange', this.syncFullscreenState);
+    this.shareId = this.$route.query.shareId || '';
     await this.initViewer();
     await this.getTargetModel();
   },
   beforeUnmount() {
     document.removeEventListener('fullscreenchange', this.syncFullscreenState);
+    if (this.app) {
+      this.app.off('annotation:click', this.onAnnotationClick);
+      this.app.off('annotation:remove', this.onAnnotationRemove);
+    }
+    this.clearAutoLoopPlayTimer();
     this.destroyPreViewer();
   }
 };
@@ -697,6 +1109,10 @@ export default {
 
 <style scoped>
 .render-task-container {
+  --panel-right-offset: 100px;
+  --control-btn-size: 44px;
+  --control-bar-gap: 8px;
+  --panel-gap: 10px;
   height: 100vh;
   background: radial-gradient(circle at 50% 0%, #1b2130 0%, #0f1218 45%, #0b0e13 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -895,12 +1311,17 @@ export default {
 }
 
 .control-icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  color: white !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 6px;
+  color: #fff !important;
   background: rgba(255, 255, 255, 0.15);
   border: none;
+  transition: all 0.2s ease;
 }
 
 .control-icon-btn:hover {
@@ -908,22 +1329,295 @@ export default {
 }
 
 .control-icon-btn .anticon {
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.control-icon-btn.active {
+  background: rgba(24, 144, 255, 0.8);
+}
+
+.control-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.control-icon-btn:disabled:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 功能面板 */
+.feature-panel {
+  position: fixed;
+  top: 60px;
+  right: var(--panel-right-offset);
+  width: 320px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateX(30px) scale(0.95);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.feature-panel.visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+/* 右上角编辑面板 */
+.feature-panel.top-right-panel {
+  top: 70px;
+  right: var(--panel-right-offset);
+  left: auto;
+  width: 340px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: panelSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes panelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Settings Panel */
+.settings-panel {
+  position: fixed;
+  top: 70px;
+  right: var(--panel-right-offset);
+  width: 340px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 1000;
+  padding: 0;
+  overflow: hidden;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.settings-header span {
+  font-weight: 700;
+  color: #1d1d1f;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+}
+
+.settings-content {
+  padding: 16px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #fafafa;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.setting-item:hover {
+  background: #f0f7ff;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-label {
+  font-size: 14px;
+  color: #1d1d1f;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.setting-slider-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 160px;
+  margin-left: 12px;
+}
+
+.setting-slider-control .param-slider {
+  flex: 1;
+  margin: 0;
+}
+
+.setting-slider-control .param-slider :deep(.ant-slider-rail) {
+  background-color: #f0f0f0;
+}
+
+.setting-slider-control .param-slider :deep(.ant-slider-track) {
+  background: #1d1d1f;
+}
+
+.setting-slider-control .param-slider :deep(.ant-slider-handle)::after {
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border: 2px solid #1d1d1f;
+  box-shadow: 0 0 8px rgba(29, 29, 31, 0.2);
+}
+
+.setting-value {
+  font-size: 12px;
+  color: #666;
+  min-width: 28px;
+  text-align: right;
+}
+
+.panel-footer {
+  display: flex;
+  justify-content: stretch;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fafafa;
+  border-radius: 0 0 16px 16px;
+}
+
+.panel-footer .ant-btn {
+  flex: 1;
+  height: 36px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-footer .ant-btn-primary {
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
+}
+
+.panel-footer .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #4096ff 0%, #69b1ff 100%);
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
   .bottom-controls {
-    padding: 12px 16px 16px;
+    padding: 10px 12px 12px;
   }
 
   .control-icon-btn {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
   }
 
   .control-icon-btn .anticon {
     font-size: 16px;
   }
+}
+
+/* 手势说明对话框样式 */
+.gesture-modal .ant-modal-content {
+  border-radius: 12px;
+}
+
+.gesture-content {
+  padding: 8px 0;
+}
+
+.gesture-section {
+  margin-bottom: 20px;
+}
+
+.gesture-section:last-child {
+  margin-bottom: 0;
+}
+
+.gesture-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid #1890ff;
+}
+
+.gesture-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gesture-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.gesture-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1677ff;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.gesture-key {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.gesture-text {
+  flex: 1;
+}
+
+.gesture-action {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 2px;
+}
+
+.gesture-detail {
+  font-size: 12px;
+  color: #8c8c8c;
 }
 </style>
 

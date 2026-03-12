@@ -50,15 +50,24 @@
       </p>
 
       <div class="card-actions" @click.stop>
-        <button
-          class="icon-action-btn"
+        <a-button
+          type="text"
+          size="small"
           :title="pauseResumeLabel"
           :disabled="!canPauseOrResume || isPausing || isResuming"
           @click="handlePauseOrResume"
         >
-          <PlayCircleOutlined v-if="isPaused || isFailed" />
-          <PauseCircleOutlined v-else />
-        </button>
+          <template #icon>
+            <PlayCircleOutlined v-if="isPaused || isFailed" />
+            <PauseCircleOutlined v-else />
+          </template>
+        </a-button>
+
+        <a-button type="text" size="small" @click="openDetailsDrawer">
+          <template #icon>
+            <InfoCircleOutlined />
+          </template>
+        </a-button>
 
         <a-popconfirm
           title="确认删除该模型吗？"
@@ -67,18 +76,16 @@
           :disabled="!canDelete || isDeleting"
           @confirm="handleDelete"
         >
-          <button
-            class="icon-action-btn icon-action-btn-danger"
-            :title="isDeleting ? '删除中...' : '删除'"
+          <a-button
+            type="text"
+            size="small"
             :disabled="!canDelete || isDeleting"
           >
-            <DeleteOutlined />
-          </button>
+            <template #icon>
+              <DeleteOutlined style="color:red"/>
+            </template>
+          </a-button>
         </a-popconfirm>
-
-        <button class="icon-action-btn" title="详情" @click="openDetailsDrawer">
-          <InfoCircleOutlined />
-        </button>
       </div>
     </div>
 
@@ -150,6 +157,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
+import { Button as AButton } from 'ant-design-vue'
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -532,7 +540,6 @@ const closeDetailsDrawer = () => {
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   overflow: hidden;
-  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
@@ -549,6 +556,7 @@ const closeDetailsDrawer = () => {
   align-items: center;
   justify-content: center;
   position: relative;
+  cursor: pointer;
 }
 
 .model-preview {
@@ -735,33 +743,6 @@ const closeDetailsDrawer = () => {
   display: flex;
   justify-content: flex-end;
   gap: 6px;
-}
-
-.icon-action-btn {
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-surface);
-  color: var(--text-primary);
-  border-radius: 999px;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.icon-action-btn:hover:not(:disabled) {
-  border-color: var(--glass-border-hover);
-}
-
-.icon-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.icon-action-btn-danger {
-  color: #d9363e;
 }
 
 .details-panel {

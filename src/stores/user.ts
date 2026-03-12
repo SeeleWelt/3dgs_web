@@ -17,6 +17,7 @@ type UserInfoState = {
   email?: string
   name?: string
   loginType?: 'email' | 'phone'
+  isPro: boolean
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -43,7 +44,8 @@ export const useUserStore = defineStore('user', () => {
     userStatus: typeof data?.userStatus === 'number' ? data.userStatus : (data?.status || 0),
     username: data?.username ?? data?.name ?? account,
     email: data?.email ?? account,
-    name: data?.name ?? data?.username ?? null
+    name: data?.name ?? data?.username ?? null,
+    isPro: data?.isPro === true || data?.isPro === 1
   })
 
   const saveLoginState = (user: any) => {
@@ -258,6 +260,7 @@ export const useUserStore = defineStore('user', () => {
         token: undefined,
         userStatus: 0,
         username: '',
+        isPro: false,
       }
     }
     // userInfo.value = Object.assign({}, userInfo.value, patch)

@@ -50,9 +50,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted,ref } from 'vue';
 import { message } from 'ant-design-vue';
 import { LinkOutlined, CopyOutlined } from '@ant-design/icons-vue';
+import { ApiServer } from '@/utils/taskService';
+import API from '@/utils/api';
 
 const props = defineProps({
   open: {
@@ -66,8 +68,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:open']);
+const shareId = ref();
 
-// ========== 独立配置的社交平台参数（包含正确的图标路径） ==========
 const socialPlatforms = [
   {
     key: 'wechat',
@@ -116,7 +118,9 @@ const socialPlatforms = [
 // 构建分享链接
 const shareLink = computed(() => {
   const baseUrl = import.meta.env.VITE_APP_BASE_URL || import.meta.env.BASE_URL || '';
-  return `${window.location.origin}${baseUrl}share/link/${props.taskId}`;
+  const shareUrl=new URL(`${window.location.origin}${baseUrl}share/link/${props.taskId}`)
+  shareUrl.searchParams.append('shareId', shareId.value);
+  return shareUrl.toString();
 });
 
 // 复制分享链接
@@ -158,6 +162,23 @@ const handlePlatformShare = (platformKey) => {
       break;
   }
 };
+
+onMounted(async () => {
+  const response = await ApiServer.request(
+    {
+      url: API.BASE_URL+ API.SHARE_CREATE,
+      method: 'POST',
+      data: {
+        taskId: props.taskId,
+        expireAt: 0, 
+      }
+    }
+    
+  )
+  console.log(response.data)
+  const shareUrl = new URL(response.data.href);
+  shareId.value = shareUrl.searchParams.get('shareId');
+});
 </script>
 
 <style scoped>

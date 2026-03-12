@@ -286,7 +286,7 @@
           <template #icon><SettingOutlined /></template>
         </a-button>
       </a-tooltip>
-      <a-tooltip title="模型编辑" placement="left">
+      <a-tooltip title="模型编辑" placement="left" v-if="false">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -298,7 +298,7 @@
           <template #icon><EditOutlined /></template>
         </a-button>
       </a-tooltip>
-      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left">
+      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left" v-if="false">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -387,11 +387,11 @@
               <template #icon><CodeOutlined /></template>
             </a-button>
           </a-tooltip>
-          <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
+            <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleGrid" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon>
-                <BorderOuterOutlined  v-if="showGrid" />
-                <BorderOutlined v-else />
+                <BorderOutlined v-if="showGrid" />
+                <BorderOuterOutlined v-else />
               </template>
             </a-button>
           </a-tooltip>
@@ -436,7 +436,7 @@
       :task-id="task_id"
     />
 
-    <ExportDialog
+    <OfficialExportDialog
       v-model:open="showExportDialog"
       :task-id="task_id"
       :file-name="task_name || fileName"
@@ -750,18 +750,17 @@ import {
   RedoOutlined,
   MobileOutlined,
   BorderOutlined,
-  BorderOuterOutlined ,
+  BorderOuterOutlined,
 } from '@ant-design/icons-vue';
 import { createEffect, GsplatEffectType, removeAllEffects } from '@/utils/revel';
 import { loadGsplat } from '@/utils/load';
 import { Annotation,AnnotationManager } from '../../scripts/esm/annotations.mjs';
-import { onMounted, onUnmounted } from 'vue';
 import ShareDialog from '@/components/ShareDialog.vue';
-import ExportDialog from '@/components/ExportDialog.vue';
+import OfficialExportDialog from '@/components/OfficialExportDialog.vue';
 import EmbedCodeDialog from '@/components/EmbedCodeDialog.vue';
 import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css' 
-import {Grid} from "../../scripts/esm/grid.mjs";  
+import { Grid } from "../../scripts/esm/grid.mjs";
 
 const showToast = (input) => {
   const defaultDuration = 2
@@ -884,7 +883,7 @@ const EFFECT_OPTIONS = [
 export default {
   components:{
     ShareDialog,
-    ExportDialog,
+    OfficialExportDialog,
     EmbedCodeDialog,
     ColorPicker,
     AppstoreOutlined,
@@ -914,7 +913,7 @@ export default {
     RedoOutlined,
     MobileOutlined,
     BorderOutlined,
-    BorderOuterOutlined ,
+    BorderOuterOutlined,
   },
   props: {
     taskId: {
@@ -1051,7 +1050,7 @@ export default {
       mouseDownPos: { x: 0, y: 0 },
       isMobile: false,
       showGrid: true,
-      gridEntity: null,
+      gridEntity: null, 
     };
   },
   watch:{
@@ -2197,6 +2196,7 @@ export default {
         gridEntity.setLocalScale(1000, 1, 1000);
         this.app.root.addChild(gridEntity);
         this.gridEntity = gridEntity;
+
         const gizmoLayer = new pc.Layer({
             name: 'Gizmo',
             clearDepthBuffer: true,
@@ -2367,31 +2367,22 @@ export default {
         console.log(`解析模型失败：${error.message}`);
       }
     },
-    async getTargetModel(mode = 'view', format = 'sog') {
+    async getTargetModel(mode = 'view', format = 'ply') {
       try {
-        const response = await ApiServer.request({
-          method: 'post',
-          url: `${API.TASK_DETAIL}/${this.task_id}/download-token`
-        }, this.token);
-        const download_token = response.data.token;
         if(mode === 'view')
         {
           this.isViewerLoading = true;
-          const response1 = await ApiServer.request({
+          const response = await ApiServer.request({
             method: 'get',
-            url: `${API.DOWNLOAD_MODEL}/${this.task_id}`,
-            params: {
-              format,
-              token: download_token
-            },
+            url: `${API.DOWNLOAD_OFFICIAL_MODEL}/${this.task_id}`,
             responseType: 'arraybuffer',
             onDownloadProgress: (progressEvent) => {
               if (progressEvent.lengthComputable) {
                 this.loading_progress = Number.parseFloat((progressEvent.loaded / progressEvent.total * 100).toFixed(2));
               }
             }
-          }, this.token);
-          const data = response1.data;
+          });
+          const data = response.data;
           console.log(data);
           const fileName = `${this.task_name || 'model'}.${format}`;
           await this.renderFromArrayBuffer(fileName, data);
@@ -2446,28 +2437,34 @@ export default {
       this.skullEntity = new pc.Entity('custom-splat');
       this.skullEntity.addComponent('gsplat', { asset: splatAsset});
       this.skullEntity.setLocalEulerAngles(180, 0, 0);
+      let annotationsData;
       // annotation.enabled = false; // 默认隐藏
-      const response = await ApiServer.request({
-        method: 'get',
-        url: API.GET_ANNOTATIONS,
-        params: {
-          taskId: this.task_id
-        }
-      });
-      console.log("data", response.data);
-      const annotationsData = response.data.data;
+      try{
+        const response = await ApiServer.request({
+          method: 'get',
+          url: API.GET_ANNOTATIONS,
+          params: {
+            taskId: this.task_id
+          }
+        });
+        annotationsData = response?.data || [];
+        console.log("获取到的标注数据：", annotationsData);
+      }catch(error){
+        console.error('获取标注数据失败：', error);
+      }
+       
       this.app.root.addChild(this.skullEntity);
       if(this.skullEntity) {
         const center = this.cameraControls?.focusOnEntity(this.skullEntity);
         const aabb = this.cameraControls?.calculateEntityAabb(this.skullEntity);
         const bottomPose = aabb.center.clone().sub(new pc.Vec3(0, aabb.halfExtents.y, 0));
-        this.gridEntity.setPosition(bottomPose);
+        this.gridEntity.setLocalPosition(bottomPose);
         this.cameraControls?.resetUserInteractionFlag?.();
         this.skullEntity.addComponent('script');
         
         this.manager = this.skullEntity.script.create(AnnotationManager);
         const annotation = new pc.Entity(`annotation_default`);
-        annotation.setPosition(center);
+        annotation.setLocalPosition(center);
         this.defaultAnnotationEntity = annotation;
         annotation.addComponent('script');
         annotation.script.create(Annotation, {
@@ -2478,25 +2475,28 @@ export default {
             size: 0.01,
           }
         });
-        
-        annotationsData.forEach((item,index) => {
-          const annotationEntity = new pc.Entity(`annotation_${item.label}`);
-          annotationEntity.setLocalPosition(parseFloat(item.x), parseFloat(item.y), parseFloat(item.z));
-          annotationEntity.__fromServer = true;
-          annotationEntity.addComponent('script');
-          const cameraPose = this.parseServerCameraPose(item);
-          annotationEntity.script.create(Annotation, {
-            properties: {
-              label: String(index+1),
-              title: item.label,
-              text: item.description,
-              size: 1,
-              cameraPose,
-            }
+        if(annotationsData?.length > 0)
+        {
+          annotationsData.forEach((item,index) => {
+            const annotationEntity = new pc.Entity(`annotation_${item.label}`);
+            annotationEntity.setLocalPosition(parseFloat(item.x), parseFloat(item.y), parseFloat(item.z));
+            annotationEntity.__fromServer = true;
+            annotationEntity.addComponent('script');
+            const cameraPose = this.parseServerCameraPose(item);
+            annotationEntity.script.create(Annotation, {
+              properties: {
+                label: String(index+1),
+                title: item.label,
+                text: item.description,
+                size: 1,
+                cameraPose,
+              }
+            });
+            this.app.root.addChild(annotationEntity);
+            this.annotataions.push(annotationEntity);
           });
-          this.app.root.addChild(annotationEntity);
-          this.annotataions.push(annotationEntity);
-        });
+        }
+        
         this.app.root.addChild(annotation);
         this.updateAnnotationVisibility();
         

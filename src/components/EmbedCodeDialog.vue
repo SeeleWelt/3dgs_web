@@ -23,9 +23,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed,ref, onMounted } from 'vue';
 import { message } from 'ant-design-vue';
-
+import API from '@/utils/api';
+import { ApiServer } from '@/utils/taskService';
 const props = defineProps({
   open: {
     type: Boolean,
@@ -42,12 +43,24 @@ const emit = defineEmits(['update:open']);
 const embedUrl = computed(() => {
   if (!props.taskId) return '';
   //把字符串中的特殊字符（如空格、&、=、?、/ 等）转换成 URL 安全的编码格式
-  return `${window.location.origin}/model/${encodeURIComponent(props.taskId)}`;
+  return shareLink.value;
 });
+
+
+// 构建分享链接
+const shareId = ref('');
+const shareLink = computed(() => {
+  const baseUrl = import.meta.env.VITE_APP_BASE_URL || import.meta.env.BASE_URL || '';
+  const shareUrl=new URL(`${window.location.origin}${baseUrl}share/link/${props.taskId}`)
+  shareUrl.searchParams.append('shareId', shareId.value);
+  console.log()
+  return shareUrl.toString();
+});
+
 
 const embedCode = computed(() => {
   if (!embedUrl.value) return '';
-  return `<iframe src="${embedUrl.value}" width="100%" height="720" frameborder="0" allowfullscreen></iframe>`;
+  return `<iframe src="${embedUrl.value}" width="800" height="500" frameborder="0" allowfullscreen></iframe>`;
 });
 
 const handleOpenChange = (nextOpen) => {
@@ -74,6 +87,27 @@ const copyEmbedCode = async () => {
 
   emit('update:open', false);
 };
+
+onMounted(async () => {
+  const response = await ApiServer.request(
+    {
+      url: API.BASE_URL+ API.SHARE_CREATE,
+      method: 'POST',
+      data: {
+        taskId: props.taskId,
+        expireAt: 0, 
+      }
+    }
+    
+  )
+  console.log(response.data)
+  const shareUrl = new URL(response.data.href);
+  shareId.value = shareUrl.searchParams.get('shareId');
+});
+
+
+
+
 </script>
 
 <style scoped>

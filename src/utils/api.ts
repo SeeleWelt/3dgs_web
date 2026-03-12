@@ -100,7 +100,11 @@ const API = {
 
   // 标注
   CREATE_ANNOTATION: "/api/task/createAnnotation",
-  GET_ANNOTATIONS: "/api/task/getAnnotation"
+  GET_ANNOTATIONS: "/api/task/getAnnotation",
+
+  // 官方模型列表
+  GET_OFFICIAL_MODEL: '/api/officialModel',
+  DOWNLOAD_OFFICIAL_MODEL: '/api/downOfficialModel',
 } as const;
 
 export default API;

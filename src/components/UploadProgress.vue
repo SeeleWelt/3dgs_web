@@ -11,7 +11,7 @@
               <p>剩余算力点: {{ Math.max(0, currentPoints - consumedPoints) }}</p>
             </div>
           </template>
-          <QuestionCircleOutlined class="points-help-icon" />
+          <ExclamationCircleOutlined class="points-help-icon" />
         </a-tooltip>
         <button class="advanced-btn" @click="$emit('open-advanced')">
           <SettingOutlined />
@@ -129,7 +129,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
+import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
 
@@ -234,13 +234,14 @@ const formatDuration = (seconds: number): string => {
 
 .points-help-icon {
   font-size: 18px;
-  color: var(--text-secondary);
+  color: #f59e0b;
   cursor: help;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .points-help-icon:hover {
-  color: var(--accent-blue);
+  color: #d97706;
+  transform: scale(1.1);
 }
 
 .points-tooltip-content {

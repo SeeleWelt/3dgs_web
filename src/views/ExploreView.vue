@@ -1,13 +1,13 @@
 <template>
-  <div class="explore-view">
+  <div class="explore-view animate-fade-in">
     <!-- Mesh Models Section -->
-    <section class="explore-section" >
+    <section class="explore-section animate-fade-in-up" >
       <div class="section-header">
         <h2 class="section-title">{{ t('explore.ai3dModels') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
-      <div class="models-grid" v-if="!isLoading">
-        <ModelCard
+      <div class="models-grid" v-if="!meshLoading">
+        <OfficialModelCard
           v-for="model in MeshModel"
           :key="model.taskId"
           :model="model"
@@ -27,13 +27,13 @@
     </section>
 
     <!-- 3DGS Models Section -->
-    <section class="explore-section gaussian-section" ref="gaussianSectionRef">
+    <section class="explore-section gaussian-section animate-fade-in-up" style="animation-delay: 0.1s" ref="gaussianSectionRef">
       <div class="section-header">
         <h2 class="section-title">{{ t('explore.gs3dTitle') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
-      <div class="models-grid" v-if="!isLoading">
-        <ModelCard
+      <div class="models-grid" v-if="!gaussianLoading">
+        <OfficialModelCard
           v-for="model in _3DModel"
           :key="model.taskId"
           :model="model"
@@ -50,7 +50,7 @@
           <div class="skeleton-desc"></div>
         </div>
       </div>
-      <div class="pagination-wrap" v-if="!isLoading && gaussianTotal > (tasksParams.pageSize || 12)">
+      <div class="pagination-wrap" v-if="!gaussianLoading && gaussianTotal > (tasksParams.pageSize || 12)">
         <a-pagination
           :current="tasksParams.page"
           :page-size="tasksParams.pageSize"
@@ -63,7 +63,7 @@
     </section>
 
     <!-- Community Cards -->
-    <section class="community-section">
+    <section class="community-section animate-fade-in-up" style="animation-delay: 0.2s">
       <div class="community-cards">
         <!-- YouTube Card -->
         <div class="community-card youtube-card">
@@ -119,12 +119,16 @@ import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
-import ModelCard from '../components/ModelCard.vue'
+import OfficialModelCard from '@/components/OfficialModelCard.vue'
 import { TaskModel, ApiServer, GetTaskListParams } from '@/utils/taskService'
+import API from '@/utils/api'
 const router = useRouter()
 const { t } = useI18n()
 
 interface Model extends TaskModel {
+  id?: string
+  preview_image?: string
+  task_name?: string
   isNew: boolean
   type: 'mesh' | 'gaussian'
 }
@@ -159,7 +163,8 @@ const MeshModel = ref<Model[]>([
 ])
 
 // 加载状态
-const isLoading = ref(false)
+const meshLoading = ref(false)
+const gaussianLoading = ref(false)
 
 // 骨架屏数量
 const meshSkeletonCount = 12
@@ -174,18 +179,37 @@ const tasksParams = ref<GetTaskListParams>({
   pageSize: 12,
 })  
 
+const mapToModels = (tasks: Model[], type: 'mesh' | 'gaussian'): Model[] => tasks.map(task => ({
+  taskId: task.taskId || task.id || 'unknown_id',
+  taskName: task.taskName || task.task_name || '未命名任务',
+  status: task.status || '"completed"',
+  objectDescription: task.objectDescription || '暂无描述',
+  ownerUsername: task.ownerUsername || '未知用户',
+  authorAvatar: task.authorAvatar || '',
+  preview: task.preview || task.preview_image || '',
+  nickname: task.nickname || '未知',
+  isPublic: task.isPublic ?? true,
+  viewCount: task.viewCount ?? 0,
+  likeCount: task.likeCount ?? 0,
+  isLiked: task.isLiked ?? false,
+  downloadCount: task.downloadCount ?? 0,
+  shareCount: task.shareCount ?? 0,
+  isNew: task.viewCount === 0,
+  type
+}))
+
 const fetchGaussianModels = async () => {
-  isLoading.value = true
+  gaussianLoading.value = true
   try {
-    const tasks = await ApiServer.getTaskList(tasksParams.value)
-    _3DModel.value = tasks.map(task => ({
-      ...task,
-      isNew: task.viewCount === 0,
-      type: 'gaussian'
-    }))
-    gaussianTotal.value = ApiServer.totalTasks || 0
+    const response = await ApiServer.request({
+      url: API.GET_OFFICIAL_MODEL,
+      method: "get",
+    })
+    const tasks = response?.data?.data || []
+    _3DModel.value = mapToModels(tasks, 'gaussian')
+    gaussianTotal.value = _3DModel.value.length
   } finally {
-    isLoading.value = false
+    gaussianLoading.value = false
   }
 }
 
@@ -197,7 +221,7 @@ const handleGaussianPageChange = async (page: number) => {
 }
 
 const openModelDetail = (model: Model) => {
-  const routeData = router.resolve(`/model/${model.taskId}`)
+  const routeData = router.resolve(`/officialModel/${model.taskId}`)
    window.open(routeData.href, '_blank')
 }
 
@@ -232,6 +256,32 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Entry animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
 .explore-view {
   padding-bottom: 40px;
 }

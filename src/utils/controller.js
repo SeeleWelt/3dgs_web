@@ -223,8 +223,8 @@ class CameraControls {
         // set orbit controller defaults
         this._orbitController.zoomRange = new Vec2(4, 50);
         this._orbitController.pitchRange = new Vec2(-90, 90);
-        this._orbitController.rotateDamping = 0.85;
-        this._orbitController.moveDamping = 0.92;
+        this._orbitController.rotateDamping = 0.98;
+        this._orbitController.moveDamping = 0.98;
         this._orbitController.zoomDamping = 0.90;
 
         // set fly controller defaults
@@ -798,12 +798,12 @@ class CameraControls {
 
     // 聚焦指定实体
     focusOnEntity(entity, position) {
-        const aabb = this._calculateEntityAabb(entity);
+        const aabb = this.calculateEntityAabb(entity);
         if (!aabb) return;
         const halfExtents = aabb.halfExtents;
         const radius = Math.max(halfExtents.x, halfExtents.y, halfExtents.z);
         const fov = this._camera.fov * math.DEG_TO_RAD;
-        const fitDistance = radius / Math.sin(0.5 * fov);
+        const fitDistance = radius*1.2 / Math.sin(0.5 * fov);
         const padding = 1.1;
         const targetDistance = fitDistance * padding;
 
@@ -828,7 +828,7 @@ class CameraControls {
     }
 
     // 计算实体包围盒
-    _calculateEntityAabb(entity) {
+    calculateEntityAabb(entity) {
         const meshInstances = [];
         // 收集所有网格实例
         entity.findComponents('render').forEach(render => meshInstances.push(...render.meshInstances));
@@ -838,10 +838,42 @@ class CameraControls {
         });
 
         if (meshInstances.length === 0) return null;
-
         const aabb = new BoundingBox();
         aabb.copy(meshInstances[0].aabb);
         meshInstances.slice(1).forEach(mi => aabb.add(mi.aabb));
+
+        const splat = this._getSplatInstance(entity);
+        if (!splat || !splat.splatData || splat.splatData.numSplats === 0) {
+            console.warn('无法计算包围盒：无有效3DGS数据');
+            return null;
+        }
+        const gsplatData = splat.splatData;
+        const x = gsplatData.getProp('x');
+        const y = gsplatData.getProp('y');
+        const z = gsplatData.getProp('z');
+        const numPoints = gsplatData.numSplats;
+
+        // 直接计算 min/max
+        let minX = x[0], maxX = x[0];
+        let minY = y[0], maxY = y[0];
+        let minZ = z[0], maxZ = z[0];
+
+        for (let i = 1; i < numPoints; i++) {
+            if (x[i] < minX) minX = x[i];
+            if (x[i] > maxX) maxX = x[i];
+            if (y[i] < minY) minY = y[i];
+            if (y[i] > maxY) maxY = y[i];
+            if (z[i] < minZ) minZ = z[i];
+            if (z[i] > maxZ) maxZ = z[i];
+        }
+
+        const halfExtents = new Vec3(
+            (maxX - minX) / 2,
+            (maxY - minY) / 2,
+            (maxZ - minZ) / 2
+        );
+
+        aabb.halfExtents.copy(halfExtents);
         return aabb;
     }
 
@@ -1424,6 +1456,7 @@ class CameraControls {
         const localAabb = splat.assetRecource.aabb;
 
         for (const [faceName, config] of Object.entries(allFaceConfigs)) {
+            console.log("localAabb", localAabb)
             // 查找当前面实体
             const faceEntity = bboxEntity.findByName(`bbox_face_${entity.name}_${faceName}`);
             if (!faceEntity) {
@@ -1705,7 +1738,7 @@ class CameraControls {
         }
 
         // 计算实体的包围盒
-        const aabb = this._calculateEntityAabb(entity);
+        const aabb = this.calculateEntityAabb(entity);
         console.log("box aabb", aabb);
         if (!aabb) {
             console.warn('无法计算实体包围盒，跳过绘制:', entity.name);
@@ -1715,8 +1748,7 @@ class CameraControls {
         // 创建包围盒父实体（跟随目标实体）
         const boxEntity = new pc.Entity(`bbox_${entity.name}`);
         this._app.root.addChild(boxEntity);
-        boxEntity.setPosition(aabb.center.x, aabb.center.y, aabb.center.z);
-
+        boxEntity.setLocalPosition(aabb.center.x, aabb.center.y, aabb.center.z);
         // 定义两种材质颜色（灰白色/红色）
         const colorConfig = useRedColor
             ? { diffuse: '#ff3333', emissive: '#ff6666' }  // 红色
@@ -1724,7 +1756,7 @@ class CameraControls {
 
         // 立方体半边长（AABB的半扩展值）
         const halfExtents = aabb.halfExtents;
-        console.log(halfExtents);
+        console.log("halfExtents",halfExtents);
         
         // 修复：6个面的正确配置（位置、旋转、缩放）
         // 核心修正：每个面的旋转适配Plane几何体的默认朝向，缩放匹配半边长
@@ -1910,7 +1942,7 @@ class CameraControls {
     }
 
     calculateAabbAxisLimits(entity) {
-        const aabb = this._calculateEntityAabb(entity);
+        const aabb = this.calculateEntityAabb(entity);
         if (!aabb) {
             console.warn('无法计算实体包围盒，无法获取坐标限制:', entity.name);
             return null;
@@ -2150,7 +2182,7 @@ class CameraControls {
         return false;
     }
     // 更新方法
-    update(dt, isLoopPlaying, isVideoPlaying, cantFly = true) {
+    update(dt, isLoopPlaying, isVideoPlaying, cantFly = false) {
         // console.log(this._camera.entity.getPosition());
         if(this.stopNormal) return; 
         const keyCode = KeyboardMouseSource.keyCode;
@@ -2206,7 +2238,6 @@ class CameraControls {
             }
         }else if(cantFly && this._state.axis.length() > 0 )
         {
-            // 节流：1秒内只提示一次
             const now = Date.now();
             if (now - this._lastCantFlyWarningTime >= 3000) {
                 message.warn("编辑模式下无法进入飞行模式");

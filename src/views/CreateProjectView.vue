@@ -3,6 +3,9 @@
     <AnimatedBackground />
 
     <div class="create-project-container">
+      <!-- Tutorial Component -->
+      <UploadTutorial ref="tutorialRef" />
+
       <!-- Back Button -->
       <button class="back-btn" @click="goBack">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -21,6 +24,7 @@
       <FileUpload @upload="handleUpload" :max-image-count="MAX_IMAGE_COUNT" :max-video-duration-seconds="MAX_VIDEO_DURATION_SECONDS" />
 
       <!-- Upload Progress -->
+      <Transition name="slide-fade">
       <UploadProgress
         v-if="uploadTask || imageFiles.length > 0"
         :task="uploadTask"
@@ -33,6 +37,7 @@
         @submit="submitProject"
         @remove-image="removeImage"
       />
+      </Transition>
 
       <a-drawer
         :open="showAdvancedOptions"
@@ -130,6 +135,7 @@ import { usePointsStore } from '@/stores/points'
 import AnimatedBackground from '../components/AnimatedBackground.vue'
 import FileUpload from '../components/FileUpload.vue'
 import UploadProgress from '../components/UploadProgress.vue'
+import UploadTutorial from '../components/UploadTutorial.vue'
 import API from '@/utils/api'
 import { ApiServer } from '@/utils/taskService'
 
@@ -164,6 +170,7 @@ interface ImageFile {
 
 const uploadTask = ref<UploadTask | null>(null)
 const imageFiles = ref<ImageFile[]>([])
+const tutorialRef = ref<InstanceType<typeof UploadTutorial> | null>(null)
 
 const showAdvancedOptions = ref(false)
 
@@ -459,6 +466,35 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Upload Progress Transition */
+.slide-fade-enter-active {
+  animation: slideUpFadeIn 0.4s ease;
+}
+
+.slide-fade-leave-active {
+  animation: fadeOut 0.3s ease;
+}
+
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .create-project-page {
   min-height: 100vh;
   background: var(--bg-primary);

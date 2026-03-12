@@ -1,9 +1,9 @@
 <template>
-  <div class="home-view">
-    <CreateSection />
+  <div class="home-view animate-fade-in">
+    <CreateSection class="animate-fade-in-up" />
 
     <!-- Projects Section -->
-    <div class="projects-section">
+    <div class="projects-section animate-fade-in-up" style="animation-delay: 0.1s">
       <div class="section-tabs">
         <div class="tabs-left">
           <div
@@ -105,7 +105,7 @@
       </div>
 
       <template v-if="filteredModels.length > 0">
-        <div class="models-grid">
+        <div class="models-grid" :key="activeTypeTab">
           <ModelCard
             v-for="model in filteredModels"
             :key="model.taskId"
@@ -113,7 +113,8 @@
             :highlight-keyword="searchQuery"
             :show-checkbox="isManagementMode"
             :checked="isSelected(model.taskId)"
-            
+            class="model-card-animate"
+
             @click="handleCardClick(model)"
             @resume-success="handleResumeSuccess"
             @task-action-success="handleResumeSuccess"
@@ -136,7 +137,7 @@
 
       <div v-else-if="isLoading" class="loading-state">
         <div class="loading-grid">
-          <div v-for="i in 8" :key="i" class="skeleton-card">
+          <div v-for="i in PAGE_SIZE" :key="i" class="skeleton-card">
             <div class="skeleton-image"></div>
             <div class="skeleton-title"></div>
             <div class="skeleton-desc"></div>
@@ -144,7 +145,7 @@
         </div>
       </div>
 
-      <div v-else-if="isSearching && !hasBaseData" class="search-empty-state">
+      <div v-else-if="isSearching" class="search-empty-state">
         <div class="search-empty-icon" aria-hidden="true">
           <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <circle cx="11" cy="11" r="7"></circle>
@@ -616,16 +617,17 @@ const defaultMeshModels: Model[] = [
 
 const MeshModel = ref<Model[]>([...defaultMeshModels])
 const Model3D = ref<Model[]>([])
+const PAGE_SIZE = 12
 
 const meshPagination = ref<GetTaskListParams>({
   page: 1,
-  pageSize: 12,
+  pageSize: PAGE_SIZE,
   mode: 'scan'
 })
 
 const model3DPagination = ref<GetTaskListParams>({
   page: 1,
-  pageSize: 12,
+  pageSize: PAGE_SIZE,
   mode: '3dgs',
   query: ''
 })
@@ -654,21 +656,20 @@ const displayTotal = computed(() => {
 const activePagination = computed(() => {
   if (activeTypeTab.value === 'mesh') return meshPagination.value
   if (activeTypeTab.value === '3dgs') return model3DPagination.value
-  return { page: 1, pageSize: 12 }
+  return { page: 1, pageSize: PAGE_SIZE }
 })
 
-const activePageSize = computed(() => Number(activePagination.value.pageSize || 12))
+const activePageSize = computed(() => Number(activePagination.value.pageSize || PAGE_SIZE))
 
 // 错误状态
 type ErrorType = 'network' | 'server' | 'unknown' | null
-const fetchError = ref<ErrorType>(null)
+const fetchError = ref<ErrorType>('server')
 
 // 加载状态
 const isLoading = ref(false)
 
 const searchQueryTrimmed = computed(() => searchQuery.value.trim())
 const isSearching = ref(false)
-const hasBaseData = computed(() => filteredModels.value.length > 0)
 
 const normalizeText = (text: string) => text.toLowerCase().replace(/\s+/g, '')
 
@@ -692,6 +693,7 @@ const filteredModels = computed(() => {
 
 const mapToModels = (tasks: TaskModel[], type: 'mesh' | 'gaussian'): Model[] => tasks.map(task => ({
   ...task,
+  objectDescription: task.objectDescription || '暂无描述',
   isNew: task.viewCount === 0,
   type
 }))
@@ -845,16 +847,46 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Entry animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
 /* Button show/hide animation */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fade-slide-enter-from,
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateX(10px);
+  transform: translateY(-16px);
 }
 
 .home-view {
@@ -869,6 +901,22 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
+}
+
+.model-card-animate {
+  animation: cardFadeIn 0.35s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pagination-wrap {

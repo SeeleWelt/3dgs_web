@@ -118,6 +118,13 @@ const router = createRouter({
       props: true
     },
     {
+      path: '/officialModel/:taskId',
+      name: 'official-model-detail',
+      component: () => import('../views/OfficialRenderTask.vue'),
+      meta: { requiresAuth: true, title: '官方模型详情' },
+      props: true
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
@@ -128,6 +135,9 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
+  // 页面切换时滚动到顶部
+  window.scrollTo(0, 0)
+
   // 设置页面标题
   const pageTitle = to.meta.title as string
   if (pageTitle) {

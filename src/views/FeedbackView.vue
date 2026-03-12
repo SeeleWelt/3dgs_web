@@ -527,7 +527,7 @@ async function submitFeedback() {
   border-bottom-right-radius: 0 !important;
 }
 
-:deep(..ant-collapse-item) {
+:deep(.ant-collapse-item) {
   border: none;
 }
 

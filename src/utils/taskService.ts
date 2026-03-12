@@ -56,7 +56,7 @@ interface TaskListResponse {
 export class ApiServer {
   private static readonly http: AxiosInstance = axios.create({
     baseURL: API.BASE_URL,
-    timeout: 10_000
+    timeout: 60_000
   })
   private static interceptorInited = false
 
@@ -108,10 +108,10 @@ export class ApiServer {
 
           switch (status) {
             case 404:
-              wrappedError.message = '请求资源不存在（404）'
+              wrappedError.message = '请求资源不存在'
               break
             case 500:
-              wrappedError.message = '服务器错误（500）'
+              wrappedError.message = '服务器错误'
               break
             default:
               wrappedError.message = ""
