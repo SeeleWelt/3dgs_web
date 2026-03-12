@@ -26,31 +26,49 @@
                 class="area-code-select"
                 @change="handleAreaCodeChange"
               >
-                <a-select-option value="+86">+86</a-select-option>
-                <a-select-option value="+1">+1</a-select-option>
-                <a-select-option value="+44">+44</a-select-option>
-                <a-select-option value="+81">+81</a-select-option>
-                <a-select-option value="+49">+49</a-select-option>
-                <a-select-option value="+33">+33</a-select-option>
-                <a-select-option value="+7">+7</a-select-option>
-                <a-select-option value="+34">+34</a-select-option>
+                <a-select-option value="+86">
+                  <span class="flag-option"><span class="fi fi-cn"></span> +86</span>
+                </a-select-option>
+                <a-select-option value="+1">
+                  <span class="flag-option"><span class="fi fi-us"></span> +1</span>
+                </a-select-option>
+                <a-select-option value="+44">
+                  <span class="flag-option"><span class="fi fi-gb"></span> +44</span>
+                </a-select-option>
+                <a-select-option value="+81">
+                  <span class="flag-option"><span class="fi fi-jp"></span> +81</span>
+                </a-select-option>
+                <a-select-option value="+49">
+                  <span class="flag-option"><span class="fi fi-de"></span> +49</span>
+                </a-select-option>
+                <a-select-option value="+33">
+                  <span class="flag-option"><span class="fi fi-fr"></span> +33</span>
+                </a-select-option>
+                <a-select-option value="+7">
+                  <span class="flag-option"><span class="fi fi-ru"></span> +7</span>
+                </a-select-option>
+                <a-select-option value="+34">
+                  <span class="flag-option"><span class="fi fi-es"></span> +34</span>
+                </a-select-option>
               </a-select>
             </template>
           </a-input>
         </a-form-item>
       </a-form>
 
-      <button 
-        class="btn btn-primary btn-full" 
-        :disabled="isLoading || !isPhoneValid" 
+      <a-button
+        type="primary"
+        class="btn btn-full"
+        :loading="isLoading"
+        :disabled="!isPhoneValid"
         @click="sendVerificationCode"
       >
-        {{ isLoading ? t('login.processing') || '处理中...' : t('login.getCode') || '获取验证码' }}
-      </button>
+        {{ t('login.getCode') || '获取验证码' }}
+      </a-button>
     </div>
 
     <!-- 步骤2：验证码输入区域 -->
-    <div v-if="currentStep === 'code'" class="step-container">
+    <div v-if="currentStep === 'code'" class="step-container" :class="{ 'is-loading': isLoading }">
       <!-- 手机号信息展示 -->
       <div class="phone-info">
         <span class="info-value">{{ selectedAreaCode }} {{ phoneForm.phone }}</span>
@@ -82,13 +100,15 @@
       </div>
 
       <!-- 提交按钮 -->
-      <button 
-        class="btn btn-primary btn-full" 
-        :disabled="isLoading || !verificationCode" 
+      <a-button
+        type="primary"
+        class="btn btn-full"
+        :loading="isLoading"
+        :disabled="!verificationCode"
         @click="handlePhoneAuth"
       >
-        {{ isLoading ? t('login.processing') || '处理中...' : t('login.submit') || '提交验证' }}
-      </button>
+        {{ t('login.submit') || '提交验证' }}
+      </a-button>
     </div>
   </div>
 </template>
@@ -104,6 +124,16 @@ import { ApiServer } from '@/utils/taskService'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
+// 定义 props
+const props = defineProps<{
+  agree?: boolean
+}>()
+
+// 定义 emit
+const emit = defineEmits<{
+  (e: 'require-agree'): void
+}>()
+
 const { t } = useI18n()
 const router = useRouter()
 const userStore = useUserStore()
@@ -115,8 +145,8 @@ const countdown = ref(0)
 const selectedAreaCode = ref('+86')
 // 验证码存储（独立于phoneForm，因为插件是独立输入）
 const verificationCode = ref('')
+let timer = ref<number>(0)
 const conuntTime = 60
-
 const resolveRequestErrorMessage = (err: any, defaultMessage: string) => {
   if (err?.message && String(err.message).length > 0) {
     return String(err.message)
@@ -208,7 +238,7 @@ const onCodeChange = (code: string) => {
 const onCodeComplete = (code: string) => {
   verificationCode.value = code
   // 可选：输入完成后自动提交
-//   handlePhoneAuth()
+  // handlePhoneAuth()
 }
 
 // 返回手机号输入步骤
@@ -220,46 +250,67 @@ const backToPhoneStep = () => {
 }
 
 // 发送验证码（第一次或切换手机号时调用，包含验证）
-const sendVerificationCode = async () => {  
+const sendVerificationCode = async () => {
+  if (!props.agree) {
+    emit('require-agree')
+    return
+  }
   // 已发送且仍在倒计时，则不重复发送
   if (countdown.value > 0) return
   // 先验证手机号表单
   if (!phoneFormRef.value) return
+  isLoading.value = true
   try {
     await phoneFormRef.value.validate()
     if (!isPhoneValid.value) {
       message.error(t('login.invalidPhone') || '请输入有效的手机号')
       return
     }
-    currentStep.value = 'code'
-    // 启动倒计时
-    countdown.value = conuntTime
+
     await ApiServer.request({
       method: 'post',
       url: API.SEND_CODE,
       data: { phone: phoneForm.value.phone }
     })
-    message.success(t('login.codeSentSuccess') || '验证码已发送')
     currentStep.value = 'code'
-    
-    const timer = setInterval(() => {
+    // 启动倒计时
+    countdown.value = conuntTime
+    timer.value = setInterval(() => {
       countdown.value--
       if (countdown.value <= 0) {
-        clearInterval(timer)
+        clearInterval(timer.value)
       }
     }, 1000)
+
+    message.success(t('login.codeSentSuccess') || '验证码已发送')
+
   } catch (error: any) {
+    currentStep.value = 'phone'
+    clearInterval(timer.value)
+    countdown.value = 0
     message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed') || '手机号验证失败，请检查输入'))
     return
+  }finally {
+    isLoading.value = false
   }
 }
 
 // 重新发送验证码（无需再次验证手机号，只要有原号码）
 const resendVerificationCode = async () => {
+  if (!props.agree) {
+    emit('require-agree')
+    return
+  }
   if (countdown.value > 0) return
   isLoading.value = true
   try {
-    // 保持在 code 步骤
+ 
+    await ApiServer.request({
+      method: 'post',
+      url: API.SEND_CODE,
+      data: { phone: phoneForm.value.phone }
+    })
+       // 保持在 code 步骤
     currentStep.value = 'code'
     countdown.value = conuntTime
     const timer = setInterval(() => {
@@ -268,11 +319,6 @@ const resendVerificationCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
-    await ApiServer.request({
-      method: 'post',
-      url: API.SEND_CODE,
-      data: { phone: phoneForm.value.phone }
-    })
     message.success(t('login.codeSentSuccess') || '验证码已发送')
     
   } catch (error: any) {
@@ -284,6 +330,12 @@ const resendVerificationCode = async () => {
 
 // 处理手机号+验证码验证提交
 const handlePhoneAuth = async () => {
+  // 检查是否同意服务条款
+  if (!props.agree) {
+    emit('require-agree');
+    return
+  }
+
   if (!verificationCode.value || verificationCode.value.length !== 6) {
     message.error(t('login.enter6DigitCode') || '请输入6位验证码')
     return
@@ -313,7 +365,8 @@ defineExpose({
   isPhoneValid,
   phoneForm,
   currentStep,
-  backToPhoneStep
+  backToPhoneStep,
+  isLoading
 })
 </script>
 
@@ -324,6 +377,20 @@ defineExpose({
 
 .step-container {
   width: 100%;
+  position: relative;
+}
+
+.step-container.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(1px);
+  border-radius: 8px;
+  z-index: 10;
 }
 
 .form-fields {
@@ -350,10 +417,31 @@ defineExpose({
 }
 
 .area-code-select {
-  width: 70px;
   border: none;
   background: transparent;
   z-index: 1;
+}
+
+/* 国旗选项样式 */
+.flag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flag-option .fi {
+  font-size: 16px;
+}
+
+/* 下拉菜单中的国旗 */
+:deep(.ant-select-item-option-content .flag-option) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:deep(.ant-select-item-option-content .fi) {
+  font-size: 18px;
 }
 
 :deep(.area-code-select .ant-select-selector) {
@@ -491,6 +579,9 @@ defineExpose({
   outline: none !important;
 }
 
+:deep(.ant-btn){
+  height:auto;
+}
 /* 按钮通用样式 */
 .btn {
   width: 100%;

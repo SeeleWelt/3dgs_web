@@ -116,7 +116,7 @@
         </div>
       </div>
 
-      <div class="section-header mt-8">
+      <!-- <div class="section-header mt-8">
         <h3>每日使用情况</h3>
         <span class="total-text">总计: {{ usage.total }} 算力点</span>
       </div>
@@ -137,7 +137,7 @@
             <div class="grid-line" v-for="i in 7" :key="i"></div>
           </div>
           <svg class="chart-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
-            <!-- Mock Line -->
+            
             <path d="M 0 198 L 400 198 L 400 2 L 405 2 L 405 198 L 1000 198" fill="none" stroke="currentColor" stroke-width="2" class="chart-line"/>
             <circle cx="400" cy="2" r="3" fill="currentColor" class="chart-dot"/>
           </svg>
@@ -151,7 +151,7 @@
           <span>3月 5</span>
           <span>3月 9</span>
         </div>
-      </div>
+      </div> -->
 
       <div class="section-header mt-8">
         <h3>算力点变更情况</h3>

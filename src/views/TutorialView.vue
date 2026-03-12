@@ -1,18 +1,5 @@
 <template>
   <div class="tutorial-page">
-    <!-- 页面头部 -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-icon">
-          <ReadOutlined />
-        </div>
-        <div class="header-text">
-          <h1>使用教程</h1>
-          <p>快速上手 MetaST 3D</p>
-        </div>
-      </div>
-    </div>
-
     <div class="tutorial-container">
       <!-- 步骤条 -->
       <a-steps :current="currentStep" class="tutorial-steps" size="small">
@@ -149,11 +136,10 @@ function prevStep() {
 
 /* 页面头部 */
 .page-header {
-  max-width: 720px;
-  margin: 0 auto 32px;
-  padding: 40px;
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 40px 24px;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-  border-radius: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -173,6 +159,8 @@ function prevStep() {
   display: flex;
   align-items: center;
   gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
   position: relative;
   z-index: 1;
 }
@@ -217,6 +205,8 @@ function prevStep() {
   background: var(--glass-surface);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.1s;
 }
 
 /* 内容卡片 */
@@ -225,6 +215,8 @@ function prevStep() {
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   overflow: hidden;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.2s;
 }
 
 .content-card {
@@ -352,6 +344,18 @@ function prevStep() {
   background: var(--text-tertiary);
 }
 
+/* 动画定义 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
   .page-header {
@@ -388,6 +392,10 @@ function prevStep() {
 
   .step-indicators {
     order: -1;
+  }
+
+  .tutorial-container {
+    padding: 0 16px;
   }
 }
 </style>

@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <EmptyState v-if="!hasProjects" @create-project="handleCreateProject" />
+    <EmptyState v-if="!hasProjects" :type="activeTypeTab === '扫描' ? 'mesh-scan' : '3dgs-scan'" />
   </div>
 </template>
 
@@ -39,10 +39,6 @@ const hasProjects = ref(false)
 
 const typeTabs = ['扫描', '3DGS']
 const statusTabs = ['全部', '已完成', '处理中']
-
-const handleCreateProject = () => {
-  console.log('Create new project')
-}
 </script>
 
 <style scoped>

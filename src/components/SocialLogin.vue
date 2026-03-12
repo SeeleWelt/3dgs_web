@@ -1,6 +1,11 @@
 <template>
   <div class="social-login">
-    <div ref="googleButtonRef" class="google-button" @click="handleGoogleLogin" />
+    <div
+      ref="googleButtonRef"
+      class="google-button"
+      :class="{ disabled: props.disabled }"
+      @click.capture="handleGoogleLogin($event)"
+    />
     <p v-if="initError" class="social-error">{{ initError }}</p>
   </div>
 </template>
@@ -18,15 +23,20 @@ declare global {
 const props = withDefaults(
   defineProps<{
     useOneTap?: boolean
+    disabled?: boolean
+    agree?: boolean
   }>(),
   {
-    useOneTap: false
+    useOneTap: false,
+    disabled: false,
+    agree: false
   }
 )
 
 const isInitialized = ref(false)
 
 const emit = defineEmits<{
+  (event: 'show-agreeTerms'): void
   (event: 'google-success', payload: { credential: string }): void
   (event: 'google-error', payload: { message: string; error?: unknown }): void
 }>()
@@ -100,7 +110,7 @@ const initGoogleLogin = async () => {
       text: 'continue_with',
       shape: 'pill',
       logo_alignment: 'left',
-      width: 320
+      width: 480
     })
 
     isInitialized.value = true
@@ -110,7 +120,15 @@ const initGoogleLogin = async () => {
   }
 }
 
-const handleGoogleLogin = async () => {
+const handleGoogleLogin = async (e: MouseEvent) => {
+  
+  if (!props.agree){
+    e.stopPropagation();
+    emit('show-agreeTerms');
+    return
+  }
+
+  if (props.disabled) return
   if (!isInitialized.value) {
     await initGoogleLogin()
   }
@@ -162,6 +180,11 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.google-button.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .google-button :deep(iframe) {

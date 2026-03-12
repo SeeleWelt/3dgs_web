@@ -14,6 +14,15 @@
 
       <span v-if="isBlocked" class="status-corner" :class="statusClass">{{ statusText }}</span>
 
+      <!-- Checkbox for management mode -->
+      <div v-if="showCheckbox" class="card-checkbox" @click.stop>
+        <a-checkbox
+          :checked="checked"
+          size="default"
+          @change="handleCheckboxChange"
+        />
+      </div>
+
       <div v-if="showOverlay" class="status-overlay">
         <div class="status-content">
           <div v-if="isProcessing" class="dot-loader" aria-label="loading">
@@ -121,7 +130,9 @@
                 class="param-item"
               >
                 <div class="param-item-header">
-                  <component :is="item.icon" class="param-icon" :style="{ color: item.color || '' }" />
+                  <div class="param-icon" :style="{ background: item.iconBg || '' }">
+                    <component :is="item.icon" :style="{ color: item.color || '' }" />
+                  </div>
                   <span class="param-label">{{ item.label }}</span>
                 </div>
                 <div :class="['param-value', item.emphasis ? 'param-value-emphasis' : '']">
@@ -188,6 +199,8 @@ interface Model {
 const props = defineProps<{
   model: Model
   highlightKeyword?: string
+  showCheckbox?: boolean
+  checked?: boolean
 }>()
 
 const isPreviewLoading = ref(false)
@@ -333,6 +346,7 @@ const techItems = computed(() => {
       emphasis: true,
       visible: true,
       color: '#2f54eb',
+      iconBg: 'rgba(47, 84, 235, 0.15)',
     },
     {
       label: '快速重建',
@@ -341,6 +355,7 @@ const techItems = computed(() => {
       emphasis: false,
       visible: true,
       color: '#fa8c16',
+      iconBg: 'rgba(250, 140, 22, 0.15)',
     },
     {
       label: '开始时间',
@@ -349,6 +364,7 @@ const techItems = computed(() => {
       emphasis: false,
       visible: true,
       color: '#722ed1',
+      iconBg: 'rgba(114, 46, 209, 0.15)',
     },
     {
       label: '结束时间',
@@ -357,6 +373,7 @@ const techItems = computed(() => {
       emphasis: false,
       visible: ['completed', 'failed'].includes(props.model.status || '') && !props.model.nsfwBlocked,
       color: '#13a8a8',
+      iconBg: 'rgba(19, 168, 168, 0.15)',
     },
     {
       label: '错误原因',
@@ -365,6 +382,7 @@ const techItems = computed(() => {
       emphasis: true,
       visible: isFailed.value,
       color: '#cf1322',
+      iconBg: 'rgba(207, 19, 34, 0.15)',
     },
     {
       label: '审核结果',
@@ -373,6 +391,7 @@ const techItems = computed(() => {
       emphasis: true,
       visible: !!props.model.nsfwBlocked,
       color: '#d48806',
+      iconBg: 'rgba(212, 136, 6, 0.15)',
     },
     {
       label: '帧数',
@@ -381,6 +400,7 @@ const techItems = computed(() => {
       emphasis: false,
       visible: true,
       color: '#1d39c4',
+      iconBg: 'rgba(29, 57, 196, 0.15)',
     },
   ]
 
@@ -392,10 +412,17 @@ const emit = defineEmits<{
   'resume-success': [taskId: string]
   'task-action-success': []
   'task-deleted': [taskId: string]
+  'update:checked': [value: boolean]
 }>()
 
+// Handle checkbox change
+const handleCheckboxChange = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  emit('update:checked', target.checked)
+}
+
 const handleCardClick = () => {
-  if (isCompleted.value) {
+  if (isCompleted.value || props.showCheckbox) {
     emit('click')
     return
   }
@@ -606,6 +633,13 @@ const closeDetailsDrawer = () => {
   background: rgba(140, 140, 140, 0.92);
 }
 
+.card-checkbox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
 .status-overlay {
   position: absolute;
   inset: 0;
@@ -795,7 +829,7 @@ const closeDetailsDrawer = () => {
   margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .stat-item {
@@ -804,69 +838,106 @@ const closeDetailsDrawer = () => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 10px 6px;
+  padding: 14px 8px;
   border: 1px solid var(--glass-border);
-  border-radius: 10px;
+  border-radius: 14px;
   background: var(--bg-secondary);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .stat-icon {
-  font-size: 18px;
-  color: var(--text-primary);
+  font-size: 20px;
+}
+
+.stat-item:nth-child(1) .stat-icon {
+  color: #1677ff;
+}
+
+.stat-item:nth-child(2) .stat-icon {
+  color: #fa8c16;
+}
+
+.stat-item:nth-child(3) .stat-icon {
+  color: #52c41a;
+}
+
+.stat-item:nth-child(4) .stat-icon {
+  color: #d48806;
 }
 
 .stat-value {
-  margin-top: 5px;
-  font-size: 13px;
-  font-weight: 600;
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .stat-label {
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 .param-grid {
   margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .param-item {
   border: 1px solid var(--glass-border);
-  border-radius: 10px;
-  padding: 10px;
-  background: #f5f5f5;
+  border-radius: 14px;
+  padding: 14px;
+  background: linear-gradient(145deg, var(--bg-secondary), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.param-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .param-item-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .param-icon {
-  font-size: 14px;
-  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 15px;
 }
 
 .param-label {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
+  font-weight: 500;
 }
 
 .param-value {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary);
   word-break: break-word;
 }
 
 .param-value-emphasis {
-  color: #d9363e;
+  color: #f5222d;
+  font-weight: 600;
 }
 
 /* Responsive */

@@ -9,34 +9,38 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { public: true }
+      meta: { public: true, title: '登录' }
     },
-    { 
+    {
       path: '/',
       name: 'main',
       component: MainView,
 
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: '首页' },
       children: [
         {
           path: '',
           name: 'home',
-          component: () => import('../views/HomeView.vue')
+          component: () => import('../views/HomeView.vue'),
+          meta: { title: '首页' }
         },
         {
           path: 'projects',
           name: 'projects',
-          component: () => import('../views/ProjectsView.vue')
+          component: () => import('../views/ProjectsView.vue'),
+          meta: { title: '项目' }
         },
         {
           path: 'explore',
           name: 'explore',
-          component: () => import('../views/ExploreView.vue')
+          component: () => import('../views/ExploreView.vue'),
+          meta: { title: '探索' }
         },
         {
           path: 'explore4d',
           name: 'explore4d',
-          component: () => import('../views/Explore4DView.vue')
+          component: () => import('../views/Explore4DView.vue'),
+          meta: { title: '4D探索' }
         },
         {
           path: 'tools',
@@ -45,34 +49,40 @@ const router = createRouter({
             {
               path: 'profile',
               name: 'profile',
-              component: () => import('../views/ProfileView.vue')
+              component: () => import('../views/ProfileView.vue'),
+              meta: { title: '个人资料' }
             }
             ,{
               path: 'settings',
               name: 'settings',
-              component: () => import('../views/SettingsView.vue')
+              component: () => import('../views/SettingsView.vue'),
+              meta: { title: '设置' }
             }
             ,
             {
               path: 'api',
               name: 'api',
-              component: () => import('../views/ApiView.vue')
+              component: () => import('../views/ApiView.vue'),
+              meta: { title: 'API' }
             },
             {
               path: 'developer',
               name: 'developer',
+              meta: { title: '开发者中心' },
               component: () => import('../views/DeveloperView.vue')
             }
             ,
             {
               path: 'tutorial',
               name: 'tutorial',
-              component: () => import('../views/TutorialView.vue')
+              component: () => import('../views/TutorialView.vue'),
+              meta: { title: '教程' }
             }
             ,{
               path: 'feedback',
               name: 'feedback',
-              component: () => import('../views/FeedbackView.vue')
+              component: () => import('../views/FeedbackView.vue'),
+              meta: { title: '反馈' }
             }
           ]
         }
@@ -81,42 +91,71 @@ const router = createRouter({
     {
       path: '/create',
       component: RouterView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: '创建' },
       children: [
         {
           path: '',
           redirect: '/create/3dgs-scan'
         },
         {
+          path: 'mesh-scan',
+          name: 'create-mesh-scan',
+          component: () => import('../views/CreateMeshProjectView.vue'),
+          meta: { title: 'Mesh扫描' }
+        },
+        {
           path: '3dgs-scan',
           name: 'create-3dgs-scan',
-          component: () => import('../views/CreateProjectView.vue')
+          component: () => import('../views/CreateProjectView.vue'),
+          meta: { title: '3DGS扫描' }
         }
       ]
+    },
+    {
+      path: '/share/link/:taskId',
+      name: 'ShareLinkRenderTask',
+      component: () => import('../views/ShareLinkRenderTask.vue'),
+      meta: { requiresAuth: false, title: '分享链接' },
+      props: true
     },
     {
       path: '/model/:taskId',
       name: 'model-detail',
       component: () => import('../views/RenderTask.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: '模型详情' },
       props: true
     },
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/login'
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue'),
+      meta: { public: true, title: '页面不存在' }
     }
   ]
 })
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  // 直接从 localStorage 检查登录状态，避免 Pinia 未初始化问题
+  // 设置页面标题
+  const pageTitle = to.meta.title as string
+  if (pageTitle) {
+    document.title = ` MetaST -${pageTitle}`
+  } else {
+    document.title = 'MetaST'
+  }
+
   const token = localStorage.getItem('token')
   const isAuthenticated = !!token
 
-  // 如果访问的是公开页面（如登录页）且已登录，则跳转到首页
-  if (to.meta.public && isAuthenticated) {
+  if(to.path === '/login' && isAuthenticated) {
+    // 如果已经登录但访问登录页，重定向到主页
+    console.log("已登录，重定向到主页")
     next('/')
+    return
+  }
+
+  if (to.meta.public) {
+    next()
     return
   }
 

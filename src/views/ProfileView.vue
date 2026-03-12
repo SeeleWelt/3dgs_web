@@ -12,6 +12,7 @@
                 <a-image
                   :src="avatarSrc"
                   class="avatar-image"
+                  placeholder
                   fallback="data:image/png;base64,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"
                   preview
                   />
@@ -37,19 +38,38 @@
             <!-- 基础信息 -->
             <div class="user-basic-info">
               <h2 class="username">{{ user?.username || t('profile.anonymous') }}</h2>
-              
-              <!-- 昵称显示，仅展示 -->
-              <div class="nickname-wrapper">
-                <span class="nickname-text">
-                  {{ user?.nickname || t('profile.noNickname') }}
+
+              <!-- 昵称显示 -->
+              <div class="nickname-row">
+                <span class="nickname-badge">
+                  <UserOutlined />
+                  <span>{{ user?.nickname || t('profile.noNickname') }}</span>
                 </span>
-                <button 
-                  class="nickname-edit-btn" 
-                  @click="toggleEditName" 
+                <button
+                  class="nickname-edit-btn"
+                  @click="toggleEditName"
                   :title="t('profile.editNickname')"
                 >
                   <EditOutlined />
                 </button>
+              </div>
+
+              <!-- 登录时间 -->
+              <div class="login-time-row" v-if="user?.loginTime">
+                <ClockCircleOutlined />
+                <span>上次登录: {{ formatLoginTime(user.loginTime) }}</span>
+              </div>
+            </div>
+
+            <!-- 右侧算力点 -->
+            <div class="user-right-section">
+              <div class="points-display" @click="showPointsLogs = true">
+                  <svg t="1773227143569" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3763" width="48" height="48"><path d="M512 0c282.763636 0 512 229.236364 512 512s-229.236364 512-512 512S0 794.763636 0 512 229.236364 0 512 0z m208.011636 209.454545H460.194909a5.306182 5.306182 0 0 0-4.654545 3.188364L279.970909 563.502545a7.168 7.168 0 0 0 0 6.237091 5.352727 5.352727 0 0 0 4.654546 3.141819h118.202181l-60.625454 280.41309c-1.303273 6.097455 5.073455 10.379636 9.006545 6.027637l391.819637-432.663273c1.629091-1.861818 2.094545-4.491636 1.28-6.842182-0.814545-2.373818-2.816-3.909818-5.026909-3.909818h-149.248l134.213818-196.235636a7.144727 7.144727 0 0 0 0.651636-6.632728 5.492364 5.492364 0 0 0-4.910545-3.584z" fill="#F1BA5A" p-id="3764"></path></svg>
+                <div class="points-info">
+                  <span class="points-value">{{ currentPoints }}</span>
+                  <span class="points-label">算力点</span>
+                </div>
+                <RightOutlined class="points-arrow" />
               </div>
             </div>
           </div>
@@ -66,7 +86,7 @@
               <div class="stats-list">
                 <div class="stat-item">
                   <div class="stat-label">{{ t('profile.lastLogin') }}</div>
-                  <div class="stat-value">{{ user?.logoutTime || '-' }}</div>
+                  <div class="stat-value">{{ formatLoginTime(user?.loginTime || '') || '-' }}</div>
                 </div>
                 <div class="stat-item">
                   <div class="stat-label">{{ t('profile.accountStatus') }}</div>
@@ -322,23 +342,64 @@
       :image-size="cropperImageSize"
       @crop="handleCropResult"
     />
+
+    <!-- 算力点日志弹窗 -->
+    <PointsLogs v-model:open="showPointsLogs" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '../stores/user'
+import { usePointsStore } from '@/stores/points'
 import { message } from 'ant-design-vue'
 import type { FormInstance } from 'ant-design-vue'
-import { EditOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, UserOutlined, ClockCircleOutlined, RightOutlined } from '@ant-design/icons-vue'
 import SmsCodeInput from '../components/SmsCodeInput.vue'
 import EmailInputCode from '../components/EmailInputCode.vue'
 import AvatarCropper from '../components/AvatarCropper.vue'
+import PointsLogs from '../components/PointsLogs.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()
+const pointsStore = usePointsStore()
 const user = computed(() => userStore.userInfo || null)
+
+//算力点相关
+const showPointsLogs = ref(false)
+const currentPoints = computed(() => pointsStore.current_points)
+
+onMounted(() => {
+  try {
+    pointsStore.getPoints()
+    pointsStore.getPointsAllLogs()
+  } catch (error) {
+    console.error('获取算力点信息失败:', error)
+  }
+})
+
+// 格式化登录时间
+const formatLoginTime = (time: string) => {
+  if (!time) return '-'
+  const date = new Date(time)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return '刚刚'
+  if (diffMins < 60) return `${diffMins}分钟前`
+  if (diffHours < 24) return `${diffHours}小时前`
+  if (diffDays < 7) return `${diffDays}天前`
+
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${month}-${day} ${hours}:${minutes}`
+}
 
 const editingName = ref(false)
 const nameValue = ref('')
@@ -736,45 +797,21 @@ onBeforeUnmount(() => {
   margin: 0 auto;
 }
 
-/* 顶部头部卡片 - 现代化渐变背景 */
+/* 顶部头部卡片 */
 .profile-header-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f97316 100%);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-  padding: 40px;
-  color: white;
+  background: var(--glass-surface);
+  border-radius: 16px;
+  padding: 24px 32px;
   margin-bottom: 24px;
-  border: none;
+  border: 1px solid var(--glass-border);
   position: relative;
-  overflow: hidden;
-}
-
-.profile-header-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.profile-header-card::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-  border-radius: 50%;
+  animation: slideUp 0.5s ease backwards;
 }
 
 .profile-header-content {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 20px;
   position: relative;
   z-index: 1;
 }
@@ -785,23 +822,23 @@ onBeforeUnmount(() => {
   gap: 32px;
 }
 
-/* 头像区域 - 带玻璃光效 */
+/* 头像区域 */
 .avatar-section {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 88px;
+  height: 88px;
   flex-shrink: 0;
+  animation: bounceIn 0.6s ease backwards;
 }
 
 .avatar-wrapper {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  border: 3px solid var(--accent-blue);
+  transition: all 0.3s ease;
 }
 
 .avatar-wrapper:hover {
@@ -809,8 +846,8 @@ onBeforeUnmount(() => {
 }
 
 .avatar-image {
-  width: 120px;
-  height: 120px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -831,23 +868,22 @@ onBeforeUnmount(() => {
   position: absolute;
   right: -4px;
   bottom: -4px;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  border: 3px solid white;
+  background: var(--accent-blue);
+  border: 2px solid var(--glass-surface);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   color: white;
-  box-shadow: 0 4px 12px rgba(238, 90, 36, 0.4);
 }
 
 .avatar-edit-btn:hover {
-  background: linear-gradient(135deg, #ff4757, #ff6b6b);
   transform: scale(1.1);
+  background: var(--accent-purple);
 }
 
 .avatar-file-input {
@@ -858,65 +894,136 @@ onBeforeUnmount(() => {
 .user-basic-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.1s;
+}
+
+/* 右侧算力点区域 */
+.user-right-section {
+  display: flex;
+  align-items: center;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.2s;
+}
+
+/* 昵称行 */
+.nickname-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nickname-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--glass-surface-hover);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+}
+
+.nickname-badge :deep(.anticon) {
+  font-size: 12px;
+}
+
+/* 登录时间 */
+.login-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.login-time-row :deep(.anticon) {
+  font-size: 13px;
 }
 
 .username {
-  font-size: 32px;
-  font-weight: 700;
-  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  letter-spacing: -0.5px;
 }
 
-/* 昵称编辑区域 */
-.nickname-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nickname-text {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.15);
-  padding: 6px 14px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-}
-
-.nickname-edit-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nickname-input {
-  flex: 1;
-  min-width: 200px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-}
-
+/* 昵称编辑按钮 */
 .nickname-edit-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
   cursor: pointer;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 10px;
-  transition: all 0.3s ease;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
 }
 
 .nickname-edit-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: white;
+}
+
+/* 算力点显示 */
+.points-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.15));
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.points-display:hover {
+  transform: translateY(-2px);
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.points-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.points-circle svg {
+  color: white;
+}
+
+.points-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.points-arrow {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.points-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.points-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
 }
 
 /* 主体内容网格 */
@@ -926,38 +1033,34 @@ onBeforeUnmount(() => {
 
 .profile-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
 }
 
 /* 左侧侧边栏 */
 .profile-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* 卡片通用样式 - 玻璃拟态 */
+/* 卡片通用样式 */
 :deep(.ant-card) {
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  border-radius: 14px;
+  transition: all 0.25s ease;
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(10px);
 }
 
 :deep(.ant-card):hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  border-color: var(--glass-border-hover);
   transform: translateY(-2px);
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 20px 0;
-  padding-bottom: 14px;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--glass-border);
   position: relative;
 }
@@ -967,88 +1070,88 @@ onBeforeUnmount(() => {
   position: absolute;
   bottom: -1px;
   left: 0;
-  width: 36px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent-blue, #0072ff), #764ba2);
-  border-radius: 2px;
+  width: 24px;
+  height: 2px;
+  background: var(--accent-blue);
+  border-radius: 1px;
 }
 
 /* 统计卡片 */
 .stats-card {
-  padding: 24px;
-  background: var(--glass-surface);
+  padding: 20px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.15s;
 }
 
 .stats-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px;
+  gap: 4px;
+  padding: 10px 12px;
   background: var(--glass-surface-hover);
-  border-radius: 12px;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .stat-item:hover {
-  background: var(--glass-surface-hover);
+  background: var(--glass-border);
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .stat-value {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-primary);
   font-weight: 600;
 }
 
-/* 侧边栏操作按钮 */
+/* 账户安全卡片 */
+.security-card {
+  padding: 20px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.25s;
+}
+
 .security-actions {
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid var(--glass-border);
 }
 
 .change-pwd-btn {
-  background: linear-gradient(135deg, var(--accent-blue, #0072ff), #764ba2) !important;
+  background: var(--accent-blue) !important;
   border: none !important;
-  font-weight: 600 !important;
-  height: 42px !important;
-  border-radius: 12px !important;
-  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  height: 40px !important;
+  border-radius: 10px !important;
 }
 
 .change-pwd-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 114, 255, 0.35);
-}
-
-/* 账户安全卡片 */
-.security-card {
-  padding: 24px;
-  background: var(--glass-surface);
+  background: var(--accent-purple) !important;
 }
 
 /* 右侧内容区域 */
 .profile-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 /* 详细信息卡片 */
 .details-card {
-  padding: 24px;
-  background: var(--glass-surface);
+  padding: 20px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.2s;
 }
 
 .details-list {
@@ -1058,18 +1161,18 @@ onBeforeUnmount(() => {
 }
 
 .detail-item {
-  padding: 16px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--glass-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .detail-item:hover {
   background: var(--glass-surface-hover);
-  margin: 0 -12px;
-  padding: 16px 12px;
+  margin: 0 -8px;
+  padding: 14px 8px;
   border-radius: 8px;
 }
 
@@ -1078,13 +1181,13 @@ onBeforeUnmount(() => {
 }
 
 .detail-label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .detail-value {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-primary);
   font-weight: 500;
 }
@@ -1092,12 +1195,20 @@ onBeforeUnmount(() => {
 .bind-phone-link {
   padding: 0;
   height: auto;
-  color: var(--accent-blue, #0072ff);
+  color: var(--accent-blue);
   font-weight: 500;
+  font-size: 13px;
 }
 
 .bind-phone-link:hover {
-  color: #764ba2;
+  color: var(--accent-purple);
+}
+
+/* 账户设置卡片 */
+.settings-card {
+  padding: 20px;
+  animation: slideUp 0.5s ease backwards;
+  animation-delay: 0.3s;
 }
 
 /* 绑定手机/邮箱弹窗 */
@@ -1155,7 +1266,7 @@ onBeforeUnmount(() => {
 }
 
 .back-btn {
-  color: var(--accent-blue, #0072ff);
+  color: var(--accent-blue);
   cursor: pointer;
   font-size: 13px;
 }
@@ -1175,7 +1286,7 @@ onBeforeUnmount(() => {
 }
 
 .resend-link {
-  color: var(--accent-blue, #0072ff);
+  color: var(--accent-blue);
   cursor: pointer;
   font-size: 13px;
 }
@@ -1206,7 +1317,7 @@ onBeforeUnmount(() => {
 
 .email-code-back {
   font-size: 12px;
-  color: var(--accent-blue, #0072ff);
+  color: var(--accent-blue);
   cursor: pointer;
 }
 
@@ -1214,12 +1325,6 @@ onBeforeUnmount(() => {
   margin: 0 0 16px;
   font-size: 12px;
   color: var(--text-tertiary);
-}
-
-/* 账户设置卡片 */
-.settings-card {
-  padding: 24px;
-  background: var(--glass-surface);
 }
 
 /* 修改密码弹窗样式 */
@@ -1231,11 +1336,37 @@ onBeforeUnmount(() => {
   margin-bottom: 20px;
 }
 
+/* 动画定义 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* 响应式适配 */
 @media (max-width: 992px) {
   .profile-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
 
   .profile-sidebar {
@@ -1253,17 +1384,17 @@ onBeforeUnmount(() => {
   }
 
   .profile-header-card {
-    padding: 28px 20px;
+    padding: 20px;
   }
 
   .profile-identity-row {
     flex-direction: column;
     text-align: center;
-    gap: 20px;
+    gap: 16px;
   }
 
   .username {
-    font-size: 26px;
+    font-size: 22px;
   }
 
   .nickname-wrapper {
@@ -1278,38 +1409,38 @@ onBeforeUnmount(() => {
 
   .detail-item {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     align-items: flex-start;
   }
 }
 
 @media (max-width: 480px) {
   .profile-page {
-    padding: 12px 8px;
+    padding: 12px;
   }
 
   .profile-header-card {
-    padding: 20px 16px;
-    border-radius: 16px;
+    padding: 16px;
+    border-radius: 14px;
   }
 
   .username {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .avatar-section {
-    width: 100px;
-    height: 100px;
+    width: 72px;
+    height: 72px;
   }
 
   .avatar-wrapper {
-    width: 100px;
-    height: 100px;
+    width: 72px;
+    height: 72px;
   }
 
   .avatar-image {
-    width: 100px;
-    height: 100px;
+    width: 72px;
+    height: 72px;
   }
 }
 </style>

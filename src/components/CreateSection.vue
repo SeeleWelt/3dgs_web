@@ -90,9 +90,11 @@ const cards = computed<CreateCardData[]>(() => [
 ])
 
 const handleClick = (id: string) => {
-  if(id === '3dgs-scan') {
+  if (id === '3dgs-scan') {
     router.push('/create/3dgs-scan')
-  } else if(id === 'ai-scan' || id === '4dgs-scan') {
+  } else if (id === 'ai-scan') {
+    router.push('/create/mesh-scan')
+  } else if (id === '4dgs-scan') {
     message.info('功能未实现')
   }
 }

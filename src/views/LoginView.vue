@@ -29,7 +29,7 @@
     </div>
 
     <!-- Right Side - Auth Forms -->
-    <div class="auth-container" >
+    <div class="auth-container" :class="{ 'is-loading': isLoading || phoneAuthLoading }">
       
       <!-- Back Button (for register/login forms) -->
       <button v-if="currentView !== 'welcome'" class="back-btn" @click="goBack">
@@ -72,13 +72,20 @@
           </div>
 
           <SocialLogin
-            @google-success="handleGoogleCredential"
+            :disabled="isLoading"
+            :agree="acceptedTerms"
+            @show-agreeTerms="handleShowAgreeTerms"
+            @google-success="handleGoogleCredentialWrapper"
             @google-error="handleGoogleError"
           />
 
-          <p class="terms">
-            {{ t('login.terms') }} <a href="#">{{ t('login.termsLink') }}</a> {{ t('login.and') }} <a href="#">{{ t('login.privacyLink') }}</a>
-          </p>
+          <div class="terms-checkbox">
+            <a-checkbox v-model:checked="acceptedTerms">
+              <span class="terms-text">
+                {{ t('login.terms') }} <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> {{ t('login.and') }} <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+              </span>
+            </a-checkbox>
+          </div>
         </div>
 
         <!-- Register View -->
@@ -145,9 +152,16 @@
               </a-form-item>
           </a-form>
 
-          <button v-if="!isEmailCodeStep" class="btn btn-primary btn-full" :disabled="isLoading" @click="handleRegister">
-            {{ isLoading ? '发送中...' : '发送邮箱验证码' }}
-          </button>
+          <a-button
+            v-if="!isEmailCodeStep"
+            type="primary"
+            class="btn btn-full"
+            :loading="isLoading"
+            @click="handleRegister"
+          >
+            发送邮箱验证码
+          </a-button>
+
 
           <div v-if="isEmailCodeStep" class="email-code-section">
             <div class="email-code-head">
@@ -173,9 +187,20 @@
           </div>
 
           <SocialLogin
-            @google-success="handleGoogleCredential"
+            :disabled="isLoading"
+            :agree="acceptedTerms"
+            @show-agreeTerms="handleShowAgreeTerms"
+            @google-success="handleGoogleCredentialWrapper"
             @google-error="handleGoogleError"
           />
+
+          <div v-if="!isEmailCodeStep" class="terms-checkbox">
+            <a-checkbox v-model:checked="acceptedTerms">
+              <span class="terms-text">
+                我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+              </span>
+            </a-checkbox>
+          </div>
         </div>
 
         <!-- Login View -->
@@ -226,9 +251,14 @@
             </a-form-item>
           </a-form>
 
-          <button class="btn btn-primary btn-full" :disabled="isLoading" @click="handleLogin">
-            {{ isLoading ? t('login.loggingIn') : t('login.login') }}
-          </button>
+          <a-button
+            type="primary"
+            class="btn btn-full"
+            :loading="isLoading"
+            @click="handleLogin"
+          >
+            {{ t('login.login') }}
+          </a-button>
 
           <p class="switch-text">
             {{ t('login.noAccount') }}<a href="#" @click.prevent="currentView = 'register'">{{ t('login.register') }}</a>
@@ -239,25 +269,51 @@
           </div>
 
           <SocialLogin
-            @google-success="handleGoogleCredential"
+            :disabled="isLoading"
+            :agree="acceptedTerms"
+            @show-agreeTerms="handleShowAgreeTerms"
+            @google-success="handleGoogleCredentialWrapper"
             @google-error="handleGoogleError"
           />
+          
+          <div class="terms-checkbox">
+            <a-checkbox v-model:checked="acceptedTerms">
+              <span class="terms-text">
+                我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+              </span>
+            </a-checkbox>
+          </div>
         </div>
 
         <!-- Phone Auth View -->
         <div v-if="currentView === 'phoneAuth'" class="auth-view form-view">
           <h2 class="form-title">{{ t('login.phoneAuthTitle') }}</h2>
           <p class="form-subtitle">{{ t('login.phoneAuthSubtitle') }}</p>
-          <PhoneAuth />
+          <PhoneAuth
+            ref="phoneAuthRef"
+            :agree="acceptedTerms"
+            @require-agree="checkAndProceedPhoneAuth"
+          />
 
           <div class="divider">
             <span>{{ t('login.or') }}</span>
           </div>
 
           <SocialLogin
-            @google-success="handleGoogleCredential"
+            :disabled="isLoading || phoneAuthLoading"
+            :agree="acceptedTerms"
+            @show-agreeTerms="handleShowAgreeTerms"
+            @google-success="handleGoogleCredentialWrapper"
             @google-error="handleGoogleError"
           />
+          
+          <div class="terms-checkbox">
+            <a-checkbox v-model:checked="acceptedTerms">
+              <span class="terms-text">
+                我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+              </span>
+            </a-checkbox>
+          </div>
         </div>  
       </div>
 
@@ -265,6 +321,29 @@
         <WechatQrLogin />
       </div>
       </div>
+
+    <!-- 服务条款同意弹窗 -->
+    <a-modal
+      v-model:open="showTermsModal"
+      title="服务条款与隐私政策"
+      :closable="false"
+      centered
+    >
+      <div class="terms-modal-content">
+        <p>在使用本服务前，请先阅读并同意以下条款：</p>
+        <div class="terms-links">
+          <a href="#" @click.prevent>{{ t('login.termsLink') || '服务条款' }}</a>
+          <span>和</span>
+          <a href="#" @click.prevent>{{ t('login.privacyLink') || '隐私政策' }}</a>
+        </div>
+      </div>
+      <template #footer>
+        <div class="terms-modal-footer">
+          <a-button @click="cancelTerms">不同意</a-button>
+          <a-button type="primary" @click="confirmTerms">同意</a-button>
+        </div>
+      </template>
+    </a-modal>
 
 
     </div>
@@ -305,9 +384,44 @@ const pendingRegister = ref<{ email: string; password: string }>({ email: '', pa
 // const googleAuthUrl = 'https://localhost:6026/api/auth/google/verify'
 const googleAuthUrl = 'https://szgm.tenyunn.com:50585/api/auth/google/verify'
 
+// 服务条款同意状态
+const acceptedTerms = ref(false)
+const pendingLoginAction = ref<(() => void) | null>(null)
+const showTermsModal = ref(false)
+
+// 检查是否同意服务条款
+const checkAndProceed = (action: (...args: any[]) => void, ...args: any[]) => {
+  console.log("是否同意",acceptedTerms.value);
+  if (acceptedTerms.value) {
+    action(...args)
+  } else {
+    pendingLoginAction.value = () => action(...args)
+    showTermsModal.value = true
+  }
+}
+
+// 确认服务条款
+const confirmTerms = () => {
+  acceptedTerms.value = true
+  showTermsModal.value = false
+  if (pendingLoginAction.value) {
+    pendingLoginAction.value()
+    pendingLoginAction.value = null
+  }
+}
+
+// 取消服务条款
+const cancelTerms = () => {
+  showTermsModal.value = false
+  pendingLoginAction.value = null
+}
+
 // 表单引用
 const registerFormRef = ref()
 const loginFormRef = ref()
+const phoneAuthRef = ref()
+
+const phoneAuthLoading = computed(() => phoneAuthRef.value?.isLoading || false)
 
 // 注册表单数据
 const registerForm = ref({
@@ -445,6 +559,11 @@ const handleLogin = async () => {
     return
   }
 
+  // 表单验证通过后，检查服务条款
+  checkAndProceed(doLogin)
+}
+
+const doLogin = async () => {
   isLoading.value = true
   try {
     const success = await userStore.emailLogin(loginForm.value.email, loginForm.value.password)
@@ -467,16 +586,9 @@ const handleRegister = async () => {
       password: values.password
     }
     emailCode.value = ''
-    isEmailCodeStep.value = true
 
-    await ApiServer.request({
-      url: API.SEND_EMAIL,
-      method: 'post',
-      data: {
-        email: values.email
-      }
-    })
-    message.success('验证码已发送，请查收邮箱')
+    // 表单验证通过后，检查服务条款
+    checkAndProceed(doSendEmailCode, values)
   } catch (error) {
     const err: any = error
 
@@ -492,6 +604,33 @@ const handleRegister = async () => {
     } else {
       message.error(err?.message || '验证码发送失败，请稍后重试')
     }
+  }
+}
+
+const doSendEmailCode = async (values: { email: string; password: string }) => {
+  isLoading.value = true
+  try {
+    await ApiServer.request({
+      url: API.SEND_EMAIL,
+      method: 'post',
+      data: {
+        email: values.email
+      }
+    })
+    isEmailCodeStep.value = true
+    message.success('验证码已发送，请查收邮箱')
+  } catch (error) {
+    const err: any = error
+    const status = getStatusCode(err)
+    if (status === 400) {
+      message.error('邮件格式错误')
+    } else if (status === 429) {
+      message.error('发送邮件过于频繁')
+    } else {
+      message.error(err?.message || '验证码发送失败，请稍后重试')
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -536,7 +675,7 @@ const backToEmailForm = () => {
 
 const persistGoogleUser = (payload: { token?: string; user?: Record<string, any> }) => {
   const token = payload?.token
-  const user = { ...(payload?.user || { headimg: payload.headimg, nickname: payload.nickname, point: payload.point, username: payload.username }), ...(token ? { token } : {}) }
+  const user = { ...(payload?.user || { headimg: payload.user?.headimg, nickname: payload.user?.nickname, point: payload.user?.point, username: payload.user?.username }), ...(token ? { token } : {}) }
 
   if (token) {
     localStorage.setItem('token', token)
@@ -573,9 +712,27 @@ const handleGoogleCredential = async ({ credential }: { credential: string }) =>
   }
 }
 
+const handleShowAgreeTerms = () => {
+  console.log("用户未同意服务条款，显示同意弹窗");
+  showTermsModal.value = true
+  
+}
+
+// Google登录包装器，用于服务条款检查
+const handleGoogleCredentialWrapper = (data: { credential: string }) => {
+  checkAndProceed(handleGoogleCredential, data)
+}
+
 const handleGoogleError = ({ message: errorMessage }: { message: string }) => {
   if (errorMessage) {
     message.error(errorMessage)
+  }
+}
+
+// 手机登录需要同意服务条款
+const checkAndProceedPhoneAuth = () => {
+  if (!acceptedTerms.value) {
+    showTermsModal.value = true
   }
 }
 
@@ -692,8 +849,19 @@ onUnmounted(() => {
   height: 500px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+}
+
+.auth-container.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(1px);
+  border-radius: 12px;
+  z-index: 100;
 }
 
 /* 半角图片核心样式 */
@@ -924,6 +1092,41 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
+/* Terms Checkbox */
+.terms-checkbox {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.terms-checkbox :deep(.ant-checkbox-wrapper) {
+  font-size: 12px;
+  color: #666;
+  user-select: none;
+}
+
+.terms-checkbox :deep(.ant-checkbox-inner) {
+  border-radius: 4px;
+  border-color: #d9d9d9;
+}
+
+
+.terms-text {
+  color: #666;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.terms-text a {
+  color: #00c6ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-text a:hover {
+  text-decoration: underline;
+}
+
 /* Form View */
 .form-view {
   padding-top: 20px;
@@ -987,6 +1190,10 @@ onUnmounted(() => {
   color: #333;
 }
 
+.auth-qr{
+  margin: 0 auto;
+}
+
 /* 适配 Ant Design Vue 输入框样式 */
 :deep(.ant-input),
 :deep(.ant-input-password) {
@@ -999,6 +1206,9 @@ onUnmounted(() => {
   font-size: 14px;
   outline: none;
   transition: all 0.3s ease;
+}
+:deep(.ant-btn){
+  height:auto
 }
 
 :deep(.email-autocomplete) {

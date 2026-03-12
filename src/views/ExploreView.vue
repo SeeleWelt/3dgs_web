@@ -6,7 +6,7 @@
         <h2 class="section-title">{{ t('explore.ai3dModels') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
-      <div class="models-grid">
+      <div class="models-grid" v-if="!isLoading">
         <ModelCard
           v-for="model in MeshModel"
           :key="model.taskId"
@@ -17,6 +17,13 @@
           @task-deleted="handleResumeSuccess"
         />
       </div>
+      <div v-else class="loading-grid">
+        <div v-for="i in meshSkeletonCount" :key="i" class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-title"></div>
+          <div class="skeleton-desc"></div>
+        </div>
+      </div>
     </section>
 
     <!-- 3DGS Models Section -->
@@ -25,7 +32,7 @@
         <h2 class="section-title">{{ t('explore.gs3dTitle') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
-      <div class="models-grid">
+      <div class="models-grid" v-if="!isLoading">
         <ModelCard
           v-for="model in _3DModel"
           :key="model.taskId"
@@ -36,7 +43,14 @@
           @task-deleted="handleResumeSuccess"
         />
       </div>
-      <div class="pagination-wrap" v-if="gaussianTotal > tasksParams.pageSize">
+      <div v-else class="loading-grid">
+        <div v-for="i in gaussianSkeletonCount" :key="i" class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-title"></div>
+          <div class="skeleton-desc"></div>
+        </div>
+      </div>
+      <div class="pagination-wrap" v-if="!isLoading && gaussianTotal > (tasksParams.pageSize || 12)">
         <a-pagination
           :current="tasksParams.page"
           :page-size="tasksParams.pageSize"
@@ -144,6 +158,13 @@ const MeshModel = ref<Model[]>([
   },
 ])
 
+// 加载状态
+const isLoading = ref(false)
+
+// 骨架屏数量
+const meshSkeletonCount = 12
+const gaussianSkeletonCount = 12
+
 const _3DModel = ref<Model[]>([])
 const gaussianTotal = ref(0)
 const gaussianSectionRef = ref<HTMLElement | null>(null)
@@ -154,13 +175,18 @@ const tasksParams = ref<GetTaskListParams>({
 })  
 
 const fetchGaussianModels = async () => {
-  const tasks = await ApiServer.getTaskList(tasksParams.value)
-  _3DModel.value = tasks.map(task => ({
-    ...task,
-    isNew: task.viewCount === 0,
-    type: 'gaussian'
-  }))
-  gaussianTotal.value = ApiServer.totalTasks || 0
+  isLoading.value = true
+  try {
+    const tasks = await ApiServer.getTaskList(tasksParams.value)
+    _3DModel.value = tasks.map(task => ({
+      ...task,
+      isNew: task.viewCount === 0,
+      type: 'gaussian'
+    }))
+    gaussianTotal.value = ApiServer.totalTasks || 0
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const handleGaussianPageChange = async (page: number) => {
@@ -171,7 +197,8 @@ const handleGaussianPageChange = async (page: number) => {
 }
 
 const openModelDetail = (model: Model) => {
-  router.push(`/model/${model.taskId}`)
+  const routeData = router.resolve(`/model/${model.taskId}`)
+   window.open(routeData.href, '_blank')
 }
 
 const handleResumeSuccess = async () => {
@@ -237,6 +264,49 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
+}
+
+/* Loading skeleton */
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.skeleton-card {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 4/5;
+  background: var(--glass-border);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.skeleton-title {
+  height: 14px;
+  width: 70%;
+  background: var(--glass-border);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-desc {
+  height: 12px;
+  width: 50%;
+  background: var(--glass-border);
+  border-radius: 4px;
 }
 
 .pagination-wrap {

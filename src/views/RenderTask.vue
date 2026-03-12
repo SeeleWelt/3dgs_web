@@ -1,5 +1,9 @@
 <template>
-  <div class="render-task-container" ref="renderTaskContainerRef">
+  <div
+    class="render-task-container"
+    ref="renderTaskContainerRef"
+    @mousemove="handleMouseMove"
+  >
     <div class="core-content">
       <div
         ref="viewerContainer"
@@ -7,7 +11,7 @@
         :style="{ backgroundColor: viewerControls.backgroundColor }"
       >
         <canvas id="application-canvas" ref="canvasRef" @keydown="handleEscKey" tabindex="0"></canvas>
-        
+
         <div v-if="isViewerLoading" class="loading-overlay">
           <div class="loading-spinner" :class="{ 'success': loading_status === 'success', 'fail': loading_status === 'fail' }"></div>
           <p class="loading-text">
@@ -17,7 +21,7 @@
           </p>
           <button v-if="loading_status === 'fail'" class="retry-btn" @click="retryLoadModel">重试加载</button>
         </div>
-        <!-- 视频录制/编码中遮罩提示（合并原录制提示，增加编码状态） -->
+        <!-- 视频录制/编码中遮罩提示 -->
         <div v-if="isRecordingVideo || isEncodingVideo" class="loading-overlay">
           <div class="loading-spinner"></div>
           <p class="loading-text">
@@ -28,306 +32,309 @@
       </div>
     </div>
 
-    <div v-if="showContorlWidget && rotation === 0" class="feature-control-bar" @click.stop>
-      <div class="feature-control-item">
-        <a-tooltip title="特效选项" placement="left">
-          <a-button class="feature-btn" :type="viewerControls.showInfo ? 'primary' : 'default'" size="middle" :style="viewerControls.showInfo ? 'color:white;' : 'color:#1d1d1f;'" @click.stop="toggleInfoPanel($event)">
-            <template #icon><AppstoreOutlined /></template>特效
-          </a-button>
-        </a-tooltip>
-        <div v-if="viewerControls.showInfo" class="feature-popover-stack" @click.stop>
-          <div class="feature-bubble effect-bubble">
-            <div class="effect-scroll-container">
-              <div class="effect-grid" ref="effectListRef">
-                <button
-                  class="effect-card"
-                  type="button"
-                  v-for="effect in effectOptions"
-                  :key="`effect-top-${effect.id}`"
-                  @click="createEffect(effect.id)"
-                >
-                  <img
-                    class="effect-card-thumb"
-                    :src="effect.src"
-                    :alt="effect.name"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div class="effect-card-title">{{ effect.name }}</div>
-                  <div class="effect-card-desc">点击立即应用</div>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="bubble-actions">
-            <a-button type="default" @click.stop="closeInfoPanel">取消</a-button>
-          </div>
-        </div>
+    <!-- 特效面板 - 移到左上角 -->
+    <div v-if="viewerControls.showInfo && showContorlWidget" class="feature-panel top-left-panel" :class="{ visible: showControls }" @click.stop>
+      <div class="panel-header">
+        <span>特效选项</span>
+        <a-button type="text" size="small" @click.stop="closeInfoPanel">
+          <template #icon><CloseOutlined /></template>
+        </a-button>
       </div>
-
-      <div class="feature-control-item">
-        <a-tooltip title="切换轨道/飞行模式" placement="left">
-          <a-button class="feature-btn" :type="viewerControls.isOrbitMode ? 'default' : 'primary'" size="middle" :style="viewerControls.isOrbitMode ? 'color:#1d1d1f;' : 'color:white;'" @click.stop="toggleMeshCursor($event)">
-            <template #icon><AimOutlined /></template>{{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}
-          </a-button>
-        </a-tooltip>
-      </div>
-
-      <div class="feature-control-item">
-        <a-tooltip title="参数设置" placement="left">
-          <a-button class="feature-btn" :type="isSettingsMenuOpen ? 'primary' : 'default'" size="middle" :disabled="isRecordingVideo || isEncodingVideo" :style="isSettingsMenuOpen ? 'color:white;' : 'color:#1d1d1f;'" @click.stop="toggleSettingsMenu($event)">
-            <template #icon><SettingOutlined /></template>设置
-          </a-button>
-        </a-tooltip>
-        <div v-if="isSettingsMenuOpen" class="feature-popover-stack" @click.stop>
-          <div class="feature-bubble settings-bubble">
-            <div class="settings-menu-inner">
-              <div class="menu-content">
-                <div class="setting-item">
-                  <label class="setting-label">飞行速度</label>
-                  <div class="setting-slider-control">
-                    <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
-                    <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
-                  </div>
-                </div>
-                <div class="setting-item">
-                  <label class="setting-label">轨道速度</label>
-                  <div class="setting-slider-control">
-                    <a-slider v-model:value="viewerControls.orbitSpeed" :min="10" :max="30" :step="0.5" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
-                    <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
-                  </div>
-                </div>
-                <div class="setting-item">
-                  <label class="setting-label">旋转速度</label>
-                  <div class="setting-slider-control">
-                    <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
-                    <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
-                  </div>
-                </div>
-                <div class="setting-item">
-                  <label class="setting-label">缩放灵敏度</label>
-                  <div class="setting-slider-control">
-                    <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
-                    <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
-                  </div>
-                </div>
-                <div class="setting-item" v-if="false">
-                  <label class="setting-label">视场角 (°)</label>
-                  <div class="setting-slider-control">
-                    <a-slider v-model:value="viewerControls.originalFov" :min="30" :max="150" :step="1" @change="updateCameraControlValue('originalFov', viewerControls.originalFov)" class="param-slider" />
-                    <span class="setting-value">{{ viewerControls.originalFov.toFixed(0) }}</span>
-                  </div>
-                </div>
-                <div class="setting-item">
-                  <label class="setting-label">背景颜色</label>
-                  <ColorPicker
-                    v-model:pureColor="viewerControls.backgroundColor"
-                    format="hex"
-                    @pure-color-change="updateBackgroundColor"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="bubble-actions">
-            <a-button type="default" @click.stop="closeSettingsPanel">取消</a-button>
-            <a-button type="primary" @click.stop="resetAllSettings">重置参数</a-button>
-          </div>
-        </div>
-      </div>
-
-      <div class="feature-control-item">
-        <a-tooltip title="模型编辑" placement="left">
-          <a-button class="feature-btn" :type="isEditMenuOpen ? 'primary' : 'default'" size="middle" :disabled="isRecordingVideo || isEncodingVideo" :style="isEditMenuOpen ? 'color:white;' : 'color:#1d1d1f;'" @click.stop="openModelEditMenu($event)">
-            <template #icon><EditOutlined /></template>模型
-          </a-button>
-        </a-tooltip>
-        <div v-if="isEditMenuOpen" class="feature-popover-stack" @click.stop>
-          <div class="feature-bubble edit-bubble">
-            <div class="edit-modal-content">
-              <div class="axis-panels">
-                <div class="axis-panel">
-                  <div class="axis-panel-header">
-                    <span class="axis-panel-icon">↔</span>
-                    <span class="axis-panel-title">X 轴</span>
-                  </div>
-                  <div class="axis-slider-row">
-                    <a-button class="axis-side-btn" size="small" :type="currentAxis === 'x+' ? 'primary' : 'default'" @click.stop="selectAxis('x+')">X+</a-button>
-                    <a-slider :value="axisValues['x+']" :min="getAxisRange('x+').min" :max="getAxisRange('x+').max" :step="getAxisRange('x+').step" @change="handleAxisValueChange('x+', $event)" class="param-slider" />
-                    <span class="axis-row-value">{{ (axisValues['x+'] ?? 0).toFixed(2) }}</span>
-                  </div>
-                  <div class="axis-slider-row">
-                    <a-button class="axis-side-btn" size="small" :type="currentAxis === 'x-' ? 'primary' : 'default'" @click.stop="selectAxis('x-')">X-</a-button>
-                    <a-slider :value="axisValues['x-']" :min="getAxisRange('x-').min" :max="getAxisRange('x-').max" :step="getAxisRange('x-').step" @change="handleAxisValueChange('x-', $event)" class="param-slider" />
-                    <span class="axis-row-value">{{ (axisValues['x-'] ?? 0).toFixed(2) }}</span>
-                  </div>
-                </div>
-
-                <div class="axis-panel">
-                  <div class="axis-panel-header">
-                    <span class="axis-panel-icon">↕</span>
-                    <span class="axis-panel-title">Y 轴</span>
-                  </div>
-                  <div class="axis-slider-row">
-                    <a-button class="axis-side-btn" size="small" :type="currentAxis === 'y+' ? 'primary' : 'default'" @click.stop="selectAxis('y+')">Y+</a-button>
-                    <a-slider :value="axisValues['y+']" :min="getAxisRange('y+').min" :max="getAxisRange('y+').max" :step="getAxisRange('y+').step" @change="handleAxisValueChange('y+', $event)" class="param-slider" />
-                    <span class="axis-row-value">{{ (axisValues['y+'] ?? 0).toFixed(2) }}</span>
-                  </div>
-                  <div class="axis-slider-row">
-                    <a-button class="axis-side-btn" size="small" :type="currentAxis === 'y-' ? 'primary' : 'default'" @click.stop="selectAxis('y-')">Y-</a-button>
-                    <a-slider :value="axisValues['y-']" :min="getAxisRange('y-').min" :max="getAxisRange('y-').max" :step="getAxisRange('y-').step" @change="handleAxisValueChange('y-', $event)" class="param-slider" />
-                    <span class="axis-row-value">{{ (axisValues['y-'] ?? 0).toFixed(2) }}</span>
-                  </div>
-                </div>
-
-                <div class="axis-panel">
-                  <div class="axis-panel-header">
-                    <span class="axis-panel-icon">⟳</span>
-                    <span class="axis-panel-title">Z 轴</span>
-                  </div>
-                  <div class="axis-slider-row">
-                    <a-button class="axis-side-btn" size="small" :type="currentAxis === 'z+' ? 'primary' : 'default'" @click.stop="selectAxis('z+')">Z+</a-button>
-                    <a-slider :value="axisValues['z+']" :min="getAxisRange('z+').min" :max="getAxisRange('z+').max" :step="getAxisRange('z+').step" @change="handleAxisValueChange('z+', $event)" class="param-slider" />
-                    <span class="axis-row-value">{{ (axisValues['z+'] ?? 0).toFixed(2) }}</span>
-                  </div>
-                  <div class="axis-slider-row">
-                    <a-button class="axis-side-btn" size="small" :type="currentAxis === 'z-' ? 'primary' : 'default'" @click.stop="selectAxis('z-')">Z-</a-button>
-                    <a-slider :value="axisValues['z-']" :min="getAxisRange('z-').min" :max="getAxisRange('z-').max" :step="getAxisRange('z-').step" @change="handleAxisValueChange('z-', $event)" class="param-slider" />
-                    <span class="axis-row-value">{{ (axisValues['z-'] ?? 0).toFixed(2) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="bubble-actions edit-actions">
-            <a-button type="default" @click.stop="closeEditModal">取消</a-button>
-            <a-button type="default" @click.stop="resetEntity">重置</a-button>
-            <a-button type="primary" @click.stop="saveCropSettings">保存</a-button>
-            <a-button  type="primary" @click.stop="showCoverConfirmModal">保存并覆盖</a-button>
-          </div>
-        </div>
-      </div>
-
-      <div class="feature-control-item">
-        <a-tooltip title="标注" placement="left">
-          <a-button class="feature-btn" :type="isAnnotationEditMenuOpen ? 'primary' : 'default'" size="middle" :disabled="isRecordingVideo || isEncodingVideo" :style="isAnnotationEditMenuOpen ? 'color:white;' : 'color:#1d1d1f;'" @click.stop="openAnnotationEditMenu($event)">
-            <template #icon><EditOutlined /></template>{{ isAnnotationEditMenuOpen ? '退出' : '标注' }}
-          </a-button>
-        </a-tooltip>
-      </div>
-
-      <div class="feature-control-item video-btn-container">
-        <a-tooltip title="生成旋转视频" placement="left">
-          <a-button class="feature-btn" :type="showVideoEffectDialog ? 'primary' : 'default'" :danger="isRecordingVideo || isEncodingVideo" size="middle" :disabled="isRecordingVideo || isEncodingVideo" @click.stop="openVideoEffectDialog">
-            <template #icon><VideoCameraOutlined /></template>视频
-          </a-button>
-        </a-tooltip>
-        <div v-if="showVideoEffectDialog" class="feature-popover-stack" @click.stop>
-          <div class="feature-bubble video-bubble">
-            <div class="video-effect-selector">
-              <div class="video-effect-grid">
-              <div
-                class="effect-option"
-                :class="{ active: selectedVideoEffect === -1 }"
-                @click="previewEffect(-1)"
-              >
-                <div class="effect-icon no-effect-icon">
-                  <CloseOutlined :style="{ fontSize: '24px' }" />
-                </div>
-                <div class="effect-name">无特效</div>
-                <div class="effect-desc">保持原始画面</div>
-              </div>
-              <div
-                class="effect-option"
-                v-for="effect in effectOptions"
-                :key="`effect-video-${effect.id}`"
-                :class="{ active: selectedVideoEffect === effect.id }"
-                @click="previewEffect(effect.id)"
-              >
-                <div class="effect-icon">
-                  <img
-                    class="effect-icon-img"
-                    :src="effect.src"
-                    :alt="effect.name"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-                <div class="effect-name">{{ effect.name }}</div>
-                <div class="effect-desc">点击可预览</div>
-              </div>
-            </div>
-            <p class="tips-text">提示：点击特效预览，生成过程中请勿关闭页面</p>
-          </div>
-        </div>
-          <div class="bubble-actions">
-            <a-button type="default" @click.stop="closeVideoEffectDialog">取消</a-button>
-            <a-button type="primary" @click.stop="confirmVideoGenerate">生成视频</a-button>
-          </div>
+      <div class="effect-scroll-container">
+        <div class="effect-grid">
+          <button
+            class="effect-card"
+            type="button"
+            v-for="effect in effectOptions"
+            :key="`effect-top-${effect.id}`"
+            @click="createEffect(effect.id)"
+          >
+            <img
+              class="effect-card-thumb"
+              :src="effect.src"
+              :alt="effect.name"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="effect-card-title">{{ effect.name }}</div>
+          </button>
         </div>
       </div>
     </div>
 
-    <div v-if="showContorlWidget && rotation === 0" class="bottom-control-bar">
-
-      <div class="primary-action-row" @click.stop>
-        <div class="control-btn-item" @click.stop="toggleFullscreen($event)">
-          <a-tooltip :title="isFullscreen ? '退出全屏' : '进入全屏'">
-            <a-button class="primary-action-btn" :type="isFullscreen ? 'primary' : 'default'" size="middle" :disabled="isRecordingVideo || isEncodingVideo" :style="isFullscreen ? 'color:white;' : 'color:#1d1d1f;'">
-              <template #icon>
-                <FullscreenExitOutlined v-if="isFullscreen" />
-                <FullscreenOutlined v-else />
-              </template>{{ isFullscreen ? '退出全屏' : '全屏' }}
-            </a-button>
-          </a-tooltip>
+    <!-- 设置面板 - 移到左上角 -->
+    <div v-if="isSettingsMenuOpen && showContorlWidget" class="feature-panel settings-panel top-left-panel" :class="{ visible: showControls }" @click.stop>
+      <div class="panel-header">
+        <span>参数设置</span>
+        <a-button type="text" size="small" @click.stop="closeSettingsPanel">
+          <template #icon><CloseOutlined /></template>
+        </a-button>
+      </div>
+      <div class="settings-content">
+        <div class="setting-item">
+          <label class="setting-label">飞行速度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
+          </div>
         </div>
-        <div class="control-btn-item" @click.stop="resetCamera()">
-          <a-tooltip title="重置视角">
-            <a-button class="primary-action-btn" type="default" size="middle" :disabled="!skullEntity || isRecordingVideo || isEncodingVideo">
-              <template #icon><ReloadOutlined /></template>重置
-            </a-button>
-          </a-tooltip>
+        <div class="setting-item">
+          <label class="setting-label">轨道速度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.orbitSpeed" :min="5" :max="30" :step="0.5" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
+          </div>
         </div>
-        <div class="control-btn-item" @click.stop="handleSharePlaceholder($event)">
-          <a-tooltip title="分享">
-            <a-button class="primary-action-btn" type="default" size="middle" :disabled="isRecordingVideo || isEncodingVideo">
-              <template #icon><ShareAltOutlined /></template>分享
-            </a-button>
-          </a-tooltip>
+        <div class="setting-item">
+          <label class="setting-label">旋转速度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
+          </div>
         </div>
-        <div class="control-btn-item" @click.stop="handleExportPlaceholder($event)">
-          <a-tooltip title="导出模型">
-            <a-button class="primary-action-btn" type="default" size="middle" :disabled="isRecordingVideo || isEncodingVideo">
-              <template #icon><ExportOutlined /></template>导出
-            </a-button>
-          </a-tooltip>
+        <div class="setting-item">
+          <label class="setting-label">缩放灵敏度</label>
+          <div class="setting-slider-control">
+            <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
+            <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
+          </div>
         </div>
-        <div class="control-btn-item" @click.stop="handleEmbedCodePlaceholder($event)">
-          <a-tooltip title="嵌入代码">
-            <a-button class="primary-action-btn" type="default" size="middle" :disabled="isRecordingVideo || isEncodingVideo">
-              <template #icon><CodeOutlined /></template>嵌入
-            </a-button>
-          </a-tooltip>
+        <div class="setting-item">
+          <label class="setting-label">背景颜色</label>
+          <ColorPicker
+            v-model:pureColor="viewerControls.backgroundColor"
+            format="hex"
+            @pure-color-change="updateBackgroundColor"
+          />
         </div>
+      </div>
+      <div class="panel-footer">
+        <a-button type="primary" size="small" @click.stop="resetAllSettings">重置参数</a-button>
       </div>
     </div>
 
-    <div v-if="showContorlWidget && rotation === 0" class="orbit-player">
-      <a-tooltip :title="isLoopPlaying ? '暂停绕中心旋转' : '开始绕中心旋转'">
+    <!-- 模型编辑面板 - 移到左上角 -->
+    <div v-if="isEditMenuOpen && showContorlWidget" class="feature-panel edit-panel top-left-panel" :class="{ visible: showControls }" @click.stop>
+      <div class="panel-header">
+        <span>模型编辑</span>
+        <a-button type="text" size="small" @click.stop="closeEditModal">
+          <template #icon><CloseOutlined /></template>
+        </a-button>
+      </div>
+      <div class="edit-modal-content">
+        <div class="axis-panels">
+          <div class="axis-panel">
+            <div class="axis-panel-header">
+              <span class="axis-panel-icon">↔</span>
+              <span class="axis-panel-title">X 轴</span>
+            </div>
+            <div class="axis-slider-row">
+              <a-button class="axis-side-btn" size="small" :type="currentAxis === 'x+' ? 'primary' : 'default'" @click.stop="selectAxis('x+')">X+</a-button>
+              <a-slider :value="axisValues['x+']" :min="getAxisRange('x+').min" :max="getAxisRange('x+').max" :step="getAxisRange('x+').step" @change="handleAxisValueChange('x+', $event)" class="param-slider" />
+              <span class="axis-row-value">{{ (axisValues['x+'] ?? 0).toFixed(2) }}</span>
+            </div>
+            <div class="axis-slider-row">
+              <a-button class="axis-side-btn" size="small" :type="currentAxis === 'x-' ? 'primary' : 'default'" @click.stop="selectAxis('x-')">X-</a-button>
+              <a-slider :value="axisValues['x-']" :min="getAxisRange('x-').min" :max="getAxisRange('x-').max" :step="getAxisRange('x-').step" @change="handleAxisValueChange('x-', $event)" class="param-slider" />
+              <span class="axis-row-value">{{ (axisValues['x-'] ?? 0).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="axis-panel">
+            <div class="axis-panel-header">
+              <span class="axis-panel-icon">↕</span>
+              <span class="axis-panel-title">Y 轴</span>
+            </div>
+            <div class="axis-slider-row">
+              <a-button class="axis-side-btn" size="small" :type="currentAxis === 'y+' ? 'primary' : 'default'" @click.stop="selectAxis('y+')">Y+</a-button>
+              <a-slider :value="axisValues['y+']" :min="getAxisRange('y+').min" :max="getAxisRange('y+').max" :step="getAxisRange('y+').step" @change="handleAxisValueChange('y+', $event)" class="param-slider" />
+              <span class="axis-row-value">{{ (axisValues['y+'] ?? 0).toFixed(2) }}</span>
+            </div>
+            <div class="axis-slider-row">
+              <a-button class="axis-side-btn" size="small" :type="currentAxis === 'y-' ? 'primary' : 'default'" @click.stop="selectAxis('y-')">Y-</a-button>
+              <a-slider :value="axisValues['y-']" :min="getAxisRange('y-').min" :max="getAxisRange('y-').max" :step="getAxisRange('y-').step" @change="handleAxisValueChange('y-', $event)" class="param-slider" />
+              <span class="axis-row-value">{{ (axisValues['y-'] ?? 0).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="axis-panel">
+            <div class="axis-panel-header">
+              <span class="axis-panel-icon">⟳</span>
+              <span class="axis-panel-title">Z 轴</span>
+            </div>
+            <div class="axis-slider-row">
+              <a-button class="axis-side-btn" size="small" :type="currentAxis === 'z+' ? 'primary' : 'default'" @click.stop="selectAxis('z+')">Z+</a-button>
+              <a-slider :value="axisValues['z+']" :min="getAxisRange('z+').min" :max="getAxisRange('z+').max" :step="getAxisRange('z+').step" @change="handleAxisValueChange('z+', $event)" class="param-slider" />
+              <span class="axis-row-value">{{ (axisValues['z+'] ?? 0).toFixed(2) }}</span>
+            </div>
+            <div class="axis-slider-row">
+              <a-button class="axis-side-btn" size="small" :type="currentAxis === 'z-' ? 'primary' : 'default'" @click.stop="selectAxis('z-')">Z-</a-button>
+              <a-slider :value="axisValues['z-']" :min="getAxisRange('z-').min" :max="getAxisRange('z-').max" :step="getAxisRange('z-').step" @change="handleAxisValueChange('z-', $event)" class="param-slider" />
+              <span class="axis-row-value">{{ (axisValues['z-'] ?? 0).toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <a-button size="small" @click.stop="resetEntity">重置</a-button>
+        <a-button type="primary" size="small" @click.stop="saveCropSettings">保存</a-button>
+        <a-button type="primary" size="small" @click.stop="showCoverConfirmModal">保存并覆盖</a-button>
+      </div>
+    </div>
+
+    <!-- 视频特效面板 - 移到左上角 -->
+    <div v-if="showVideoEffectDialog && showContorlWidget" class="feature-panel video-panel top-left-panel" :class="{ visible: showControls }" @click.stop>
+      <div class="panel-header">
+        <span>生成旋转视频</span>
+        <a-button type="text" size="small" @click.stop="closeVideoEffectDialog">
+          <template #icon><CloseOutlined /></template>
+        </a-button>
+      </div>
+      <div class="video-effect-selector">
+        <div class="video-effect-grid">
+          <div
+            class="effect-option"
+            :class="{ active: selectedVideoEffect === -1 }"
+            @click="previewEffect(-1)"
+          >
+            <div class="effect-icon no-effect-icon">
+              <CloseOutlined :style="{ fontSize: '20px' }" />
+            </div>
+            <div class="effect-name">无特效</div>
+          </div>
+          <div
+            class="effect-option"
+            v-for="effect in effectOptions"
+            :key="`effect-video-${effect.id}`"
+            :class="{ active: selectedVideoEffect === effect.id }"
+            @click="previewEffect(effect.id)"
+          >
+            <div class="effect-icon">
+              <img
+                class="effect-icon-img"
+                :src="effect.src"
+                :alt="effect.name"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="effect-name">{{ effect.name }}</div>
+          </div>
+        </div>
+        <p class="tips-text">提示：点击特效预览，生成过程中请勿关闭页面</p>
+      </div>
+      <div class="panel-footer">
+        <a-button type="primary" size="small" @click.stop="confirmVideoGenerate">生成视频</a-button>
+      </div>
+    </div>
+
+    <!-- 模式提示 -->
+    <div v-if="showContorlWidget && (isAnnotationEditMenuOpen || !viewerControls.isOrbitMode || isEditMenuOpen)" class="mode-tip" :class="{ 'fly-mode': !viewerControls.isOrbitMode, 'annotation-mode': isAnnotationEditMenuOpen, 'edit-mode': isEditMenuOpen }">
+      <template v-if="!viewerControls.isOrbitMode">
+        <span class="mode-icon">✈️</span>
+        <span>飞行模式</span>
+      </template>
+      <template v-else-if="isEditMenuOpen">
+        <span class="mode-icon">📐</span>
+        <span>模型编辑模式</span>
+      </template>
+      <template v-else-if="isAnnotationEditMenuOpen">
+        <span class="mode-icon">📝</span>
+        <span>标注编辑模式</span>
+      </template>
+    </div>
+
+    <!-- 右侧中间功能按钮组 - 垂直排列 -->
+    <div
+      class="right-center-controls"
+      :class="{ visible: showControls }"
+      v-if="showContorlWidget && rotation === 0"
+      @click.stop
+    >
+      <a-tooltip title="特效选项" placement="left">
         <a-button
-          class="loop-play-button"
-          type="primary"
-          shape="circle"
-          :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
-          @click.stop="toggleLoopPlay"
+          type="text"
+          class="control-icon-btn"
+          tabindex="-1"
+          :class="{ active: viewerControls.showInfo }"
+          @click.stop="toggleInfoPanel"
+          :disabled="isRecordingVideo || isEncodingVideo"
         >
-          <template #icon>
-            <PauseOutlined v-if="isLoopPlaying" />
-            <CaretRightOutlined v-else />
-          </template>
+          <template #icon><AppstoreOutlined /></template>
         </a-button>
       </a-tooltip>
-      <div class="orbit-progress-wrap" @click.stop>
+      <a-tooltip :title="viewerControls.isOrbitMode ? '切换飞行模式' : '切换轨道模式'" placement="left">
+        <a-button
+          type="text"
+          class="control-icon-btn"
+          tabindex="-1"
+          :class="{ active: !viewerControls.isOrbitMode }"
+          @click.stop="toggleMeshCursor"
+          :disabled="isRecordingVideo || isEncodingVideo"
+        >
+          <template #icon><AimOutlined /></template>
+        </a-button>
+      </a-tooltip>
+      <a-tooltip title="参数设置" placement="left">
+        <a-button
+          type="text"
+          class="control-icon-btn"
+          tabindex="-1"
+          :class="{ active: isSettingsMenuOpen }"
+          @click.stop="toggleSettingsMenu"
+          :disabled="isRecordingVideo || isEncodingVideo"
+        >
+          <template #icon><SettingOutlined /></template>
+        </a-button>
+      </a-tooltip>
+      <a-tooltip title="模型编辑" placement="left">
+        <a-button
+          type="text"
+          class="control-icon-btn"
+          tabindex="-1"
+          :class="{ active: isEditMenuOpen }"
+          @click.stop="openModelEditMenu"
+          :disabled="isRecordingVideo || isEncodingVideo"
+        >
+          <template #icon><EditOutlined /></template>
+        </a-button>
+      </a-tooltip>
+      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left">
+        <a-button
+          type="text"
+          class="control-icon-btn"
+          tabindex="-1"
+          :class="{ active: isAnnotationEditMenuOpen }"
+          @click.stop="openAnnotationEditMenu"
+          :disabled="isRecordingVideo || isEncodingVideo"
+        >
+          <template #icon><MessageOutlined /></template>
+        </a-button>
+      </a-tooltip>
+      <a-tooltip title="生成视频" placement="left">
+        <a-button
+          type="text"
+          class="control-icon-btn"
+          tabindex="-1"
+          :class="{ active: showVideoEffectDialog }"
+          @click.stop="openVideoEffectDialog"
+          :disabled="isRecordingVideo || isEncodingVideo"
+
+        >
+          <template #icon><VideoCameraOutlined /></template>
+        </a-button>
+      </a-tooltip>
+    </div>
+
+    <!-- 底部控制栏 -->
+    <div
+      class="bottom-controls"
+      :class="{ visible: showControls }"
+      v-if="showContorlWidget && rotation === 0"
+      @click.stop
+    >
+      <!-- 进度条 -->
+      <div class="progress-section">
         <a-slider
           v-model:value="orbitPlaybackAngle"
           :min="0"
@@ -336,7 +343,60 @@
           :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
           @change="handleOrbitProgressChange"
           @afterChange="toggleLoopPlay"
+          class="orbit-slider"
         />
+      </div>
+
+      <!-- 功能按钮 -->
+      <div class="control-buttons">
+        <!-- 左侧按钮组：播放/暂停、重置 -->
+        <div class="btn-group left">
+          <a-tooltip title="播放/暂停">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleLoopPlay" :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo">
+              <template #icon>
+                <PauseOutlined v-if="isLoopPlaying" />
+                <CaretRightOutlined v-else />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip title="重置视角">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="resetCamera" :disabled="!skullEntity || isRecordingVideo || isEncodingVideo">
+              <template #icon><ReloadOutlined /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip title="操作说明">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="showGestureModal = true" :disabled="isRecordingVideo || isEncodingVideo">
+              <template #icon><QuestionCircleOutlined /></template>
+            </a-button>
+          </a-tooltip>
+        </div>
+
+        <!-- 右侧按钮组：分享、导出、嵌入、全屏 -->
+        <div class="btn-group right">
+          <a-tooltip title="分享">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleSharePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
+              <template #icon><ShareAltOutlined /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip title="导出模型">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleExportPlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
+              <template #icon><ExportOutlined /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip title="嵌入代码">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleEmbedCodePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
+              <template #icon><CodeOutlined /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip :title="isFullscreen ? '退出全屏' : '全屏'">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleFullscreen" :disabled="isRecordingVideo || isEncodingVideo">
+              <template #icon>
+                <FullscreenExitOutlined v-if="isFullscreen" />
+                <FullscreenOutlined v-else />
+              </template>
+            </a-button>
+          </a-tooltip>
+        </div>
       </div>
     </div>
     
@@ -494,6 +554,156 @@
       </div>
     </a-modal>
 
+    <!-- 手势操作说明对话框 -->
+    <a-modal
+      v-model:open="showGestureModal"
+      title="操作说明"
+      :footer="null"
+      :mask-closable="true"
+      width="520px"
+      class="gesture-modal"
+    >
+      <div class="gesture-content">
+        <!-- 浏览器端操作说明 -->
+        <template v-if="!isMobile">
+          <div class="gesture-section">
+            <div class="gesture-section-title">轨道模式（默认）</div>
+            <div class="gesture-list">
+              <div class="gesture-item">
+                <div class="gesture-icon"><SwapOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">旋转视角</div>
+                  <div class="gesture-detail">左键拖拽</div>
+                </div>
+  
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><ZoomInOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">缩放</div>
+                  <div class="gesture-detail">鼠标滚轮</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><DragOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">平移</div>
+                  <div class="gesture-detail">右键拖拽</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><FullscreenExitOutlined   /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">双击聚焦</div>
+                  <div class="gesture-detail">双击模型某处聚焦查看</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="gesture-section">
+            <div class="gesture-section-title">飞行模式</div>
+            <div class="gesture-list">
+              <div class="gesture-item">
+                <div class="gesture-icon"><ArrowUpOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">前进/后退</div>
+                  <div class="gesture-detail">W / S 键</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><ArrowLeftOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">左右移动</div>
+                  <div class="gesture-detail">A / D 键</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><RedoOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">调整视角方向</div>
+                  <div class="gesture-detail">鼠标左键拖拽</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="gesture-section">
+            <div class="gesture-section-title">快捷键</div>
+            <div class="gesture-list">
+              <div class="gesture-item">
+                <div class="gesture-key">Esc</div>
+                <div class="gesture-text">
+                  <div class="gesture-action">退出当前模式</div>
+                  <div class="gesture-detail">关闭面板、取消编辑等</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <!-- 移动端操作说明 -->
+        <template v-else>
+          <div class="gesture-section">
+            <div class="gesture-section-title">轨道模式（默认）</div>
+            <div class="gesture-list">
+              <div class="gesture-item">
+                <div class="gesture-icon"><SwapOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">旋转视角</div>
+                  <div class="gesture-detail">单指拖拽</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><ZoomInOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">缩放</div>
+                  <div class="gesture-detail">双指捏合/张开</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><DragOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">平移</div>
+                  <div class="gesture-detail">双指同步拖拽</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><FullscreenExitOutlined   /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">双击聚焦</div>
+                  <div class="gesture-detail">双击模型某处聚焦查看</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="gesture-section">
+            <div class="gesture-section-title">飞行模式</div>
+            <div class="gesture-list">
+              <div class="gesture-item">
+                <div class="gesture-icon"><MobileOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">虚拟摇杆飞行</div>
+                  <div class="gesture-detail">屏幕左侧区域拖拽控制方向</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><RedoOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">调整视角方向</div>
+                  <div class="gesture-detail">单指在屏幕右侧拖拽</div>
+                </div>
+              </div>
+              <div class="gesture-item">
+                <div class="gesture-icon"><ZoomInOutlined /></div>
+                <div class="gesture-text">
+                  <div class="gesture-action">前进/后退</div>
+                  <div class="gesture-detail">双指向前/向后移动</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </a-modal>
+
 
   </div>
 </template>
@@ -522,6 +732,16 @@ import {
   CodeOutlined,
   CloseOutlined,
   CheckCircleFilled,
+  MessageOutlined,
+  QuestionCircleOutlined,
+  SwapOutlined,
+  ZoomInOutlined,
+  DragOutlined,
+  ArrowUpOutlined,
+  ArrowLeftOutlined,
+  VerticalAlignTopOutlined,
+  RedoOutlined,
+  MobileOutlined,
 } from '@ant-design/icons-vue';
 import { createEffect, GsplatEffectType, removeAllEffects } from '@/utils/revel';
 import { loadGsplat } from '@/utils/load';
@@ -624,25 +844,11 @@ function handleEscKey(e) {
   }
 }
 
-onMounted(() => {
-  // 绑定ESC事件到canvas
-  const canvas = document.getElementById('application-canvas');
-  if (canvas) {
-    canvas.addEventListener('keydown', handleEscKey);
-  }
-});
-onUnmounted(() => {
-  const canvas = document.getElementById('application-canvas');
-  if (canvas) {
-    canvas.removeEventListener('keydown', handleEscKey);
-  }
-});
-
 const DEFAULT_SETTINGS = {
   showInfo: false,
   isOrbitMode: true,
   moveSpeed: 2,
-  orbitSpeed: 18,
+  orbitSpeed: 5,
   autoRotateSpeed: 30,
   pinchSpeed: 0.4,
   originalFov: 75,
@@ -686,6 +892,17 @@ export default {
     CodeOutlined,
     CloseOutlined,
     CheckCircleFilled,
+    MessageOutlined,
+    QuestionCircleOutlined,
+    SwapOutlined,
+    ZoomInOutlined,
+    DragOutlined,
+    FullscreenExitOutlined ,
+    ArrowUpOutlined,
+    ArrowLeftOutlined,
+    VerticalAlignTopOutlined,
+    RedoOutlined,
+    MobileOutlined,
   },
   props: {
     taskId: {
@@ -706,6 +923,8 @@ export default {
       showContorlWidget: false,
       isFeatureMenuExpanded: false,
       isFullscreen: false,
+      showControls: true,
+      controlsHideTimer: null,
       showFugai: false,
       cameraData:{},
       isLocal: false,
@@ -759,6 +978,7 @@ export default {
       currentAxisValue: 0,
       showConfirmModal: false,
       showSuccessModal: false,
+      showGestureModal: false,
       showShareDialog: false,
       showExportDialog: false,
       showEmbedCodeDialog: false,
@@ -816,7 +1036,8 @@ export default {
       annotationsSnapshot: null,
       annotationsSnapshotSerialized: '',
       effectOptions: EFFECT_OPTIONS,
-      mouseDownPos: { x: 0, y: 0 }, 
+      mouseDownPos: { x: 0, y: 0 },
+      isMobile: false, 
     };
   },
   watch:{
@@ -845,7 +1066,29 @@ export default {
     }
   },
   methods: {
-     handleClosePopup() {
+    // 返回上一个路由
+    handleGoBack() {
+      if (window.history.length > 1) {
+        this.$router.go(-1)
+      } else {
+        this.$router.push('/')
+      }
+    },
+
+    // 控制底部栏显示/隐藏
+    showControlsTimer() {
+      this.showControls = true;
+      if (this.controlsHideTimer) {
+        clearTimeout(this.controlsHideTimer);
+      }
+      this.controlsHideTimer = setTimeout(() => {
+        this.showControls = false;
+      }, 3000);
+    },
+    handleMouseMove() {
+      this.showControlsTimer();
+    },
+    handleClosePopup() {
         // 1. 先获取正确的滚动容器（确保ref绑定在可滚动的元素上）
         const effectListRef = this.$refs.effectListRef;
         
@@ -884,6 +1127,7 @@ export default {
       {
         this.cameraControls.focusOnEntity(this.skullEntity);
       }
+      this.showControlsTimer();
     },
     getModelCenter() {
       if (!this.skullEntity) return null;
@@ -956,6 +1200,12 @@ export default {
         this.autoLoopPlayTimer = null;
       }
     },
+    clearControlsHideTimer() {
+      if (this.controlsHideTimer) {
+        clearTimeout(this.controlsHideTimer);
+        this.controlsHideTimer = null;
+      }
+    },
     hideOtherFeatureBubbles(except = null) {
       if (except !== 'effect') {
         this.viewerControls.showInfo = false;
@@ -1005,6 +1255,7 @@ export default {
 
       if (this.isLoopPlaying) {
         this.stopLoopPlayback(false);
+        this.showControlsTimer();
         return;
       }
 
@@ -1014,6 +1265,7 @@ export default {
         return;
       }
 
+      this.showControlsTimer();
       const startAngle = this.clamp(this.orbitPlaybackAngle, 0, 360);
       this.orbitPlaybackSessionStartAngle = startAngle;
       this.orbitPlaybackTravelled = 0;
@@ -1753,12 +2005,14 @@ export default {
       this.axisValues[this.currentAxis] = clampedValue;
       this.cameraControls?.modifyBboxFacePosition(this.skullEntity, this.currentAxis, this.currentAxisValue);
     },
-    saveCropSettings() {
+    saveCropSettings(show = true) {
       if (this.skullEntity && this.cameraControls) {
         this.saveCurrentAxisValuesToSession();
         this.cameraControls?.clipGsplatDataByAllFaces(this.skullEntity);
         this.closeEditModal();
-        showToast("保存成功");
+        if (show) {
+          showToast("保存成功");
+        }
       }
     },
     showCoverConfirmModal() {
@@ -1768,11 +2022,14 @@ export default {
       this.showConfirmModal = false;
     },
     async confirmSaveChanges() {
+      this.saveCropSettings(false);
       this.showConfirmModal = false;
       this.closeEditModal();
       this.savedCropAxisValues = null;
       this.cameraControls?.clipGsplatDataByAllFaces(this.skullEntity);
+      
       const arrayBuffer = await this.generateBinary3dgsSog();
+      await this.renderFromArrayBuffer('output.sog', arrayBuffer);
       const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
       const a = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -2010,7 +2267,9 @@ export default {
         this.applyOrbitAngle(clampedAngle, true);
       }
 
-      this.cameraControls?.update(dt, false, this.isRecordingVideo || this.isEncodingVideo);
+      this.cameraControls?.update(dt, false, this.isRecordingVideo || this.isEncodingVideo, this.isEditMenuOpen 
+         || this.isAnnotationEditMenuOpen
+      );
     
     },
     updateDownloadInfo(options) {
@@ -2096,6 +2355,8 @@ export default {
           console.log(data);
           const fileName = `${this.task_name || 'model'}.${format}`;
           await this.renderFromArrayBuffer(fileName, data);
+          this.scheduleAutoLoopPlay();
+          this.showControlsTimer();
         }
         
         
@@ -2198,11 +2459,11 @@ export default {
         this.updateAnnotationVisibility();
         
       }
+      this.app.off('update', this.handleUpdate);
       this.app.on('update', this.handleUpdate);
       URL.revokeObjectURL(fileUrl);
-      this.loading_status = 'success';  
+      this.loading_status = 'success';
       this.isViewerLoading = false;
-      this.scheduleAutoLoopPlay();
     },
     toggleInfoPanel($event = null) {
       if(this.isRecordingVideo || this.isEncodingVideo) return;
@@ -2250,7 +2511,7 @@ export default {
           this.cameraControls.moveSpeed = this.viewerControls.moveSpeed;
           break;
         case 'orbitSpeed':
-          this.viewerControls.orbitSpeed = this.clamp(this.viewerControls.orbitSpeed + step, 10, 30);
+          this.viewerControls.orbitSpeed = this.clamp(this.viewerControls.orbitSpeed + step, 1, 30);
           this.cameraControls.orbitSpeed = this.viewerControls.orbitSpeed;
           break;
         case 'pinchSpeed':
@@ -2273,6 +2534,7 @@ export default {
     destroyPreViewer() {
       this.clearLoopPlayStartTimer();
       this.clearAutoLoopPlayTimer();
+      this.clearControlsHideTimer();
       this.isLoopPlaying = false;
       message.destroy(this.sogConvertMessageKey);
       this.sogConvertProgressText = '';
@@ -2466,7 +2728,7 @@ export default {
         showToast({ type: 'info', message: '开始生成MP4视频，请勿关闭页面' });
         const ffmpeg = this.ffmpeg;
         // 写入所有帧到虚拟文件系统
-        for (let i = 0; i < this.videoFrameList.length; i++) {
+        for (let i = 4; i < this.videoFrameList.length; i++) {
           const frameBase64 = this.videoFrameList[i].replace(/^data:image\/jpeg;base64,/, '');
           const frameBuffer = Uint8Array.from(atob(frameBase64), c => c.charCodeAt(0));
           // 帧文件名补零，保证FFmpeg按顺序读取（关键：必须补零）
@@ -2476,6 +2738,7 @@ export default {
 
         // 执行FFmpeg转码命令`  
         await ffmpeg.run(
+          '-start_number', '5', // 从第5帧开始，跳过前4帧
           '-r', this.videoFps.toString(),
           '-f', 'image2',
           '-i', '/frame_%04d.jpg',
@@ -2631,6 +2894,12 @@ export default {
     // ========== FFmpeg相关方法结束 ==========
   },
   async mounted() {
+      const canvas = document.getElementById('application-canvas');
+    if (canvas) {
+      canvas.addEventListener('keydown', handleEscKey);
+    }
+    // 检测设备类型
+    this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.addEventListener('fullscreenchange', this.syncFullscreenState);
     await this.initViewer();
@@ -2661,6 +2930,10 @@ export default {
     window.receiveFlutterMsg = null;
     document.removeEventListener('fullscreenchange', this.syncFullscreenState);
     this.destroyPreViewer();
+    const canvas = document.getElementById('application-canvas');
+    if (canvas) {
+      canvas.removeEventListener('keydown', handleEscKey);
+    }
   }
 };
 </script>
@@ -3183,6 +3456,37 @@ export default {
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* 返回按钮 */
+.back-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(-2px);
+}
+
+.back-button:active {
+  transform: translateX(0) scale(0.95);
+}
+
 .core-content{
   flex: 1;
   position: relative;
@@ -3831,6 +4135,599 @@ export default {
   display: none !important;
 }
 
+/* 新布局样式 - 视频播放风格 */
+
+/* 功能面板 */
+.feature-panel {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.feature-panel.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* 左上角编辑面板 */
+.feature-panel.top-left-panel {
+  top: 70px;
+  left: 16px;
+  right: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 特效面板 */
+.effect-scroll-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.effect-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.effect-card {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.effect-card:hover {
+  border-color: #1890ff;
+  transform: translateY(-2px);
+}
+
+.effect-card-thumb {
+  width: 100%;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.effect-card-title {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* 设置面板 */
+.settings-content {
+  padding: 12px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-label {
+  font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.setting-slider-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 160px;
+  margin-left: 12px;
+}
+
+.setting-slider-control .param-slider {
+  flex: 1;
+  margin: 0;
+}
+
+.setting-value {
+  font-size: 12px;
+  color: #666;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* 编辑面板 */
+.edit-modal-content {
+  padding: 12px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.axis-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.axis-panel {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+}
+
+.axis-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.axis-panel-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.axis-panel-title {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.axis-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.axis-slider-row:last-child {
+  margin-bottom: 0;
+}
+
+.axis-side-btn {
+  min-width: 36px;
+  padding: 0 4px;
+  font-size: 11px;
+}
+
+.axis-slider-row .param-slider {
+  flex: 1;
+  margin: 0;
+}
+
+.axis-row-value {
+  font-size: 11px;
+  color: #666;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 视频特效面板 */
+.video-effect-selector {
+  padding: 12px;
+}
+
+.video-effect-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.video-effect-selector .effect-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.video-effect-selector .effect-option:hover {
+  border-color: #1890ff;
+}
+
+.video-effect-selector .effect-option.active {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+.video-effect-selector .effect-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-effect-selector .effect-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-effect-selector .effect-name {
+  font-size: 11px;
+  margin-top: 4px;
+  color: #333;
+}
+
+.video-effect-selector .tips-text {
+  font-size: 11px;
+  color: #999;
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+/* 底部控制栏 */
+.bottom-controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 24px 20px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bottom-controls.visible {
+  opacity: 1;
+}
+
+.progress-section {
+  margin-bottom: 12px;
+}
+
+.orbit-slider {
+  margin: 0;
+}
+
+.orbit-slider :deep(.ant-slider-rail) {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.orbit-slider :deep(.ant-slider-track) {
+  background-color: #1890ff;
+}
+
+.orbit-slider :deep(.ant-slider-handle)::after {
+  box-shadow: 0 0 0 2px #1890ff;
+}
+
+.control-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-group.left {
+  flex-shrink: 0;
+}
+
+.btn-group.center {
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-group.right {
+  flex-shrink: 0;
+}
+
+.btn-group.right-center {
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+/* 右侧中间控制组 - 垂直排列 */
+.right-center-controls {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.right-center-controls.visible {
+  opacity: 1;
+}
+
+/* 模式提示 */
+.mode-tip {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: modeTipFadeIn 0.3s ease;
+}
+
+@keyframes modeTipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.mode-tip.fly-mode {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
+}
+
+.mode-tip.annotation-mode {
+  background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(136, 84, 208, 0.4);
+}
+
+.mode-tip.edit-mode {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.4);
+}
+
+.mode-tip .mode-icon {
+  font-size: 16px;
+}
+
+/* 调整右上角面板在模式提示时不被遮挡 */
+.feature-panel:not(.top-left-panel) {
+  top: 70px;
+}
+
+.control-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: white !important;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.control-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.control-icon-btn.active {
+  background: rgba(24, 144, 255, 0.8);
+  border-color: rgba(24, 144, 255, 1);
+}
+
+.control-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-icon-btn:disabled:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.control-icon-btn .anticon {
+  font-size: 20px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .feature-panel {
+    right: 8px;
+    left: 8px;
+    width: auto;
+  }
+
+  .feature-panel.top-left-panel {
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+
+  .mode-tip {
+    top: 10px;
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .feature-panel:not(.top-left-panel) {
+    top: 56px;
+  }
+
+  .bottom-controls {
+    padding: 10px 12px 12px;
+  }
+
+  .control-buttons {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-group {
+    gap: 4px;
+  }
+
+  .right-center-controls {
+    right: 8px;
+    gap: 6px;
+  }
+
+  .btn-group.right-center {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+
+  .control-icon-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .control-icon-btn .anticon {
+    font-size: 16px;
+  }
+}
+
+/* 手势说明对话框样式 */
+.gesture-modal .ant-modal-content {
+  border-radius: 12px;
+}
+
+.gesture-content {
+  padding: 8px 0;
+}
+
+.gesture-section {
+  margin-bottom: 20px;
+}
+
+.gesture-section:last-child {
+  margin-bottom: 0;
+}
+
+.gesture-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid #1890ff;
+}
+
+.gesture-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gesture-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.gesture-item:hover {
+  background: #f0f0f0;
+}
+
+.gesture-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f7ff;
+  border-radius: 8px;
+  color: #1890ff;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.gesture-key {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d1d1f;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.gesture-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.gesture-action {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 2px;
+}
+
+.gesture-detail {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+:deep(.ant-btn)
+{
+  height: auto;
+}
 </style>
 
 <style>
