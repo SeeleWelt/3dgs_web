@@ -6,16 +6,41 @@
         <h2 class="section-title">{{ t('explore.ai3dModels') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
-      <div class="models-grid" v-if="!meshLoading">
-        <OfficialModelCard
-          v-for="model in MeshModel"
-          :key="model.taskId"
-          :model="model"
-          @click="openModelDetail(model)"
-          @resume-success="handleResumeSuccess"
-          @task-action-success="handleResumeSuccess"
-          @task-deleted="handleResumeSuccess"
-        />
+      <div class="models-carousel" v-if="!meshLoading">
+        <button
+          v-show="meshCanScrollLeft"
+          class="scroll-btn scroll-left"
+          @click="scrollMesh('left')"
+        >
+          <LeftOutlined />
+        </button>
+        <div
+          ref="meshScrollRef"
+          class="models-grid"
+          :class="{ 'is-dragging': isDragging }"
+          @scroll="handleMeshScroll"
+          @mousedown="onMouseDown"
+          @mousemove="onMouseMove"
+          @mouseup="onMouseUp"
+          @mouseleave="onMouseLeave"
+        >
+          <OfficialModelCard
+            v-for="model in MeshModel"
+            :key="model.taskId"
+            :model="model"
+            @click="handleCardClick(model)"
+            @resume-success="handleResumeSuccess"
+            @task-action-success="handleResumeSuccess"
+            @task-deleted="handleResumeSuccess"
+          />
+        </div>
+        <button
+          v-show="meshCanScrollRight"
+          class="scroll-btn scroll-right"
+          @click="scrollMesh('right')"
+        >
+          <RightOutlined />
+        </button>
       </div>
       <div v-else class="loading-grid">
         <div v-for="i in meshSkeletonCount" :key="i" class="skeleton-card">
@@ -32,16 +57,41 @@
         <h2 class="section-title">{{ t('explore.gs3dTitle') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
-      <div class="models-grid" v-if="!gaussianLoading">
-        <OfficialModelCard
-          v-for="model in _3DModel"
-          :key="model.taskId"
-          :model="model"
-          @click="openModelDetail(model)"
-          @resume-success="handleResumeSuccess"
-          @task-action-success="handleResumeSuccess"
-          @task-deleted="handleResumeSuccess"
-        />
+      <div class="models-carousel" v-if="!gaussianLoading">
+        <button
+          v-show="gaussianCanScrollLeft"
+          class="scroll-btn scroll-left"
+          @click="scrollGaussian('left')"
+        >
+          <LeftOutlined />
+        </button>
+        <div
+          ref="gaussianScrollRef"
+          class="models-grid"
+          :class="{ 'is-dragging': isDragging }"
+          @scroll="handleGaussianScroll"
+          @mousedown="onGaussianMouseDown"
+          @mousemove="onGaussianMouseMove"
+          @mouseup="onGaussianMouseUp"
+          @mouseleave="onGaussianMouseLeave"
+        >
+          <OfficialModelCard
+            v-for="model in _3DModel"
+            :key="model.taskId"
+            :model="model"
+            @click="handleGaussianCardClick(model)"
+            @resume-success="handleResumeSuccess"
+            @task-action-success="handleResumeSuccess"
+            @task-deleted="handleResumeSuccess"
+          />
+        </div>
+        <button
+          v-show="gaussianCanScrollRight"
+          class="scroll-btn scroll-right"
+          @click="scrollGaussian('right')"
+        >
+          <RightOutlined />
+        </button>
       </div>
       <div v-else class="loading-grid">
         <div v-for="i in gaussianSkeletonCount" :key="i" class="skeleton-card">
@@ -115,10 +165,11 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
+import { LeftOutlined, RightOutlined } from '@ant-design/icons-vue'
 import OfficialModelCard from '@/components/OfficialModelCard.vue'
 import { TaskModel, ApiServer, GetTaskListParams } from '@/utils/taskService'
 import API from '@/utils/api'
@@ -160,7 +211,420 @@ const MeshModel = ref<Model[]>([
     isNew: true,
     type: 'mesh'
   },
+  {
+    taskId: 'task_002',
+    taskName: '城市建筑扫描',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 256,
+    likeCount: 45,
+    isLiked: false,
+    downloadCount: 32,
+    shareCount: 12,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: false,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '城市高楼建筑3D扫描重建，精确还原建筑细节',
+    ownerUsername: 'cityscan',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1002',
+    headimg: 'assets/logo.png',
+    nickname: 'cityscan',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_003',
+    taskName: '室内家居设计',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 189,
+    likeCount: 28,
+    isLiked: true,
+    downloadCount: 15,
+    shareCount: 6,
+    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 44 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '现代简约风格客厅3D重建，家具布局精准还原',
+    ownerUsername: 'homedesign',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1003',
+    headimg: 'assets/logo.png',
+    nickname: 'homedesign',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_004',
+    taskName: '历史文物修复',
+    status: 'reconstructing_3dgs',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 312,
+    likeCount: 67,
+    isLiked: false,
+    downloadCount: 24,
+    shareCount: 18,
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    endAt: undefined,
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '古代陶瓷文物3D扫描重建，高精度还原文物细节',
+    ownerUsername: 'heritage',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1004',
+    headimg: 'assets/logo.png',
+    nickname: 'heritage',
+    isNew: true,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_005',
+    taskName: '汽车模型展示',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 445,
+    likeCount: 89,
+    isLiked: false,
+    downloadCount: 56,
+    shareCount: 23,
+    createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 68 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: false,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '经典老爷车3D模型重建，细节完美还原',
+    ownerUsername: 'autocars',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1005',
+    headimg: 'assets/logo.png',
+    nickname: 'autocars',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_006',
+    taskName: '人物肖像扫描',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 178,
+    likeCount: 34,
+    isLiked: false,
+    downloadCount: 12,
+    shareCount: 8,
+    createdAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 92 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '人物面部3D扫描重建，高精度还原面部特征',
+    ownerUsername: 'portraitscan',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1006',
+    headimg: 'assets/logo.png',
+    nickname: 'portraitscan',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_007',
+    taskName: '地形地貌测绘',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 267,
+    likeCount: 51,
+    isLiked: false,
+    downloadCount: 38,
+    shareCount: 14,
+    createdAt: new Date(Date.now() - 120 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 116 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: false,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '山地地形3D扫描测绘，精确还原地形特征',
+    ownerUsername: 'terrainmap',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1007',
+    headimg: 'assets/logo.png',
+    nickname: 'terrainmap',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_008',
+    taskName: '游戏角色建模',
+    status: 'reconstructing_3dgs',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 523,
+    likeCount: 102,
+    isLiked: false,
+    downloadCount: 67,
+    shareCount: 31,
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    endAt: undefined,
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '游戏角色3D建模绑定，高品质角色渲染',
+    ownerUsername: 'gamechar',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1008',
+    headimg: 'assets/logo.png',
+    nickname: 'gamechar',
+    isNew: true,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_009',
+    taskName: '工业零件检测',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 156,
+    likeCount: 23,
+    isLiked: false,
+    downloadCount: 45,
+    shareCount: 9,
+    createdAt: new Date(Date.now() - 144 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 140 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: false,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '工业机械零件3D扫描检测，精度达到毫米级',
+    ownerUsername: 'industrial3d',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1009',
+    headimg: 'assets/logo.png',
+    nickname: 'industrial3d',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_010',
+    taskName: '珠宝设计展示',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 298,
+    likeCount: 56,
+    isLiked: false,
+    downloadCount: 28,
+    shareCount: 15,
+    createdAt: new Date(Date.now() - 168 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 164 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '珠宝首饰3D建模展示，精美绝伦的细节还原',
+    ownerUsername: 'jewelry3d',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1010',
+    headimg: 'assets/logo.png',
+    nickname: 'jewelry3d',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_011',
+    taskName: '校园导览系统',
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 412,
+    likeCount: 78,
+    isLiked: false,
+    downloadCount: 34,
+    shareCount: 22,
+    createdAt: new Date(Date.now() - 192 * 60 * 60 * 1000).toISOString(),
+    endAt: new Date(Date.now() - 188 * 60 * 60 * 1000).toISOString(),
+    error: undefined,
+    lightning: false,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '大学校园3D全景重建，虚拟导览系统基础数据',
+    ownerUsername: 'campus3d',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1011',
+    headimg: 'assets/logo.png',
+    nickname: 'campus3d',
+    isNew: false,
+    type: 'mesh'
+  },
+  {
+    taskId: 'task_012',
+    taskName: '医疗影像重建',
+    status: 'reconstructing_3dgs',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: 234,
+    likeCount: 42,
+    isLiked: false,
+    downloadCount: 19,
+    shareCount: 11,
+    createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
+    endAt: undefined,
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: '人体器官3D重建，医疗影像可视化应用',
+    ownerUsername: 'medical3d',
+    authorAvatar: undefined,
+    preview: 'https://picsum.photos/400/500?random=1012',
+    headimg: 'assets/logo.png',
+    nickname: 'medical3d',
+    isNew: false,
+    type: 'mesh'
+  },
 ])
+
+// Mesh 滚动相关逻辑
+const meshScrollRef = ref<HTMLElement | null>(null)
+const meshScrollLeft = ref(0)
+
+// 鼠标拖动相关
+const isDragging = ref(false)
+const startX = ref(0)
+const scrollLeft = ref(0)
+const hasDragged = ref(false) // 是否真正拖动过
+
+const meshCanScrollLeft = computed(() => meshScrollLeft.value > 0)
+const meshCanScrollRight = computed(() => {
+  if (!meshScrollRef.value) return false
+  const { scrollWidth, clientWidth } = meshScrollRef.value
+  return meshScrollLeft.value < scrollWidth - clientWidth - 10
+})
+
+const handleMeshScroll = () => {
+  if (meshScrollRef.value) {
+    meshScrollLeft.value = meshScrollRef.value.scrollLeft
+  }
+}
+
+const scrollMesh = (direction: 'left' | 'right') => {
+  if (!meshScrollRef.value) return
+  const scrollAmount = meshScrollRef.value.clientWidth * 0.8
+  meshScrollRef.value.scrollBy({
+    left: direction === 'left' ? -scrollAmount : scrollAmount,
+    behavior: 'smooth'
+  })
+}
+
+// 鼠标拖动滚动
+const onMouseDown = (e: MouseEvent) => {
+  isDragging.value = true
+  hasDragged.value = false
+  startX.value = e.pageX
+  if (meshScrollRef.value) {
+    scrollLeft.value = meshScrollRef.value.scrollLeft
+  }
+}
+
+const onMouseMove = (e: MouseEvent) => {
+  if (!isDragging.value || !meshScrollRef.value) return
+  e.preventDefault()
+  const x = e.pageX
+  const walk = (startX.value - x) // 拖动速度系数
+  if (Math.abs(walk) > 5) {
+    hasDragged.value = true
+  }
+  meshScrollRef.value.scrollLeft = scrollLeft.value + walk
+}
+
+const onMouseUp = () => {
+  isDragging.value = false
+}
+
+const onMouseLeave = () => {
+  isDragging.value = false
+}
+
+// Gaussian 滚动相关逻辑
+const gaussianScrollRef = ref<HTMLElement | null>(null)
+const gaussianScrollLeft = ref(0)
+
+// Gaussian 鼠标拖动相关
+const gaussianIsDragging = ref(false)
+const gaussianStartX = ref(0)
+const gaussianScrollLeftVal = ref(0)
+const gaussianHasDragged = ref(false)
+
+const gaussianCanScrollLeft = computed(() => gaussianScrollLeft.value > 0)
+const gaussianCanScrollRight = computed(() => {
+  if (!gaussianScrollRef.value) return false
+  const { scrollWidth, clientWidth } = gaussianScrollRef.value
+  return gaussianScrollLeft.value < scrollWidth - clientWidth - 10
+})
+
+const handleGaussianScroll = () => {
+  if (gaussianScrollRef.value) {
+    gaussianScrollLeft.value = gaussianScrollRef.value.scrollLeft
+  }
+}
+
+const scrollGaussian = (direction: 'left' | 'right') => {
+  if (!gaussianScrollRef.value) return
+  const scrollAmount = gaussianScrollRef.value.clientWidth * 0.8
+  gaussianScrollRef.value.scrollBy({
+    left: direction === 'left' ? -scrollAmount : scrollAmount,
+    behavior: 'smooth'
+  })
+}
+
+const onGaussianMouseDown = (e: MouseEvent) => {
+  gaussianIsDragging.value = true
+  gaussianHasDragged.value = false
+  gaussianStartX.value = e.pageX
+  if (gaussianScrollRef.value) {
+    gaussianScrollLeftVal.value = gaussianScrollRef.value.scrollLeft
+  }
+}
+
+const onGaussianMouseMove = (e: MouseEvent) => {
+  if (!gaussianIsDragging.value || !gaussianScrollRef.value) return
+  e.preventDefault()
+  const x = e.pageX
+  const walk = (gaussianStartX.value - x)
+  if (Math.abs(walk) > 5) {
+    gaussianHasDragged.value = true
+  }
+  gaussianScrollRef.value.scrollLeft = gaussianScrollLeftVal.value + walk
+}
+
+const onGaussianMouseUp = () => {
+  gaussianIsDragging.value = false
+}
+
+const onGaussianMouseLeave = () => {
+  gaussianIsDragging.value = false
+}
+
+const handleGaussianCardClick = (model: Model) => {
+  if (!gaussianHasDragged.value) {
+    openModelDetail(model)
+  }
+}
 
 // 加载状态
 const meshLoading = ref(false)
@@ -220,9 +684,16 @@ const handleGaussianPageChange = async (page: number) => {
   gaussianSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const openModelDetail = (model: Model) => {
+const openModelDetail = (model: Model)  => {
   const routeData = router.resolve(`/officialModel/${model.taskId}`)
    window.open(routeData.href, '_blank')
+}
+
+// 处理卡片点击，只有在非拖动情况下才触发
+const handleCardClick = (model: Model) => {
+  if (!hasDragged.value) {
+    openModelDetail(model)
+  }
 }
 
 const handleResumeSuccess = async () => {
@@ -310,6 +781,73 @@ onMounted(async () => {
   color: var(--text-secondary);
 }
 
+/* 滚动轮播容器 */
+.models-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.models-carousel .models-grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 4px 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.models-carousel .models-grid.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.models-carousel .models-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.models-carousel .models-grid > * {
+  flex-shrink: 0;
+  width: 200px;
+}
+
+/* 滚动按钮 */
+.scroll-btn {
+  position: absolute;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.scroll-btn.scroll-left {
+  left: -20px;
+}
+
+.scroll-btn.scroll-right {
+  right: -20px;
+}
+
 .models-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -385,7 +923,7 @@ onMounted(async () => {
 }
 
 .community-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {

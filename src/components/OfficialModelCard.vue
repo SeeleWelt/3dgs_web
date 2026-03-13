@@ -1,6 +1,6 @@
 <template>
-  <div class="model-card" @click="handleCardClick">
-    <div class="model-image">
+  <div class="model-card" >
+    <div class="model-image" @click="handleCardClick">
       <img
         v-if="model.preview"
         v-lazy="lazyPreview"
@@ -120,11 +120,6 @@ const handleCardClick = () => {
   position: relative;
 }
 
-.model-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-}
-
 .model-image {
   aspect-ratio: 1;
   background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
@@ -135,10 +130,25 @@ const handleCardClick = () => {
   cursor: pointer;
 }
 
+/* 悬停遮罩层 */
+.model-image:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 0;
+}
+
+
 .model-preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .loading-overlay {
@@ -191,6 +201,7 @@ const handleCardClick = () => {
 
 .model-info {
   padding: 12px;
+  user-select: none;
 }
 
 .model-author {

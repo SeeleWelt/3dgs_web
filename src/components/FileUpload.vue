@@ -1,74 +1,91 @@
 <template>
   <div
-    class="file-upload"
-    :class="{ dragging: isDragging }"
+    :class="props.compact ? 'file-upload-compact' : 'file-upload'"
     @dragenter.prevent="handleDragEnter"
     @dragleave.prevent="handleDragLeave"
     @dragover.prevent
     @drop.prevent="handleDrop"
   >
-    <!-- Upload Zone -->
-    <div class="upload-zone">
-      <!-- Floating Format Icons -->
-      <div class="floating-icons">
-        <span class="icon icon-jpg">JPG</span>
-        <span class="icon icon-png">PNG</span>
-        <span class="icon icon-mov">MOV</span>
-        <span class="icon icon-mp4">MP4</span>
-        <span class="icon icon-webp">WEBP</span>
-      </div>
-
-      <!-- Upload Icon -->
-      <div class="upload-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-      </div>
-
-      <!-- Upload Text -->
-      <div class="upload-text">
-        <p class="main-text">点击上传或将视频/图片拖入此区域</p>
-        <p class="sub-text">支持视频（mp4, mov）或图片（jpg, png, webp）</p>
-      </div>
-
-      <!-- Hidden Input -->
+    <!-- Compact Mode (Re-upload) -->
+    <div v-if="props.compact" class="compact-zone">
+      <UploadOutlined />
+      <span class="compact-text">点击或拖拽重新上传文件</span>
       <input
         ref="fileInput"
         type="file"
-        accept="image/png,image/jpg,image/jpeg,image/webp,video/mp4,video/quicktime,.mp4,.mov"
+        accept="image/png,image/jpg,image/jpeg,image/webp,video/quicktime,video/mp4,video/webm,video/x-msvideo,video/x-matroska,.mp4,.mov,.mkv,.avi,.webm"
         multiple
         class="file-input"
         @change="handleFileSelect"
       >
     </div>
 
-    <!-- Upload Info -->
-    <div class="upload-info">
-      <div class="info-row">
-        <span class="info-label">视频上传：</span>
-        <span class="info-content">
-          · 支持的格式：mp4, mov
-          · 视频时长限制：最长 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
-          · 一次仅支持 1 个视频
-          · 分辨率限制：{{ getMaxResolution().width >= 3840 ? '4K' : `${getMaxResolution().width}x${getMaxResolution().height}` }} 及以下
-        </span>
+    <!-- Normal Mode -->
+    <template v-else>
+      <!-- Upload Zone -->
+      <div class="upload-zone">
+        <!-- Floating Format Icons -->
+        <div class="floating-icons">
+          <span class="icon icon-jpg">JPG</span>
+          <span class="icon icon-png">PNG</span>
+          <span class="icon icon-mov">MOV</span>
+          <span class="icon icon-mp4">MP4</span>
+          <span class="icon icon-webp">WEBP</span>
+        </div>
+
+        <!-- Upload Icon -->
+        <div class="upload-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+
+        <!-- Upload Text -->
+        <div class="upload-text">
+          <p class="main-text">点击上传或将视频/图片拖入此区域</p>
+          <p class="sub-text">支持视频（mp4, mov）或图片（jpg, png, webp）</p>
+        </div>
+
+        <!-- Hidden Input -->
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/png,image/jpg,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm,video/x-msvideo,video/x-matroska,.mp4,.mov,.mkv,.avi,.webm"
+          multiple
+          class="file-input"
+          @change="handleFileSelect"
+        >
       </div>
-      <div class="info-row">
-        <span class="info-label">图片上传：</span>
-        <span class="info-content">
-          · 支持的格式：jpg, png, webp
-          · 最多上传 {{ props.maxImageCount || 15 }} 张图片
-          · 分辨率限制：{{ getMaxResolution().width >= 3840 ? '4K' : `${getMaxResolution().width}x${getMaxResolution().height}` }} 及以下
-        </span>
+
+      <!-- Upload Info -->
+      <div class="upload-info">
+        <div class="info-row">
+          <span class="info-label">视频上传：</span>
+          <span class="info-content">
+            · 支持的格式：mp4, mov
+            · 视频时长限制：最长 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
+            · 一次仅支持 1 个视频
+            · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">图片上传：</span>
+          <span class="info-content">
+            · 支持的格式：jpg, png, webp
+            · 最多上传 {{ props.maxImageCount || 15 }} 张图片
+            · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下
+          </span>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { message } from 'ant-design-vue';
+import { UploadOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
 
 const emit = defineEmits<{
@@ -79,10 +96,26 @@ const props = defineProps<{
   maxVideoDurationSeconds?: number
   maxImageCount?: number
   maxResolution?: { width: number; height: number }
+  compact?: boolean
 }>()
 
-// 默认 4K 分辨率
-const DEFAULT_MAX_RESOLUTION = { width: 3840, height: 2160 }
+// 分辨率参数
+const RESOLUTION_1K = { width: 1920, height: 1080 }
+const RESOLUTION_2K = { width: 2560, height: 1440 }
+const RESOLUTION_4K = { width: 3840, height: 2160 }
+const RESOLUTION_8K = { width: 7680, height: 4320 }
+
+// 默认 2K 分辨率
+const DEFAULT_MAX_RESOLUTION = RESOLUTION_2K
+
+// 获取分辨率标签
+const getResolutionLabel = (width: number, height: number): string => {
+  if (width >= RESOLUTION_8K.width || height >= RESOLUTION_8K.height) return '8K'
+  if (width >= RESOLUTION_4K.width || height >= RESOLUTION_4K.height) return '4K'
+  if (width >= RESOLUTION_2K.width || height >= RESOLUTION_2K.height) return '2K'
+  if (width >= RESOLUTION_1K.width || height >= RESOLUTION_1K.height) return '1K'
+  return `${width}x${height}`
+}
 
 const getMaxResolution = () => props.maxResolution || DEFAULT_MAX_RESOLUTION
 
@@ -110,7 +143,12 @@ const getVideoDimensions = (file: File): Promise<{ width: number; height: number
   return new Promise((resolve) => {
     const video = document.createElement('video')
     video.onloadedmetadata = () => {
-      resolve({ width: video.videoWidth, height: video.videoHeight })
+      if(video.videoWidth > video.videoHeight)
+      {
+        resolve({ width: video.videoWidth, height: video.videoHeight })
+      }else {
+        resolve({ width: video.videoHeight, height: video.videoWidth })
+      }
       URL.revokeObjectURL(video.src)
     }
     video.onerror = () => {
@@ -219,6 +257,23 @@ const handleFileSelect = async (e: Event) => {
   background: rgba(10, 132, 255, 0.05);
 }
 
+.file-upload-compact {
+  background: var(--glass-surface);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 2px dashed var(--glass-border);
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.file-upload-compact:hover,
+.file-upload-compact.dragging {
+  border-color: var(--accent-blue);
+  background: rgba(10, 132, 255, 0.05);
+}
+
+
 .upload-zone {
   position: relative;
   min-height: 280px;
@@ -226,6 +281,30 @@ const handleFileSelect = async (e: Event) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+}
+
+/* Compact mode (re-upload) */
+.compact-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  position: relative;
+}
+
+.compact-zone:hover {
+  color: var(--accent-blue);
+}
+
+.compact-zone .file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
   cursor: pointer;
 }
 

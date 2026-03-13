@@ -775,11 +775,7 @@ export class AnnotationManager extends Script {
             if (this._annotationEditMode) {
                 return;
             }
-            if (this._activeAnnotation === annotation) {
-                this._hideTooltip(annotation);
-            } else {
-                this._showTooltip(annotation);
-            }
+            this._showTooltip(annotation);
         };
         hotspotDom.addEventListener('pointerdown', onPointerDown);
 

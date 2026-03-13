@@ -24,6 +24,12 @@
       </div>
     </div>
 
+    <!-- 访问MetaST链接 -->
+    <div class="home-link-area" @click.stop="$router.push('/')">
+      <HomeOutlined class="home-icon" />
+      <span class="home-text">访问MetaST</span>
+    </div>
+
     <!-- 底部控制栏 -->
     <div
       class="bottom-controls"
@@ -47,22 +53,25 @@
       <!-- 功能按钮 -->
       <div class="control-buttons">
         <div class="btn-group left">
-          <a-tooltip title="播放/暂停">
+          <a-tooltip :title="isLoopPlaying ? '暂停' : '播放'">
             <a-button type="text" class="control-icon-btn" @click.stop="toggleLoopPlay" :disabled="!skullEntity || !viewerControls.isOrbitMode">
               <template #icon>
                 <PauseOutlined v-if="isLoopPlaying" />
                 <CaretRightOutlined v-else />
               </template>
+              {{ isLoopPlaying ? '暂停' : '播放' }}
             </a-button>
           </a-tooltip>
           <a-tooltip title="重置视角">
             <a-button type="text" class="control-icon-btn" @click.stop="resetCamera">
               <template #icon><ReloadOutlined /></template>
+              重置
             </a-button>
           </a-tooltip>
           <a-tooltip title="操作说明">
             <a-button type="text" class="control-icon-btn" @click.stop="showGestureModal = true">
               <template #icon><QuestionCircleOutlined /></template>
+              说明
             </a-button>
           </a-tooltip>
         </div>
@@ -70,16 +79,19 @@
           <a-tooltip title="嵌入代码">
             <a-button type="text" class="control-icon-btn" @click.stop="handleEmbedCodePlaceholder">
               <template #icon><CodeOutlined /></template>
+              嵌入
             </a-button>
           </a-tooltip>
           <a-tooltip title="参数设置">
             <a-button type="text" class="control-icon-btn" @click.stop="toggleSettingsMenu">
               <template #icon><SettingOutlined /></template>
+              设置
             </a-button>
           </a-tooltip>
-          <a-tooltip :title="viewerControls.isOrbitMode ? '切换飞行模式' : '切换轨道模式'">
+          <a-tooltip :title="viewerControls.isOrbitMode ? '切换轨道模式' : '切换飞行模式'">
             <a-button type="text" class="control-icon-btn" :class="{ active: !viewerControls.isOrbitMode }" @click.stop="toggleMeshCursor">
               <template #icon><AimOutlined /></template>
+              {{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}
             </a-button>
           </a-tooltip>
           <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
@@ -88,6 +100,7 @@
                 <BorderOuterOutlined v-if="showGrid" />
                 <BorderOutlined v-else />
               </template>
+              网格
             </a-button>
           </a-tooltip>
           <a-tooltip :title="isFullscreen ? '退出全屏' : '全屏'">
@@ -96,6 +109,7 @@
                 <FullscreenExitOutlined v-if="isFullscreen" />
                 <FullscreenOutlined v-else />
               </template>
+              {{ isFullscreen ? '退出' : '全屏' }}
             </a-button>
           </a-tooltip>
         </div>
@@ -264,6 +278,7 @@ import {
   VerticalAlignTopOutlined,
   VerticalAlignBottomOutlined,
   AimOutlined,
+  HomeOutlined,
 } from '@ant-design/icons-vue';
 import { loadGsplat } from '@/utils/load';
 import { Annotation, AnnotationManager } from '../../scripts/esm/annotations.mjs';
@@ -348,6 +363,7 @@ export default {
     VerticalAlignTopOutlined,
     VerticalAlignBottomOutlined,
     AimOutlined,
+    HomeOutlined,
   },
   props: {
     taskId: {
@@ -404,6 +420,7 @@ export default {
       showGrid: true,
       gridEntity: null,
       showGestureModal: false,
+      hasClickAnnotation: false,
     };
   },
   watch:{
@@ -554,7 +571,7 @@ export default {
       const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
       this.forceStartInteractionFlag = false;
       this.cameraControls?.resetUserInteractionFlag?.();
-      if (!shouldDelayStart) {
+      if (!shouldDelayStart && !this.hasClickAnnotation) {
         this.applyOrbitAngle(startAngle, true);
         this.isLoopPlaying = true;
         return;
@@ -566,6 +583,7 @@ export default {
         if (!this.skullEntity || !this.viewerControls.isOrbitMode) return;
         this.isLoopPlaying = true;
       }, this.loopPlayStartDelayMs);
+      this.hasClickAnnotation = false;
     },
     handleOrbitProgressChange(value) {
       if (!this.skullEntity || !this.viewerControls.isOrbitMode) return;
@@ -1017,6 +1035,7 @@ export default {
       const entity = annotationScript?.entity;
       if (!entity) return;
       this.stopLoopPlayback(false);
+      this.hasClickAnnotation = true;
       this.viewerControls.isOrbitMode = true;
       this.applyAnnotationCameraPose(annotationScript);
     },
@@ -1030,7 +1049,7 @@ export default {
 
       const focus = new pc.Vec3(cameraPose.focus.x, cameraPose.focus.y, cameraPose.focus.z);
       const position = new pc.Vec3(cameraPose.position.x, cameraPose.position.y, cameraPose.position.z);
-      this.cameraControls.reset(focus, position, { immediate: false });
+      this.cameraControls.reset(focus, position, { duration: 0.5 });
       return true;
     },
     scheduleAutoLoopPlay(delayMs = 400) {
@@ -1094,6 +1113,12 @@ export default {
     this.shareId = this.$route.query.shareId || '';
     await this.initViewer();
     await this.getTargetModel();
+
+    // 动态计算右侧面板偏移量
+    this.$nextTick(() => {
+        const offset = 30;
+        document.documentElement.style.setProperty('--panel-right-offset', `${offset}px`);
+    });
   },
   beforeUnmount() {
     document.removeEventListener('fullscreenchange', this.syncFullscreenState);
@@ -1109,7 +1134,6 @@ export default {
 
 <style scoped>
 .render-task-container {
-  --panel-right-offset: 100px;
   --control-btn-size: 44px;
   --control-bar-gap: 8px;
   --panel-gap: 10px;
@@ -1301,6 +1325,46 @@ export default {
   align-items: center;
 }
 
+/* 访问MetaST链接 */
+.home-link-area {
+  position: fixed;
+  left: 24px;
+  bottom: 100px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1001;
+}
+
+.home-link-area:hover {
+  background: rgba(51, 65, 85, 0.9);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.home-link-area:active {
+  transform: translateY(0);
+}
+
+.home-icon {
+  font-size: 16px;
+  color: #60a5fa;
+}
+
+.home-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
 .btn-group {
   display: flex;
   gap: 8px;
@@ -1308,14 +1372,14 @@ export default {
 
 .btn-group.right {
   margin-left: auto;
+  width: fit-content;
 }
 
 .control-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  height: 44px;
   padding: 6px;
   border-radius: 6px;
   color: #fff !important;

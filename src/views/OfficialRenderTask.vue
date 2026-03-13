@@ -260,9 +260,10 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><AppstoreOutlined /></template>
+          特效
         </a-button>
       </a-tooltip>
-      <a-tooltip :title="viewerControls.isOrbitMode ? '切换飞行模式' : '切换轨道模式'" placement="left">
+      <a-tooltip :title="viewerControls.isOrbitMode ? '切换轨道模式' : '切换飞行模式'" placement="left">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -272,6 +273,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><AimOutlined /></template>
+          {{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}
         </a-button>
       </a-tooltip>
       <a-tooltip title="参数设置" placement="left">
@@ -284,6 +286,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><SettingOutlined /></template>
+          设置
         </a-button>
       </a-tooltip>
       <a-tooltip title="模型编辑" placement="left" v-if="false">
@@ -296,6 +299,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><EditOutlined /></template>
+          编辑
         </a-button>
       </a-tooltip>
       <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left" v-if="false">
@@ -308,6 +312,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><MessageOutlined /></template>
+          标注
         </a-button>
       </a-tooltip>
       <a-tooltip title="生成视频" placement="left">
@@ -321,6 +326,7 @@
 
         >
           <template #icon><VideoCameraOutlined /></template>
+          视频
         </a-button>
       </a-tooltip>
     </div>
@@ -350,22 +356,25 @@
       <div class="control-buttons">
         <!-- 左侧按钮组：播放/暂停、重置 -->
         <div class="btn-group left">
-          <a-tooltip title="播放/暂停">
+          <a-tooltip :title="isLoopPlaying ? '暂停' : '播放'">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleLoopPlay" :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo">
               <template #icon>
                 <PauseOutlined v-if="isLoopPlaying" />
                 <CaretRightOutlined v-else />
               </template>
+              {{ isLoopPlaying ? '暂停' : '播放' }}
             </a-button>
           </a-tooltip>
           <a-tooltip title="重置视角">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="resetCamera" :disabled="!skullEntity || isRecordingVideo || isEncodingVideo">
               <template #icon><ReloadOutlined /></template>
+              重置
             </a-button>
           </a-tooltip>
           <a-tooltip title="操作说明">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="showGestureModal = true" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><QuestionCircleOutlined /></template>
+              说明
             </a-button>
           </a-tooltip>
         </div>
@@ -375,16 +384,19 @@
           <a-tooltip title="分享">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleSharePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><ShareAltOutlined /></template>
+              分享
             </a-button>
           </a-tooltip>
           <a-tooltip title="导出模型">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleExportPlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><ExportOutlined /></template>
+              导出
             </a-button>
           </a-tooltip>
           <a-tooltip title="嵌入代码">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleEmbedCodePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><CodeOutlined /></template>
+              嵌入
             </a-button>
           </a-tooltip>
             <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
@@ -393,6 +405,7 @@
                 <BorderOutlined v-if="showGrid" />
                 <BorderOuterOutlined v-else />
               </template>
+              网格
             </a-button>
           </a-tooltip>
           <a-tooltip :title="isFullscreen ? '退出全屏' : '全屏'">
@@ -401,6 +414,7 @@
                 <FullscreenExitOutlined v-if="isFullscreen" />
                 <FullscreenOutlined v-else />
               </template>
+              {{ isFullscreen ? '退出' : '全屏' }}
             </a-button>
           </a-tooltip>
         </div>
@@ -1050,7 +1064,8 @@ export default {
       mouseDownPos: { x: 0, y: 0 },
       isMobile: false,
       showGrid: true,
-      gridEntity: null, 
+      gridEntity: null,
+      hasClickAnnotation: false,
     };
   },
   watch:{
@@ -1294,7 +1309,7 @@ export default {
       const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
       this.forceStartInteractionFlag = false;
       this.cameraControls?.resetUserInteractionFlag?.();
-      if (!shouldDelayStart) {
+      if (!shouldDelayStart && !this.hasClickAnnotation) {
         this.applyOrbitAngle(startAngle, true);
         this.isLoopPlaying = true;
         return;
@@ -1306,6 +1321,7 @@ export default {
         if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
         this.isLoopPlaying = true;
       }, this.loopPlayStartDelayMs);
+      this.hasClickAnnotation = false;
     },
     handleOrbitProgressChange(value) {
       if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
@@ -1626,7 +1642,7 @@ export default {
 
       const focus = new pc.Vec3(cameraPose.focus.x, cameraPose.focus.y, cameraPose.focus.z);
       const position = new pc.Vec3(cameraPose.position.x, cameraPose.position.y, cameraPose.position.z);
-      this.cameraControls.reset(focus, position);
+      this.cameraControls.reset(focus, position, { duration: 0.5 });
       return true;
     },
 
@@ -1923,6 +1939,7 @@ export default {
         this.openAnnotationDialog('edit', entity);
       } else {
         this.stopLoopPlayback(false);
+        this.hasClickAnnotation = true;
         this.viewerControls.isOrbitMode = true;
         this.applyAnnotationCameraPose(annotationScript);
       }
@@ -2947,6 +2964,16 @@ export default {
     await this.initViewer();
     await this.getTargetModel();
 
+    // 动态计算右侧面板偏移量
+    this.$nextTick(() => {
+      const rightBtnGroup = document.querySelector('.right-center-controls');
+      if (rightBtnGroup) {
+        const btnWidth = rightBtnGroup.getBoundingClientRect().width;
+        const offset = btnWidth + 30;
+        document.documentElement.style.setProperty('--panel-right-offset', `${offset}px`);
+      }
+    });
+
     // const loadLocalModel = async () => {
     //   try {
     //     const localFilePath = 'test3.sog';
@@ -3491,7 +3518,6 @@ export default {
   --control-btn-size: 44px;
   --control-bar-gap: 16px;
   --panel-gap: 10px;
-  --panel-right-offset: calc(var(--control-btn-size) + var(--control-bar-gap) + var(--panel-gap));
   height: 100vh;
   background: radial-gradient(circle at 50% 0%, #1b2130 0%, #0f1218 45%, #0b0e13 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -4579,6 +4605,7 @@ export default {
 
 .btn-group.right {
   flex-shrink: 0;
+  width: fit-content;
 }
 
 .btn-group.right-center {
@@ -4663,7 +4690,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--control-btn-size);
   height: var(--control-btn-size);
   padding: 6px;
   border-radius: 8px;
