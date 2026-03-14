@@ -331,6 +331,17 @@
       </a-tooltip>
     </div>
 
+    <!-- 标注标题切换 -->
+    <div v-if="showContorlWidget && annotataions.length > 0 && shouldShowAnnotation" class="annotation-cycling">
+      <a-button type="text" class="annotation-nav-btn" @click.stop="prevAnnotation">
+        <LeftOutlined />
+      </a-button>
+      <span class="annotation-current-title">{{ getCurrentAnnotationTitle() }}</span>
+      <a-button type="text" class="annotation-nav-btn" @click.stop="nextAnnotation">
+        <RightOutlined />
+      </a-button>
+    </div>
+
     <!-- 底部控制栏 -->
     <div
       class="bottom-controls"
@@ -347,7 +358,7 @@
           :step="0.1"
           :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
           @change="handleOrbitProgressChange"
-          @afterChange="toggleLoopPlay"
+          @afterChange="isLoopPlaying = true"
           class="orbit-slider"
         />
       </div>
@@ -765,6 +776,8 @@ import {
   MobileOutlined,
   BorderOutlined,
   BorderOuterOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons-vue';
 import { createEffect, GsplatEffectType, removeAllEffects } from '@/utils/revel';
 import { loadGsplat } from '@/utils/load';
@@ -928,6 +941,8 @@ export default {
     MobileOutlined,
     BorderOutlined,
     BorderOuterOutlined,
+    LeftOutlined,
+    RightOutlined,
   },
   props: {
     taskId: {
@@ -1046,6 +1061,8 @@ export default {
       index: 0,
       manager: null,
       annotataions: [], // 存储编辑生成的标注
+      shouldShowAnnotation: true,
+      currentAnnotationIndex: 0,
       defaultAnnotationEntity: null,
       isAnnotationDialogOpen: false,
       annotationDialogMode: 'view', // view | create | edit
@@ -1101,6 +1118,38 @@ export default {
       } else {
         this.$router.push('/')
       }
+    },
+
+    // 获取当前标注标题
+    getCurrentAnnotationTitle() {
+      const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
+      if (titles.length === 0) return ''
+      return titles[this.currentAnnotationIndex] || ''
+    },
+
+    // 切换到上一个标注
+    prevAnnotation() {
+      const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
+      if (titles.length === 0) return
+      this.currentAnnotationIndex = (this.currentAnnotationIndex - 1 + titles.length) % titles.length
+      this.focusAnnotation(this.currentAnnotationIndex)
+    },
+
+    // 切换到下一个标注
+    nextAnnotation() {
+      const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
+      if (titles.length === 0) return
+      this.currentAnnotationIndex = (this.currentAnnotationIndex + 1) % titles.length
+      this.focusAnnotation(this.currentAnnotationIndex)
+    },
+
+    // 聚焦指定标注
+    focusAnnotation(index) {
+      const annotations = this.annotataions
+      if (!annotations || annotations.length === 0) return
+      const annotation = annotations[index]
+      if (!annotation || !annotation.script || !annotation.script.annotation) return
+      this.manager._annotationResources.get(annotation.script.annotation).hotspotDom.dispatchEvent(new PointerEvent('pointerdown'))
     },
 
     // 控制底部栏显示/隐藏
@@ -1186,18 +1235,25 @@ export default {
       meshInstances.slice(1).forEach(mi => aabb.add(mi.aabb));
       return aabb.center.clone();
     },
-    initLoopPlaybackState() {
+    initLoopPlaybackState(cameraPose = null) {
       if (!this.cameraEntity || !this.cameraControls || !this.skullEntity) return false;
       if (this.orbitPlaybackFocus && this.orbitPlaybackVector && this.orbitPlaybackStartPos) {
         return true;
       }
+      let center, currentPos, vec;
+      if(cameraPose) {
+        center = cameraPose.focus;
+        currentPos = cameraPose.cameraPosition;
+        vec = currentPos.clone().sub(center);
+        if (vec.length() < 1e-6) return false;
+      }else{
+        center = this.getModelCenter();
+        if (!center) return false;
 
-      const center = this.getModelCenter();
-      if (!center) return false;
-
-      const currentPos = this.cameraEntity.getPosition().clone();
-      const vec = currentPos.clone().sub(center);
-      if (vec.length() < 1e-6) return false;
+        currentPos = this.cameraEntity.getPosition().clone();
+        vec = currentPos.clone().sub(center);
+        if (vec.length() < 1e-6) return false;
+      }
 
       this.orbitPlaybackFocus = center;
       this.orbitPlaybackStartPos = currentPos;
@@ -1935,6 +1991,13 @@ export default {
       const entity = annotationScript?.entity;
       if (!entity) return;
 
+      // 更新当前标注索引
+      const index = this.annotataions.findIndex(item => 
+        item.script.annotation.label === annotationScript.label)
+      if (index >= 0) {
+        this.currentAnnotationIndex = index
+      }
+      
       if (this.isAnnotationEditMenuOpen) {
         this.openAnnotationDialog('edit', entity);
       } else {
@@ -4868,6 +4931,65 @@ export default {
 .gesture-detail {
   font-size: 12px;
   color: #8c8c8c;
+}
+
+/* 标注标题切换 */
+.annotation-cycling {
+  min-width: 280px;
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  z-index: 1001;
+  animation: modeTipFadeIn 0.3s ease;
+}
+
+.annotation-current-title {
+  font-size: 14px;
+  color: #fff;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.annotation-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.annotation-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+
+@keyframes modeTipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* :deep(.ant-btn)
