@@ -1437,6 +1437,7 @@ export default {
               'easeInOut': Easing.easeInOutCubic,
               'smooth': Easing.smoothstep
             };
+            console.log()
             const easingFn = easingMap[this.customMotion.interpolationType] || Easing.easeInOutCubic;
             targetPos = applyPathMotion(pathPoints, angle / 360, easingFn);
           } else {
