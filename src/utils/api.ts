@@ -112,6 +112,9 @@ const API = {
   RENAME_API_KEY: '/api/apiKey/renameApiKey',
   GET_OPEN_CREDITS: '/api/apiKey/getOpenCredits',
   GET_OPEN_CREDITS_LOGS: '/api/apiKey/getLogs',
+  SET_WEBHOOKS: '/api/apiKey/setWebhooks',
+  GET_WEBHOOKS: '/api/apiKey/getWebhooks',
+  DELETE_WEBHOOKS: '/api/apiKey/deleteWebhooks',
 } as const;
 
 export default API;

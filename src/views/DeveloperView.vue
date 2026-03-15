@@ -106,12 +106,12 @@
               <div class="card-value">{{ usage.left }}</div>
               <div class="card-bottom-text">开发算力点有效期：永久</div>
             </div>
-            <button class="btn-cyan btn-topup">
+            <!-- <button class="btn-cyan btn-topup">
               <svg viewBox="0 0 24 24" fill="currentColor" class="btn-icon" width="16" height="16">
                 <path d="M4 6V4a2 2 0 012-2h12a2 2 0 012 2v2M4 6v14a2 2 0 002 2h12a2 2 0 002-2V6M4 6h16M11 12h2M11 16h2"/>
               </svg>
               充值
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -171,26 +171,39 @@
     <div v-else class="tab-content">
       <div class="section-header">
         <h2>Webhooks</h2>
-        <a-button type="primary" @click="showCreateWebhookModal = true">Add Webhook</a-button>
+        <a-button type="primary" @click="openWebhookModal()">
+          {{ hasWebhook ? 'Edit Webhook' : 'Add Webhook' }}
+        </a-button>
       </div>
-      <p class="section-desc">Manage your webhook endpoints to receive notifications when events happen.</p>
+      <p class="section-desc">使用webHooks监听模型状态改变事件</p>
 
       <div class="custom-card table-container">
         <table class="custom-table">
           <thead>
             <tr>
               <th>Callback URL</th>
-              <th>Status</th>
               <th>Created</th>
               <th width="50"></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="wh in webhooks" :key="wh.id">
+            <tr v-for="wh in webhooks" :key="wh.url">
               <td>{{ wh.url }}</td>
-              <td><span class="status-badge" :class="wh.status">{{ wh.status }}</span></td>
-              <td>{{ wh.created }}</td>
-              <td><button class="actions-btn">···</button></td>
+              <td>
+                <a-dropdown placement="bottomRight">
+                  <button class="actions-btn">···</button>
+                  <template #overlay>
+                    <a-menu>
+                      <a-menu-item @click="openWebhookModal(wh)">
+                        编辑
+                      </a-menu-item>
+                      <a-menu-item @click="deleteWebhook" style="color: #ff4d4f">
+                        删除
+                      </a-menu-item>
+                    </a-menu>
+                  </template>
+                </a-dropdown>
+              </td>
             </tr>
             <tr v-if="webhooks.length === 0">
               <td colspan="4" class="empty-text">No Webhooks found.</td>
@@ -239,25 +252,32 @@
 
     <a-modal
       v-model:open="showCreateWebhookModal"
-      title="Create Webhook"
+      :title="isEditingWebhook ? 'Edit Webhook' : 'Create Webhook'"
       @ok="createWebhook"
-      @cancel="showCreateWebhookModal = false"
-      okText="Add"
+      @cancel="closeWebhookModal"
+      :okText="isEditingWebhook ? 'Save' : 'Add'"
       cancelText="Cancel"
-      :okButtonProps="{ disabled: !newWebhookUrl, loading: isCreatingWebhook }"
+      :okButtonProps="{ disabled: !isWebhookFormValid, loading: isCreatingWebhook }"
     >
       <div class="form-group">
         <label>Callback URL</label>
         <a-input-group compact>
           <a-input style="width: 110px" value="https://" disabled />
-          <a-input v-model:value="newWebhookUrl" placeholder="example.com/webhook" style="width: calc(100% - 110px)" />
+          <a-input
+            v-model:value="newWebhookUrl"
+            :maxlength="80"
+            placeholder="example.com/webhook"
+            style="width: calc(100% - 110px)"
+          />
         </a-input-group>
-        <p class="form-help">A POST request will be sent to this URL each time an event is triggered in MetaST</p>
+        <p v-if="webhookUrlError" class="form-error">{{ webhookUrlError }}</p>
+        <p class="form-help">每当模型重建进度发生改变时，相关信息会发送到此 URL地址</p>
       </div>
       <div class="form-group mt-4">
-        <label>Signing Secret</label>
-        <a-input-password v-model:value="newWebhookSecret" placeholder="********" />
-        <p class="form-help">A secret used to sign each request and verify that the webhook is sent from MetaST via the X-Signature header</p>
+        <label>Secret</label>
+        <a-input-password v-model:value="newWebhookSecret" placeholder="********" :maxlength="50" />
+        <p v-if="webhookSecretError" class="form-error">{{ webhookSecretError }}</p>
+        <p class="form-help">用于签署每个请求的密钥，并通过 X-Signature 头验证 webhook 是否来自 MetaST</p>
       </div>
     </a-modal>
 
@@ -280,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, createVNode } from 'vue'
+import { ref, createVNode, computed } from 'vue'
 import { Modal, message } from 'ant-design-vue'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import API from '@/utils/api'
@@ -301,6 +321,7 @@ const newWebhookUrl = ref('')
 const newWebhookSecret = ref('')
 const editingKeyName = ref('')
 const createdApiKey = ref('')
+const isEditingWebhook = ref(false)
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -337,10 +358,8 @@ type ApiKey = {
 }
 
 type Webhook = {
-  id: number
   url: string
-  status: 'active' | 'inactive'
-  created: string
+  secret: string
 }
 
 const editingKeyId = ref<ApiKey['id'] | null>(null)
@@ -353,6 +372,51 @@ const usage = ref({
 const apiKeys = ref<ApiKey[]>([])
 
 const webhooks = ref<Webhook[]>([])
+
+const hasWebhook = computed(() => webhooks.value.length > 0)
+
+const hostnameRegex = /^(?=.{1,253}$)(?!-)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$/
+
+const normalizeWebhookInput = (value: string) => value.trim()
+
+const buildWebhookUrl = (value: string) => {
+  const trimmed = normalizeWebhookInput(value)
+  if (!trimmed) return ''
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
+}
+
+const isValidWebhookUrl = computed(() => {
+  const trimmed = normalizeWebhookInput(newWebhookUrl.value)
+  if (!trimmed) return false
+  if (/\s/.test(trimmed)) return false
+  const urlString = buildWebhookUrl(trimmed)
+  try {
+    const parsed = new URL(urlString)
+    return hostnameRegex.test(parsed.hostname)
+  } catch (error) {
+    return false
+  }
+})
+
+const webhookUrlError = computed(() => {
+  if (!newWebhookUrl.value) return ''
+  return isValidWebhookUrl.value ? '' : '请输入合法域名'
+})
+
+const webhookSecretError = computed(() => {
+  if (!newWebhookSecret.value) return ''
+  const length = newWebhookSecret.value.length
+  if (length < 6) return 'Secret长度不能少于6'
+  return length > 50 ? 'Signing Secret长度不能超过50' : ''
+})
+
+const isWebhookSecretValid = computed(() => {
+  const length = newWebhookSecret.value.length
+  return length >= 6 && length <= 150
+})
+
+const isWebhookFormValid = computed(() => isValidWebhookUrl.value && isWebhookSecretValid.value)
 
 const history = ref([
 ])
@@ -486,20 +550,90 @@ const deleteApiKey = (id: ApiKey['id']) => {
 }
 
 const createWebhook = async () => {
-  if (!newWebhookUrl.value || isCreatingWebhook.value) return
+  if (!isWebhookFormValid.value || isCreatingWebhook.value) return
   isCreatingWebhook.value = true
   try {
-    webhooks.value.push({
-      id: Date.now(),
-      url: 'https://' + newWebhookUrl.value,
-      status: 'active',
-      created: new Date().toLocaleString()
+    const url = buildWebhookUrl(newWebhookUrl.value)
+    const payload = {
+      web_hooks: url,
+      signing_secret: newWebhookSecret.value
+    }
+    const response = await ApiServer.request({
+      url: API.SET_WEBHOOKS,
+      method: 'post',
+      data: payload
     })
-    showCreateWebhookModal.value = false
-    newWebhookUrl.value = ''
-    newWebhookSecret.value = ''
+    if (response?.data?.code == 200) {
+      message.success(isEditingWebhook.value ? '修改成功' : '创建成功')
+      getWebhooks()
+    }
+    closeWebhookModal()
   } finally {
     isCreatingWebhook.value = false
+  }
+}
+
+const openWebhookModal = (webhook?: Webhook) => {
+  if (webhook) {
+    isEditingWebhook.value = true
+    newWebhookUrl.value = webhook.url.replace(/^https?:\/\//i, '')
+    newWebhookSecret.value = webhook.secret
+  } else if (hasWebhook.value) {
+    const current = webhooks.value[0]
+    isEditingWebhook.value = true
+    newWebhookUrl.value = current.url.replace(/^https?:\/\//i, '')
+    newWebhookSecret.value = current.secret
+  } else {
+    isEditingWebhook.value = false
+    newWebhookUrl.value = ''
+    newWebhookSecret.value = ''
+  }
+  showCreateWebhookModal.value = true
+}
+
+const closeWebhookModal = () => {
+  showCreateWebhookModal.value = false
+  isEditingWebhook.value = false
+  newWebhookUrl.value = ''
+  newWebhookSecret.value = ''
+}
+
+const deleteWebhook = () => {
+  Modal.confirm({
+    title: '删除 Webhook',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: '您确定要删除此 Webhook 吗？此操作无法撤销。',
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    onOk() {
+      ApiServer.request({
+        url: API.DELETE_WEBHOOKS,
+        method: 'delete'
+      }).then(response => {
+        if (response?.data?.code == 200) {
+          message.success('Webhook 删除成功')
+          webhooks.value = []
+        } else {
+          // message.error('删除 Webhook 失败')
+        }
+      })
+    }
+  })
+}
+
+const getWebhooks = async () => {
+  try {
+    const response = await ApiServer.request({
+      url: API.GET_WEBHOOKS,
+      method: 'get'
+    })
+    const hooks = response?.data?.data || []
+    webhooks.value = [{
+      url: hooks.web_hooks,
+      secret: hooks.signing_secret
+    }]
+  } catch (error) {
   }
 }
 
@@ -554,6 +688,7 @@ const getLogs = async () => {
 fetchApiKeys()
 getOpenCredits()
 getLogs()
+getWebhooks()
 </script>
 
 <style scoped>
@@ -934,6 +1069,13 @@ getLogs()
 .form-help {
   font-size: 13px;
   color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.form-error {
+  font-size: 13px;
+  color: #ff4d4f;
   margin-top: 8px;
   line-height: 1.4;
 }

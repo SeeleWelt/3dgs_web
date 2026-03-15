@@ -122,7 +122,7 @@
 										<td>videos</td>
 										<td>File</td>
 										<td>是</td>
-										<td>上传视频文件，字段名固定为 videos，仅 1 个文件</td>
+										<td>上传视频文件，字段名固定为 videos，支持 .mp4/.avi/.mov/.mkv/.webm，只支持单文件；最大 1GB</td>
 									</tr>
 									<tr>
 										<td>Form</td>
@@ -146,6 +146,8 @@
 							<div class="code-card">
 								<div class="code-title">成功响应示例</div>
 								<pre><code class="language-json">{
+  "code": 200,
+  "message": "Success",
   "task_id": "b7a21c63-3f23-4b1c-bd2d-8c9d7e1d5c1f",
   "task_name": "my_task"
 }</code></pre>
@@ -180,12 +182,6 @@
 										<td>String</td>
 										<td>否</td>
 										<td>用户自定义物体描述</td>
-									</tr>
-									<tr>
-										<td>videos</td>
-										<td>File</td>
-										<td>是</td>
-										<td>支持 .mp4/.avi/.mov/.mkv/.webm，单文件；最大 10GB</td>
 									</tr>
 								</tbody>
 							</table>
@@ -503,14 +499,14 @@ Binary file stream</code></pre>
 						<div class="info-title">Webhook 需要满足以下三项要素</div>
 						<ol class="doc-list">
 							<li>
-								Webhook 可在控制台“设置 &gt; Webhooks”中创建与管理。
+								Webhook 可在开发者中心“设置 &gt; Webhooks”中创建与管理。
 							</li>
 							<li>
 								回调地址（Callback URL）：当模型状态变更时，系统会向该地址发送 POST 请求。
 							</li>
 							<li>
-								签名密钥（Signing Secret）：长度 6-40 的随机字符串，用于签名每次请求。
-								请在服务端校验签名以确认请求来自 3DGS。
+								签名密钥（Secret）：长度 6-50 的随机字符串，用于签名每次请求。
+								用于加密回调内容，请在服务端使用相同密钥解密。
 							</li>
 						</ol>
 					</div>
@@ -519,31 +515,130 @@ Binary file stream</code></pre>
 						<h3>重要说明</h3>
 						<ol class="doc-list emphasis">
 							<li>请确保 NotifyUrl 可被公网访问。</li>
-							<li>请使用 POST 方法并以 JSON 形式接收 status 与 serialize 数据。</li>
-							<li>收到通知后请返回 HTTP 200。</li>
+							<li>回调为 POST JSON，字段为 data/iv/tag，需用 secret 解密。</li>
+							<li>收到通知后请返回 HTTP 200，否则每 30s 重试一次，最多 3 次。</li>
 						</ol>
+					</div>
+					<div class="code-card">
+						<div class="code-title">参数解密示例 (Node.js)</div>
+						<pre><code class="language-javascript">const crypto = require('crypto');
+
+function decryptWebhookPayload(payload, secret) {
+  const key = crypto.createHash('sha256').update(String(secret)).digest();
+  const iv = Buffer.from(payload.iv, 'base64');
+  const tag = Buffer.from(payload.tag, 'base64');
+  const data = Buffer.from(payload.data, 'base64');
+
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  const decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
+
+  return JSON.parse(decrypted.toString('utf8'));
+}
+</code></pre>
+					</div>
+					<div class="code-card">
+						<div class="code-title">参数解密示例 (Python)</div>
+						<pre><code class="language-python">import base64
+import hashlib
+import json
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+def decrypt_webhook_payload(payload, secret):
+    key = hashlib.sha256(secret.encode('utf-8')).digest()
+    iv = base64.b64decode(payload['iv'])
+    data = base64.b64decode(payload['data'])
+    tag = base64.b64decode(payload['tag'])
+    aesgcm = AESGCM(key)
+    plaintext = aesgcm.decrypt(iv, data + tag, None)
+    return json.loads(plaintext.decode('utf-8'))
+</code></pre>
 					</div>
 				</section>
 
 				<section id="errors" class="doc-section">
 					<div class="section-header">
 						<h2>错误</h2>
-						<p>所有错误返回统一格式（待补充）。</p>
+						<p>所有错误返回统一格式。</p>
 					</div>
 					<div class="code-card">
 						<div class="code-title">错误响应示例</div>
 						<pre><code class="language-json">{
-	"code": "ERROR_CODE",
-	"message": "Human readable message",
-	"requestId": "trace-id"
+	"code": 2002,
+	"message": "任务ID格式不正确"
 }</code></pre>
+					</div>
+					<div>
+						<h4>业务错误码</h4>
+						<table class="param-table">
+							<thead>
+								<tr>
+									<th>错误码</th>
+									<th>说明</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>2001</td>
+									<td>缺少 task_id</td>
+								</tr>
+								<tr>
+									<td>2002</td>
+									<td>任务ID格式不正确</td>
+								</tr>
+								<tr>
+									<td>2003</td>
+									<td>无权访问此任务</td>
+								</tr>
+								<tr>
+									<td>2004</td>
+									<td>任务未找到</td>
+								</tr>
+								<tr>
+									<td>2005</td>
+									<td>任务尚未完成</td>
+								</tr>
+								<tr>
+									<td>2006</td>
+									<td>模型已超过7天，不提供下载</td>
+								</tr>
+								<tr>
+									<td>2007</td>
+									<td>不支持的格式</td>
+								</tr>
+								<tr>
+									<td>2008</td>
+									<td>模型文件未找到</td>
+								</tr>
+								<tr>
+									<td>2010</td>
+									<td>剩余可用算力点不足</td>
+								</tr>
+								<tr>
+									<td>2011</td>
+									<td>任务名称不符合要求</td>
+								</tr>
+								<tr>
+									<td>2012</td>
+									<td>参数不合格</td>
+								</tr>
+								<tr>
+									<td>2500</td>
+									<td>服务器错误</td>
+								</tr>
+								<tr>
+									<td>2501</td>
+									<td>上传失败</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</section>
 
 				<section id="status-codes" class="doc-section">
 					<div class="section-header">
 						<h2>状态码</h2>
-						<p>HTTP 状态码说明（待补充）。</p>
+						<p>HTTP 状态码说明。</p>
 					</div>
 					<table class="param-table">
 						<thead>
@@ -568,6 +663,21 @@ Binary file stream</code></pre>
 								<td>401</td>
 								<td>Unauthorized</td>
 								<td>鉴权失败</td>
+							</tr>
+							<tr>
+								<td>403</td>
+								<td>Forbidden</td>
+								<td>无权访问资源</td>
+							</tr>
+							<tr>
+								<td>404</td>
+								<td>Not Found</td>
+								<td>资源未找到</td>
+							</tr>
+							<tr>
+								<td>420</td>
+								<td>Insufficient Credits</td>
+								<td>算力点不足</td>
 							</tr>
 							<tr>
 								<td>500</td>

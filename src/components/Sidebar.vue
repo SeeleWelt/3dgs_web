@@ -203,7 +203,7 @@ const toolsMenu = computed(() => [
   // { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },
   // { name: 'unreal', label: t('sidebar.unreal'), path: '/tools/unreal', icon: UnrealIcon },
   { name: 'tutorial', label: t('sidebar.tutorial'), path: '/tools/tutorial', icon: TutorialIcon },
-  { name: 'settings', label: t('sidebar.settings'), path: '/tools/settings', icon: SettingsIcon },
+  // { name: 'settings', label: t('sidebar.settings'), path: '/tools/settings', icon: SettingsIcon },
   { name: 'feedback', label: t('sidebar.feedback'), path: '/tools/feedback', icon: FeedbackIcon }
 ])
 

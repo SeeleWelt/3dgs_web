@@ -415,6 +415,7 @@ const submitProject = async () => {
       url: API.UPLOAD_TASK,
       method: 'post',
       data: formData,
+      timeout: 10 * 60 * 1000, // 10分钟超时
       headers: {
         'Content-Type': 'multipart/form-data',
       },
