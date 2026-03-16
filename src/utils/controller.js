@@ -812,7 +812,6 @@ class CameraControls {
         const fitDistance = radius / Math.sin(0.5 * fov);
         const padding = 1.3; // 适当增加距离，避免过于贴近
         const targetDistance = fitDistance * padding;
-
         const currentZoomRange = new Vec2(targetDistance, 50);
         const maxZoom = Math.min(currentZoomRange.y, targetDistance * 2);
         this.zoomRange = new Vec2(fitDistance, maxZoom);

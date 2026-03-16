@@ -388,6 +388,96 @@ export function applyPathMotion(
 }
 
 /**
+ * 基于时间区间的路径运动
+ * 根据每段路径的实际时长来计算位置
+ *
+ * @param pathPoints - 路径点数组（至少2个点）
+ * @param time - 当前时间（秒）
+ * @param durations - 每段路径的持续时间数组，长度应为 pathPoints.length - 1
+ *                   例如：[2, 3, 1] 表示第1→2点用2秒，第2→3点用3秒，第3→4点用1秒
+ * @param easing - 缓动函数
+ * @returns 路径上的位置
+ *
+ * @example
+ * const pathPoints = [p0, p1, p2, p3];
+ * const durations = [2, 3, 1]; // 第0→1点2秒，第1→2点3秒，第2→3点1秒
+ * const pos = applyTimedPathMotion(pathPoints, 1.5, durations); // 1.5秒时的位置（在第1段中间）
+ */
+export function applyTimedPathMotion(
+  pathPoints: pc.Vec3[],
+  time: number,
+  durations: number[],
+  easing: EasingFunction = Easing.easeInOutQuad
+): pc.Vec3 {
+  if (!pathPoints || pathPoints.length < 2 || !durations || durations.length < 1) {
+    return pathPoints?.[0] ? pathPoints[0].clone() : new pc.Vec3();
+  }
+
+  const n = pathPoints.length;
+  const segmentCount = n - 1;
+
+  // 验证 durations 长度
+  if (durations.length !== segmentCount) {
+    console.warn(`durations length (${durations.length}) does not match path segments (${segmentCount}), using available durations`);
+  }
+
+  // 计算总时间
+  const totalDuration = durations.reduce((sum, d) => sum + d, 0);
+
+  if (totalDuration <= 0) {
+    return pathPoints[0].clone();
+  }
+
+  // 只有一个点
+  if (n === 1) {
+    return pathPoints[0].clone();
+  }
+
+  // 边界处理
+  const clampedTime = Math.max(0, Math.min(time, totalDuration));
+
+  // 计算累计时间数组
+  const cumulativeTimes: number[] = [0];
+  for (let i = 0; i < durations.length; i++) {
+    cumulativeTimes.push(cumulativeTimes[i] + durations[i]);
+  }
+
+  // 找到当前时间所在的段
+  let segmentIndex = 0;
+  for (let i = 0; i < segmentCount; i++) {
+    if (clampedTime >= cumulativeTimes[i] && clampedTime <= cumulativeTimes[i + 1]) {
+      segmentIndex = i;
+      break;
+    }
+    if (i === segmentCount - 1) {
+      segmentIndex = segmentCount - 1;
+    }
+  }
+
+  // 计算在当前段内的局部时间 [0, 1]
+  const segmentStartTime = cumulativeTimes[segmentIndex];
+  const segmentEndTime = cumulativeTimes[Math.min(segmentIndex + 1, cumulativeTimes.length - 1)];
+  const segmentDuration = segmentEndTime - segmentStartTime;
+
+  if (segmentDuration <= 0) {
+    return pathPoints[Math.min(segmentIndex + 1, n - 1)].clone();
+  }
+
+  const localT = (clampedTime - segmentStartTime) / segmentDuration;
+
+  // 应用缓动
+  const easedLocalT = easing(Math.min(1, Math.max(0, localT)));
+
+  // 获取四个控制点
+  const p0 = pathPoints[Math.max(0, segmentIndex - 1)];
+  const p1 = pathPoints[segmentIndex];
+  const p2 = pathPoints[Math.min(segmentIndex + 1, n - 1)];
+  const p3 = pathPoints[Math.min(segmentIndex + 2, n - 1)];
+
+  return catmullRom(p0, p1, p2, p3, easedLocalT);
+}
+
+/**
  * 复合运镜
  * 组合多种运镜效果
  *
