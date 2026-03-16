@@ -43,7 +43,6 @@
             <tr>
               <th>Name</th>
               <th>Key</th>
-              <th>Usage</th>
               <th>Created</th>
               <th width="50"></th>
             </tr>
@@ -52,7 +51,6 @@
             <tr v-for="key in apiKeys" :key="key.id">
               <td>{{ key.name }}</td>
               <td>{{ key.key }}</td>
-              <td>{{ key.usage }} 算力点</td>
               <td>{{ key.created }}</td>
               <td>
                 <a-dropdown placement="bottomRight">

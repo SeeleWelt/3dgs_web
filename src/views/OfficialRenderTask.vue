@@ -260,9 +260,10 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><AppstoreOutlined /></template>
+          特效
         </a-button>
       </a-tooltip>
-      <a-tooltip :title="viewerControls.isOrbitMode ? '切换飞行模式' : '切换轨道模式'" placement="left">
+      <a-tooltip :title="viewerControls.isOrbitMode ? '切换轨道模式' : '切换飞行模式'" placement="left">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -272,6 +273,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><AimOutlined /></template>
+          {{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}
         </a-button>
       </a-tooltip>
       <a-tooltip title="参数设置" placement="left">
@@ -284,6 +286,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><SettingOutlined /></template>
+          设置
         </a-button>
       </a-tooltip>
       <a-tooltip title="模型编辑" placement="left" v-if="false">
@@ -296,6 +299,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><EditOutlined /></template>
+          编辑
         </a-button>
       </a-tooltip>
       <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left" v-if="false">
@@ -308,6 +312,7 @@
           :disabled="isRecordingVideo || isEncodingVideo"
         >
           <template #icon><MessageOutlined /></template>
+          标注
         </a-button>
       </a-tooltip>
       <a-tooltip title="生成视频" placement="left">
@@ -321,8 +326,20 @@
 
         >
           <template #icon><VideoCameraOutlined /></template>
+          视频
         </a-button>
       </a-tooltip>
+    </div>
+
+    <!-- 标注标题切换 -->
+    <div v-if="showContorlWidget && annotataions.length > 0 && shouldShowAnnotation" class="annotation-cycling">
+      <a-button type="text" class="annotation-nav-btn" @click.stop="prevAnnotation">
+        <LeftOutlined />
+      </a-button>
+      <span class="annotation-current-title">{{ getCurrentAnnotationTitle() }}</span>
+      <a-button type="text" class="annotation-nav-btn" @click.stop="nextAnnotation">
+        <RightOutlined />
+      </a-button>
     </div>
 
     <!-- 底部控制栏 -->
@@ -341,7 +358,7 @@
           :step="0.1"
           :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
           @change="handleOrbitProgressChange"
-          @afterChange="toggleLoopPlay"
+          @afterChange="isLoopPlaying = true"
           class="orbit-slider"
         />
       </div>
@@ -350,22 +367,25 @@
       <div class="control-buttons">
         <!-- 左侧按钮组：播放/暂停、重置 -->
         <div class="btn-group left">
-          <a-tooltip title="播放/暂停">
+          <a-tooltip :title="isLoopPlaying ? '暂停' : '播放'">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleLoopPlay" :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo">
               <template #icon>
                 <PauseOutlined v-if="isLoopPlaying" />
                 <CaretRightOutlined v-else />
               </template>
+              {{ isLoopPlaying ? '暂停' : '播放' }}
             </a-button>
           </a-tooltip>
           <a-tooltip title="重置视角">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="resetCamera" :disabled="!skullEntity || isRecordingVideo || isEncodingVideo">
               <template #icon><ReloadOutlined /></template>
+              重置
             </a-button>
           </a-tooltip>
           <a-tooltip title="操作说明">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="showGestureModal = true" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><QuestionCircleOutlined /></template>
+              说明
             </a-button>
           </a-tooltip>
         </div>
@@ -375,16 +395,19 @@
           <a-tooltip title="分享">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleSharePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><ShareAltOutlined /></template>
+              分享
             </a-button>
           </a-tooltip>
           <a-tooltip title="导出模型">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleExportPlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><ExportOutlined /></template>
+              导出
             </a-button>
           </a-tooltip>
           <a-tooltip title="嵌入代码">
             <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleEmbedCodePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
               <template #icon><CodeOutlined /></template>
+              嵌入
             </a-button>
           </a-tooltip>
             <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
@@ -393,6 +416,7 @@
                 <BorderOutlined v-if="showGrid" />
                 <BorderOuterOutlined v-else />
               </template>
+              网格
             </a-button>
           </a-tooltip>
           <a-tooltip :title="isFullscreen ? '退出全屏' : '全屏'">
@@ -401,6 +425,7 @@
                 <FullscreenExitOutlined v-if="isFullscreen" />
                 <FullscreenOutlined v-else />
               </template>
+              {{ isFullscreen ? '退出' : '全屏' }}
             </a-button>
           </a-tooltip>
         </div>
@@ -751,6 +776,8 @@ import {
   MobileOutlined,
   BorderOutlined,
   BorderOuterOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons-vue';
 import { createEffect, GsplatEffectType, removeAllEffects } from '@/utils/revel';
 import { loadGsplat } from '@/utils/load';
@@ -914,6 +941,8 @@ export default {
     MobileOutlined,
     BorderOutlined,
     BorderOuterOutlined,
+    LeftOutlined,
+    RightOutlined,
   },
   props: {
     taskId: {
@@ -1032,6 +1061,8 @@ export default {
       index: 0,
       manager: null,
       annotataions: [], // 存储编辑生成的标注
+      shouldShowAnnotation: true,
+      currentAnnotationIndex: 0,
       defaultAnnotationEntity: null,
       isAnnotationDialogOpen: false,
       annotationDialogMode: 'view', // view | create | edit
@@ -1050,7 +1081,8 @@ export default {
       mouseDownPos: { x: 0, y: 0 },
       isMobile: false,
       showGrid: true,
-      gridEntity: null, 
+      gridEntity: null,
+      hasClickAnnotation: false,
     };
   },
   watch:{
@@ -1086,6 +1118,38 @@ export default {
       } else {
         this.$router.push('/')
       }
+    },
+
+    // 获取当前标注标题
+    getCurrentAnnotationTitle() {
+      const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
+      if (titles.length === 0) return ''
+      return titles[this.currentAnnotationIndex] || ''
+    },
+
+    // 切换到上一个标注
+    prevAnnotation() {
+      const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
+      if (titles.length === 0) return
+      this.currentAnnotationIndex = (this.currentAnnotationIndex - 1 + titles.length) % titles.length
+      this.focusAnnotation(this.currentAnnotationIndex)
+    },
+
+    // 切换到下一个标注
+    nextAnnotation() {
+      const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
+      if (titles.length === 0) return
+      this.currentAnnotationIndex = (this.currentAnnotationIndex + 1) % titles.length
+      this.focusAnnotation(this.currentAnnotationIndex)
+    },
+
+    // 聚焦指定标注
+    focusAnnotation(index) {
+      const annotations = this.annotataions
+      if (!annotations || annotations.length === 0) return
+      const annotation = annotations[index]
+      if (!annotation || !annotation.script || !annotation.script.annotation) return
+      this.manager._annotationResources.get(annotation.script.annotation).hotspotDom.dispatchEvent(new PointerEvent('pointerdown'))
     },
 
     // 控制底部栏显示/隐藏
@@ -1171,18 +1235,25 @@ export default {
       meshInstances.slice(1).forEach(mi => aabb.add(mi.aabb));
       return aabb.center.clone();
     },
-    initLoopPlaybackState() {
+    initLoopPlaybackState(cameraPose = null) {
       if (!this.cameraEntity || !this.cameraControls || !this.skullEntity) return false;
       if (this.orbitPlaybackFocus && this.orbitPlaybackVector && this.orbitPlaybackStartPos) {
         return true;
       }
+      let center, currentPos, vec;
+      if(cameraPose) {
+        center = cameraPose.focus;
+        currentPos = cameraPose.cameraPosition;
+        vec = currentPos.clone().sub(center);
+        if (vec.length() < 1e-6) return false;
+      }else{
+        center = this.getModelCenter();
+        if (!center) return false;
 
-      const center = this.getModelCenter();
-      if (!center) return false;
-
-      const currentPos = this.cameraEntity.getPosition().clone();
-      const vec = currentPos.clone().sub(center);
-      if (vec.length() < 1e-6) return false;
+        currentPos = this.cameraEntity.getPosition().clone();
+        vec = currentPos.clone().sub(center);
+        if (vec.length() < 1e-6) return false;
+      }
 
       this.orbitPlaybackFocus = center;
       this.orbitPlaybackStartPos = currentPos;
@@ -1294,7 +1365,7 @@ export default {
       const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
       this.forceStartInteractionFlag = false;
       this.cameraControls?.resetUserInteractionFlag?.();
-      if (!shouldDelayStart) {
+      if (!shouldDelayStart && !this.hasClickAnnotation) {
         this.applyOrbitAngle(startAngle, true);
         this.isLoopPlaying = true;
         return;
@@ -1306,6 +1377,7 @@ export default {
         if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
         this.isLoopPlaying = true;
       }, this.loopPlayStartDelayMs);
+      this.hasClickAnnotation = false;
     },
     handleOrbitProgressChange(value) {
       if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
@@ -1626,7 +1698,7 @@ export default {
 
       const focus = new pc.Vec3(cameraPose.focus.x, cameraPose.focus.y, cameraPose.focus.z);
       const position = new pc.Vec3(cameraPose.position.x, cameraPose.position.y, cameraPose.position.z);
-      this.cameraControls.reset(focus, position);
+      this.cameraControls.reset(focus, position, { duration: 0.5 });
       return true;
     },
 
@@ -1919,10 +1991,18 @@ export default {
       const entity = annotationScript?.entity;
       if (!entity) return;
 
+      // 更新当前标注索引
+      const index = this.annotataions.findIndex(item => 
+        item.script.annotation.label === annotationScript.label)
+      if (index >= 0) {
+        this.currentAnnotationIndex = index
+      }
+      
       if (this.isAnnotationEditMenuOpen) {
         this.openAnnotationDialog('edit', entity);
       } else {
         this.stopLoopPlayback(false);
+        this.hasClickAnnotation = true;
         this.viewerControls.isOrbitMode = true;
         this.applyAnnotationCameraPose(annotationScript);
       }
@@ -2947,6 +3027,16 @@ export default {
     await this.initViewer();
     await this.getTargetModel();
 
+    // 动态计算右侧面板偏移量
+    this.$nextTick(() => {
+      const rightBtnGroup = document.querySelector('.right-center-controls');
+      if (rightBtnGroup) {
+        const btnWidth = rightBtnGroup.getBoundingClientRect().width;
+        const offset = btnWidth + 30;
+        document.documentElement.style.setProperty('--panel-right-offset', `${offset}px`);
+      }
+    });
+
     // const loadLocalModel = async () => {
     //   try {
     //     const localFilePath = 'test3.sog';
@@ -3491,7 +3581,6 @@ export default {
   --control-btn-size: 44px;
   --control-bar-gap: 16px;
   --panel-gap: 10px;
-  --panel-right-offset: calc(var(--control-btn-size) + var(--control-bar-gap) + var(--panel-gap));
   height: 100vh;
   background: radial-gradient(circle at 50% 0%, #1b2130 0%, #0f1218 45%, #0b0e13 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -4579,6 +4668,7 @@ export default {
 
 .btn-group.right {
   flex-shrink: 0;
+  width: fit-content;
 }
 
 .btn-group.right-center {
@@ -4663,7 +4753,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--control-btn-size);
   height: var(--control-btn-size);
   padding: 6px;
   border-radius: 8px;
@@ -4842,6 +4931,65 @@ export default {
 .gesture-detail {
   font-size: 12px;
   color: #8c8c8c;
+}
+
+/* 标注标题切换 */
+.annotation-cycling {
+  min-width: 280px;
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  z-index: 1001;
+  animation: modeTipFadeIn 0.3s ease;
+}
+
+.annotation-current-title {
+  font-size: 14px;
+  color: #fff;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.annotation-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.annotation-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+
+@keyframes modeTipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* :deep(.ant-btn)

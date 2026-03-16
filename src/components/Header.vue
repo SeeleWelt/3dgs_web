@@ -78,7 +78,7 @@
               <div class="user-details">
                 <span class="user-email">{{ userStore.userInfo?.nickname }}</span>
                 <div class="user-info-bottom">
-                  <span class="user-badge">{{ userStore.userInfo?.isPro ? 'vip用户' : t('header.regularAccount') }}</span>
+                  <!-- <span class="user-badge">{{ userStore.userInfo?.isPro ? 'vip用户' : t('header.regularAccount') }}</span> -->
                   <span class="user-points">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -91,12 +91,12 @@
             
             <!-- Menu Items -->
             <div class="menu-section">
-              <button class="menu-item" @click="handleUpgrade">
+              <!-- <button class="menu-item" @click="handleUpgrade">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
                 <span>{{ t('header.upgradePro') }}</span>
-              </button>
+              </button> -->
               <button class="menu-item" @click="navigateTo('/tools/api')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="16 18 22 12 16 6"/>

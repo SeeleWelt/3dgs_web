@@ -133,6 +133,13 @@ const router = createRouter({
       props: true
     },
     {
+      path: '/AiModel/:taskId',
+      name: 'ai-model-detail',
+      component: () => import('../views/AiModel.vue'),
+      meta: { requiresAuth: true, title: 'AI模型详情' },
+      props: true
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),

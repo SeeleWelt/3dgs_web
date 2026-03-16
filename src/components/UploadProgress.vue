@@ -32,7 +32,19 @@
           >
             <CloseOutlined />
           </button>
-          <video :src="task.previewUrl" controls preload="metadata"></video>
+          <video
+            :src="task.previewUrl"
+            controls
+            preload="metadata"
+            @error="handleVideoError"
+            @stalled="handleVideoStalled"
+            @loadeddata="handleVideoLoadedData"
+            @timeout="handleVideoTimeout"
+          ></video>
+          <div v-if="videoWarning" class="video-warning">
+            <ExclamationCircleOutlined />
+            <span>{{ videoWarning }}</span>
+          </div>
         </div>
 
         <div class="file-info">
@@ -97,6 +109,11 @@
             </div>
           </div>
         </div>
+        <!-- 添加更多图像按钮 -->
+        <div class="add-more-image" @click="$emit('add-image')">
+          <PlusOutlined />
+          <span>添加更多图像</span>
+        </div>
       </div>
     </div>
 
@@ -128,8 +145,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { computed, ref } from 'vue'
+import { message } from 'ant-design-vue'
+import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
 
@@ -163,6 +181,7 @@ const emit = defineEmits<{
   submit: []
   cancel: []
   'remove-image': [imageId: string]
+  'add-image': []
 }>()
 
 const hasFiles = computed(() => {
@@ -199,11 +218,119 @@ const formatDuration = (seconds: number): string => {
   const ss = (total % 60).toString().padStart(2, '0')
   return `${mm}:${ss}`
 }
+
+// 视频解码错误处理
+const videoErrorShown = ref(false)
+const videoWarning = ref('')
+
+const handleVideoError = (e: Event) => {
+  const video = e.target as HTMLVideoElement
+  if (videoErrorShown.value) return
+
+  // MediaError 对象
+  const error = video?.error
+  if (!error) return
+
+  videoErrorShown.value = true
+
+  // error.code:
+  // 1 = MEDIA_ERR_ABORTED - 取缔
+  // 2 = MEDIA_ERR_NETWORK - 网络错误
+  // 3 = MEDIA_ERR_DECODE - 解码错误
+  // 4 = MEDIA_ERR_SRC_NOT_SUPPORTED - 资源不支持
+
+  let errorMessage = '视频无法播放'
+
+  switch (error.code) {
+    case 3:
+      errorMessage = '视频编码不支持，无法解码播放（可能是 H.265/HEVC 等格式）'
+      break
+    case 4:
+      errorMessage = '视频格式不支持'
+      break
+    case 2:
+      errorMessage = '视频加载失败，请检查网络'
+      break
+    case 1:
+      errorMessage = '视频加载被中断'
+      break
+    default:
+      errorMessage = '视频无法播放'
+  }
+
+  message.warning(errorMessage)
+}
+
+const handleVideoStalled = () => {
+  // 视频加载卡顿时提示
+  message.info('视频加载中，请稍候...')
+}
+
+// 检测视频画面是否正常（黑屏检测）
+let videoCheckTimeout: ReturnType<typeof setTimeout> | null = null
+
+const handleVideoLoadedData = (e: Event) => {
+  const video = e.target as HTMLVideoElement
+
+  // 清除之前的超时
+  if (videoCheckTimeout) {
+    clearTimeout(videoCheckTimeout)
+  }
+
+  // 设置超时检测：1秒后检查视频是否黑屏
+  videoCheckTimeout = setTimeout(() => {
+    checkVideoBlackScreen(video)
+  }, 1000)
+}
+
+const handleVideoTimeout = () => {
+  // 视频加载超时
+  message.warning('视频加载超时')
+}
+
+const checkVideoBlackScreen = (video: HTMLVideoElement) => {
+  try {
+    // 创建 canvas 来检测画面
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    if (!ctx || video.readyState < 2) {
+      return // 视频数据不够
+    }
+
+    canvas.width = 320 // 缩小检测以提高性能
+    canvas.height = 180
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+
+    // 计算画面平均亮度
+    let totalBrightness = 0
+    let pixelCount = data.length / 4
+
+    for (let i = 0; i < data.length; i += 4) {
+      // 使用感知亮度公式: 0.299*R + 0.587*G + 0.114*B
+      const brightness = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]
+      totalBrightness += brightness
+    }
+
+    const avgBrightness = totalBrightness / pixelCount
+
+    // 如果平均亮度很低（小于 5），很可能是黑屏
+    if (avgBrightness < 5) {
+      videoWarning.value = '视频无法正常播放（可能是编码不支持），仍然可以生成模型'
+    }
+  } catch (err) {
+    // 跨域等问题导致的检测失败，静默处理
+    console.log('视频画面检测失败:', err)
+  }
+}
 </script>
 
 <style scoped>
 .upload-progress {
-  margin-top: 32px;
   background: var(--glass-surface);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -234,13 +361,11 @@ const formatDuration = (seconds: number): string => {
 
 .points-help-icon {
   font-size: 18px;
-  color: #f59e0b;
-  cursor: help;
+  color: #767168;
   transition: all 0.2s ease;
 }
 
 .points-help-icon:hover {
-  color: #d97706;
   transform: scale(1.1);
 }
 
@@ -321,6 +446,21 @@ const formatDuration = (seconds: number): string => {
   position: relative;
 }
 
+.video-warning {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 10px;
+  background: rgba(250, 140, 22, 0.95);
+  color: #fff;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.4;
+}
+
 .preview-remove {
   position: absolute;
   top: 8px;
@@ -376,6 +516,36 @@ const formatDuration = (seconds: number): string => {
 .image-item:hover {
   transform: scale(1.03);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.add-more-image {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 2px dashed var(--glass-border);
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.add-more-image:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.add-more-image :deep(.anticon) {
+  font-size: 24px;
+}
+
+.add-more-image span {
+  font-size: 11px;
+  text-align: center;
 }
 
 .image-preview {
@@ -438,6 +608,9 @@ const formatDuration = (seconds: number): string => {
 .file-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .file-header {

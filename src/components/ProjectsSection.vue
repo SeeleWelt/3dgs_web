@@ -33,11 +33,11 @@
 import { ref } from 'vue'
 import EmptyState from './EmptyState.vue'
 
-const activeTypeTab = ref('扫描')
+const activeTypeTab = ref('3DGS')
 const activeStatusTab = ref('全部')
 const hasProjects = ref(false)
 
-const typeTabs = ['扫描', '3DGS']
+const typeTabs = ['3DGS']
 const statusTabs = ['全部', '已完成', '处理中']
 </script>
 

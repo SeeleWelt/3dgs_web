@@ -20,7 +20,7 @@
         <div class="corner-decor bottom-left"></div>
         <div class="corner-decor bottom-right"></div>
       </div>
-      <p class="contact-tip">扫码添加客服微信</p>
+      <p class="contact-tip">扫码添加官方微信</p>
     </div>
   </a-modal>
 </template>

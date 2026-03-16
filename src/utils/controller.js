@@ -178,6 +178,12 @@ class CameraControls {
         this.isFirstTouchRecorded = false; // 首次触摸记录标记
         this.pixelToAngleRatio = 3.33; // 初始默认值，首次触摸后会自动更新
 
+        // 输入平滑配置
+        this.inputSmoothing = 0.08; // 平滑系数：越小越平滑（0.05-0.3）
+        this.inputSmoothingThreshold = 0.05; // 平滑阈值：小于此值直接置0
+        this._smoothedMouseDelta = [0, 0]; // 平滑后的鼠标增量
+        this._smoothedTouchDelta = [0, 0]; // 平滑后的触摸增量
+
         // 触摸点击检测相关配置和状态
         this.touchTapThreshold = 10; // 拖动阈值（像素），小于此值视为点击
         this.touchTapCallback = null; // 点击回调函数
@@ -222,10 +228,10 @@ class CameraControls {
 
         // set orbit controller defaults
         this._orbitController.zoomRange = new Vec2(4, 50);
-        this._orbitController.pitchRange = new Vec2(-90, 90);
+        this._orbitController.pitchRange = new Vec2(-60, 5);
         this._orbitController.rotateDamping = 0.98;
         this._orbitController.moveDamping = 0.98;
-        this._orbitController.zoomDamping = 0.90;
+        this._orbitController.zoomDamping = 0.99;
 
         // set fly controller defaults
         this._flyController.pitchRange = new Vec2(-90, 90);
@@ -797,56 +803,56 @@ class CameraControls {
     }
 
     // 聚焦指定实体
-    focusOnEntity(entity, position) {
+    focusOnEntity(entity, vec) {
         const aabb = this.calculateEntityAabb(entity);
         if (!aabb) return;
         const halfExtents = aabb.halfExtents;
         const radius = Math.max(halfExtents.x, halfExtents.y, halfExtents.z);
         const fov = this._camera.fov * math.DEG_TO_RAD;
-        const fitDistance = radius*1.2 / Math.sin(0.5 * fov);
-        const padding = 1.1;
+        const fitDistance = radius / Math.sin(0.5 * fov);
+        const padding = 1.3; // 适当增加距离，避免过于贴近
         const targetDistance = fitDistance * padding;
 
-        // 更新缩放范围：最小值为刚好看到物体的距离
-        const currentZoomRange = this._orbitController.zoomRange || new Vec2(fitDistance, 50);
-        const maxZoom = Math.max(currentZoomRange.y, targetDistance * 3);
-        this.zoomRange = new Vec2(0, maxZoom);
+        const currentZoomRange = new Vec2(targetDistance, 50);
+        const maxZoom = Math.min(currentZoomRange.y, targetDistance * 2);
+        this.zoomRange = new Vec2(fitDistance, maxZoom);
 
         const modelYHeight = halfExtents.y * 2; 
-        const yOffset = modelYHeight * 0.2; 
+        const yOffset = modelYHeight * 0.5; 
 
-        const lookDir = position 
-            ? new Vec3().subVectors(position, aabb.center).normalize() 
+        const lookDir = vec ? vec.clone().normalize()
             : new Vec3(0, 0, 1); 
-
+        lookDir.y = 0;
         const cameraTargetPos = aabb.center.clone()
             .add(lookDir.mulScalar(targetDistance))
             .add(new Vec3(0, yOffset, 0)); 
 
         this.reset(aabb.center, cameraTargetPos);
-        return aabb.center;
+        return {focus:aabb.center, cameraPosition:cameraTargetPos};
     }
 
     // 计算实体包围盒
     calculateEntityAabb(entity) {
-        const meshInstances = [];
-        // 收集所有网格实例
-        entity.findComponents('render').forEach(render => meshInstances.push(...render.meshInstances));
-        entity.findComponents('model').forEach(model => meshInstances.push(...model.meshInstances));
-        entity.findComponents('gsplat').forEach(gsplat => {
-            if (gsplat.instance?.meshInstance) meshInstances.push(gsplat.instance.meshInstance);
-        });
+        // const meshInstances = [];
+        // // 收集所有网格实例
+        // entity.findComponents('render').forEach(render => meshInstances.push(...render.meshInstances));
+        // entity.findComponents('model').forEach(model => meshInstances.push(...model.meshInstances));
+        // entity.findComponents('gsplat').forEach(gsplat => {
+        //     if (gsplat.instance?.meshInstance) meshInstances.push(gsplat.instance.meshInstance);
+        // });
 
-        if (meshInstances.length === 0) return null;
-        const aabb = new BoundingBox();
-        aabb.copy(meshInstances[0].aabb);
-        meshInstances.slice(1).forEach(mi => aabb.add(mi.aabb));
+        // if (meshInstances.length === 0) return null;
+        // const aabb = new BoundingBox();
+        // aabb.copy(meshInstances[0].aabb);
+        // meshInstances.slice(1).forEach(mi => aabb.add(mi.aabb));
 
         const splat = this._getSplatInstance(entity);
+        
         if (!splat || !splat.splatData || splat.splatData.numSplats === 0) {
             console.warn('无法计算包围盒：无有效3DGS数据');
             return null;
         }
+        const aabb = new BoundingBox();
         const gsplatData = splat.splatData;
         const x = gsplatData.getProp('x');
         const y = gsplatData.getProp('y');
@@ -867,6 +873,13 @@ class CameraControls {
             if (z[i] > maxZ) maxZ = z[i];
         }
 
+        const center = new Vec3(
+            (minX + maxX) / 2,
+            (minY + maxY) / 2,
+            (minZ + maxZ) / 2
+        );
+
+        aabb.center.copy(center);
         const halfExtents = new Vec3(
             (maxX - minX) / 2,
             (maxY - minY) / 2,
@@ -1443,17 +1456,17 @@ class CameraControls {
 
         // 3. 所有面的配置：面名称 → 裁剪轴 + 裁剪方向
         const allFaceConfigs = {
-            'y+': { axis: 'y', direction: -1 }, // y+面：裁剪y轴大于faceEntity.y的点
-            'y-': { axis: 'y', direction: 1 },// y-面：裁剪y轴小于faceEntity.y的点
+            'y+': { axis: 'y', direction: 1 }, // y+面：裁剪y轴大于faceEntity.y的点
+            'y-': { axis: 'y', direction: -1 },// y-面：裁剪y轴小于faceEntity.y的点
             'x+': { axis: 'x', direction: 1 }, // x+面：裁剪x轴大于faceEntity.x的点
             'x-': { axis: 'x', direction: -1 },// x-面：裁剪x轴小于faceEntity.x的点
-            'z+': { axis: 'z', direction: -1 }, // z+面：裁剪z轴大于faceEntity.z的点
-            'z-': { axis: 'z', direction: 1 } // z-面：裁剪z轴小于faceEntity.z的点
+            'z+': { axis: 'z', direction: 1 }, // z+面：裁剪z轴大于faceEntity.z的点
+            'z-': { axis: 'z', direction: -1 } // z-面：裁剪z轴小于faceEntity.z的点
         };
 
-        // 4. 预加载所有有效面的裁剪阈值（过滤掉未找到的面）
+        // 预加载所有有效面的裁剪阈值（过滤掉未找到的面）
         const validFaceClips = [];
-        const localAabb = splat.assetRecource.aabb;
+        const localAabb = this.calculateEntityAabb(entity);
 
         for (const [faceName, config] of Object.entries(allFaceConfigs)) {
             console.log("localAabb", localAabb)
@@ -1464,14 +1477,11 @@ class CameraControls {
                 continue;
             }
 
-            // 计算该面的裁剪阈值（统一坐标系）
+            // 计算该面的裁剪阈值
             const faceWorldPos = faceEntity.getLocalPosition();
             let clipValue;
-            if(config.axis === 'x')
-                clipValue = localAabb.center[config.axis] + faceWorldPos[config.axis];
-            else
-                clipValue = localAabb.center[config.axis] - faceWorldPos[config.axis];
-
+            clipValue = localAabb.center[config.axis] + faceWorldPos[config.axis];
+    
             validFaceClips.push({
                 faceName,
                 axis: config.axis,
@@ -1486,7 +1496,7 @@ class CameraControls {
             return;
         }
 
-        // 5. 获取所有高斯点的位置数据（世界空间）
+        // 5获取所有高斯点的位置数据（世界空间）
         const positions = {
             x: gsplatData.getProp('x'),
             y: gsplatData.getProp('y'),
@@ -2262,9 +2272,18 @@ class CameraControls {
         v.add(wheelMove.mulScalar(this.wheelSpeed * dt));
         deltas.move.append([v.x, v.y, orbit ? -v.z : v.z]);
 
-        // 桌面端旋转
+        // 桌面端旋转（带输入平滑，防止快速拖动反转）
         v.set(0, 0, 0);
-        const mouseRotate = new Vec3(mouse[0], mouse[1], 0);
+        // 使用指数移动平均平滑鼠标增量
+        const smoothing = this.inputSmoothing;
+        const threshold = this.inputSmoothingThreshold;
+        this._smoothedMouseDelta[0] = this._smoothedMouseDelta[0] * (1 - smoothing) + mouse[0] * smoothing;
+        this._smoothedMouseDelta[1] = this._smoothedMouseDelta[1] * (1 - smoothing) + mouse[1] * smoothing;
+        // 阈值判断：小于阈值直接置0，避免微小值导致继续旋转
+        if (Math.abs(this._smoothedMouseDelta[0]) < threshold) this._smoothedMouseDelta[0] = 0;
+        if (Math.abs(this._smoothedMouseDelta[1]) < threshold) this._smoothedMouseDelta[1] = 0;
+        const mouseRotate = new Vec3(this._smoothedMouseDelta[0], this._smoothedMouseDelta[1], 0);
+
         v.add(mouseRotate.mulScalar((1 - pan) * this.orbitSpeed * dt));
         deltas.rotate.append([v.x, v.y, v.z]);
 
@@ -2301,9 +2320,15 @@ class CameraControls {
         v.add(pinchMove.mulScalar(orbit * double * this.pinchSpeed * dt));
         deltas.move.append([v.x, v.y, v.z]);
 
-        // 移动端旋转
+        // 移动端旋转（带输入平滑，防止快速拖动反转）
         v.set(0, 0, 0);
-        const orbitRotate = new Vec3(touch[0], touch[1], 0);
+        // 使用指数移动平均平滑触摸增量
+        this._smoothedTouchDelta[0] = this._smoothedTouchDelta[0] * (1 - smoothing) + touch[0] * smoothing;
+        this._smoothedTouchDelta[1] = this._smoothedTouchDelta[1] * (1 - smoothing) + touch[1] * smoothing;
+        // 阈值判断：小于阈值直接置0，避免微小值导致继续旋转
+        if (Math.abs(this._smoothedTouchDelta[0]) < threshold) this._smoothedTouchDelta[0] = 0;
+        if (Math.abs(this._smoothedTouchDelta[1]) < threshold) this._smoothedTouchDelta[1] = 0;
+        const orbitRotate = new Vec3(this._smoothedTouchDelta[0], this._smoothedTouchDelta[1], 0);
         v.add(orbitRotate.mulScalar(orbit * (1 - pan) * this.orbitSpeed * dt));
         // const flyRotate = new Vec3(rightInput[0], rightInput[1], 0);
         // v.add(flyRotate.mulScalar(fly * this.orbitSpeed * dt));
@@ -2318,7 +2343,7 @@ class CameraControls {
                 this.rotation
             )
         }
-        
+
         v.add(flyRotate.mulScalar(fly * this.orbitSpeed * dt));
         deltas.rotate.append([v.x, v.y, v.z]);
 
@@ -2349,7 +2374,7 @@ class CameraControls {
             transition.elapsed = Math.min(transition.elapsed + dt, transition.duration);
             let t = transition.duration > 0 ? transition.elapsed / transition.duration : 1;
             // 常见先快后慢的 ease-out（如 cubic）
-            t = 1 - Math.pow(1 - t, 1); // cubic ease-out
+            t = t * t * (3 - 2 * t);
             this._pose.position.lerp(transition.startPosition, transition.endPosition, t);  
             transition.currentFocus.lerp(transition.startFocus, transition.endFocus, t);
             this._pose.look(this._pose.position, transition.currentFocus);

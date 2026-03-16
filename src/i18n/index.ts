@@ -41,7 +41,7 @@ const messages = {
     home: {
       startCreate: '开始创建',
       aiScan: 'AI扫描生成',
-      aiScanDesc: '支持上传照片或视频',
+      aiScanDesc: '支持上传单张照片或多张照片',
       scan3dgs: '3DGS扫描',
       scan3dgsDesc: '支持上传照片或视频',
       scan4dgs: '4DGS扫描',
@@ -55,7 +55,7 @@ const messages = {
     },
     explore: {
       ai3dModels: 'AI生成的3D模型',
-      weeklyUpdate: '每周都会添加新模型',
+      weeklyUpdate: '不定时添加新模型展示',
       gs3dTitle: '3D Gaussian Splatting（3D高斯泼溅重建模型）',
       gs4dTitle: '4D Gaussian Splatting（4D高斯泼溅动态重建模型）',
       youtubeTitle: '查看YouTube上的新内容',

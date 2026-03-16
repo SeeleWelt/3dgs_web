@@ -37,7 +37,7 @@
           <div class="user-info">
             <div class="user-name-row">
               <h1 class="username">{{ user?.username || t('profile.anonymous') }}</h1>
-              <a-tag :class="user?.isPro ? 'user-level-tag-vip' : 'user-level-tag'" color="blue">{{ user?.isPro ? "vip用户" : "普通用户" }}</a-tag>
+              <!-- <a-tag :class="user?.isPro ? 'user-level-tag-vip' : 'user-level-tag'" color="blue">{{ user?.isPro ? "vip用户" : "普通用户" }}</a-tag> -->
             </div>
             <div class="user-meta">
               <span class="meta-item">

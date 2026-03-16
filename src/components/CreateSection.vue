@@ -79,23 +79,24 @@ const cards = computed<CreateCardData[]>(() => [
     pro: true,
     color: 'orange'
   },
-  {
-    id: '4dgs-scan',
-    title: t('home.scan4dgs'),
-    description: t('home.scan4dgsDesc'),
-    icon: FourDGSScanIcon,
-    pro: true,
-    color: 'red'
-  }
+  // {
+  //   id: '4dgs-scan',
+  //   title: t('home.scan4dgs'),
+  //   description: t('home.scan4dgsDesc'),
+  //   icon: FourDGSScanIcon,
+  //   pro: true,
+  //   color: 'red'
+  // }
 ])
 
 const handleClick = (id: string) => {
   if (id === '3dgs-scan') {
     router.push('/create/3dgs-scan')
   } else if (id === 'ai-scan') {
-    router.push('/create/mesh-scan')
+    message.info('敬请期待')
+    // router.push('/create/mesh-scan')
   } else if (id === '4dgs-scan') {
-    message.info('功能未实现')
+    message.info('敬请期待')
   }
 }
 </script>

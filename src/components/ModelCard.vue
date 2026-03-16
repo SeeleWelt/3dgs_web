@@ -1,11 +1,12 @@
 <template>
-  <div class="model-card" @click="handleCardClick">
+  <div :class="['model-card', { 'is-completed': isCompleted }]" @click="handleCardClick">
     <div class="model-image">
       <img
         v-if="model.preview"
         v-lazy="lazyPreview"
         :alt="model.taskName"
         class="model-preview"
+        draggable="false"
       />
       <div v-if="isPreviewLoading" class="loading-overlay" aria-label="loading">
         <span class="loading-spinner"></span>
@@ -13,6 +14,7 @@
       <span v-if="model.isNew && isCompleted" class="new-badge">New</span>
 
       <span v-if="isBlocked" class="status-corner" :class="statusClass">{{ statusText }}</span>
+      <span v-if="isReceived && queueLength > 0" class="queue-badge">队列中 · {{ queueLength }}个任务</span>
 
       <!-- Checkbox for management mode -->
       <div v-if="showCheckbox" class="card-checkbox" @click.stop>
@@ -50,24 +52,27 @@
       </p>
 
       <div class="card-actions" @click.stop>
-        <a-button
-          type="text"
-          size="small"
-          :title="pauseResumeLabel"
-          :disabled="!canPauseOrResume || isPausing || isResuming"
-          @click="handlePauseOrResume"
-        >
-          <template #icon>
-            <PlayCircleOutlined v-if="isPaused || isFailed" />
-            <PauseCircleOutlined v-else />
-          </template>
-        </a-button>
+        <a-tooltip :title="pauseResumeLabel" :disabled="!canPauseOrResume || isPausing || isResuming">
+          <a-button
+            type="text"
+            size="small"
+            :disabled="!canPauseOrResume || isPausing || isResuming"
+            @click="handlePauseOrResume"
+          >
+            <template #icon>
+              <PlayCircleOutlined v-if="isPaused || isFailed" />
+              <PauseCircleOutlined v-else />
+            </template>
+          </a-button>
+        </a-tooltip>
 
-        <a-button type="text" size="small" @click="openDetailsDrawer">
-          <template #icon>
-            <InfoCircleOutlined />
-          </template>
-        </a-button>
+        <a-tooltip title="查看详情">
+          <a-button type="text" size="small" @click="openDetailsDrawer">
+            <template #icon>
+              <InfoCircleOutlined />
+            </template>
+          </a-button>
+        </a-tooltip>
 
         <a-popconfirm
           title="确认删除该模型吗？"
@@ -155,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import { Button as AButton } from 'ant-design-vue'
 import {
@@ -216,6 +221,7 @@ const isResuming = ref(false)
 const isPausing = ref(false)
 const isDeleting = ref(false)
 const showDetailsDrawer = ref(false)
+const queueLength = ref(0)
 
 const processingStatusList = [
   'received',
@@ -248,6 +254,7 @@ const statusText = computed(() => {
 const isCompleted = computed(() => props.model.status === 'completed' && !props.model.nsfwBlocked)
 const isPaused = computed(() => props.model.status === 'paused' && !props.model.nsfwBlocked)
 const isFailed = computed(() => props.model.status === 'failed' && !props.model.nsfwBlocked)
+const isReceived = computed(() => props.model.status === 'received' && !props.model.nsfwBlocked)
 const isProcessing = computed(() => processingStatusList.includes(props.model.status || '') && !props.model.nsfwBlocked)
 const isBlocked = computed(() => !isCompleted.value)
 const showOverlay = computed(() => isProcessing.value || isFailed.value || !!props.model.nsfwBlocked)
@@ -323,6 +330,18 @@ const displayValue = (value: string | number | boolean | null | undefined, fallb
   if (value === undefined || value === null) return fallback
   const stringValue = String(value).trim()
   return stringValue === '' ? fallback : stringValue
+}
+
+const getTaskQuque = async() =>{
+  const response = await ApiServer.request({
+    url: API.GET_TASK_QUEUE,
+    method: 'post',
+    data:{
+      task_id: props.model.taskId
+    }
+  })
+  console.log("response", response.data);
+  queueLength.value = response.data.length || 0
 }
 
 const formatDateTime = (value: string | undefined) => {
@@ -532,6 +551,12 @@ const openDetailsDrawer = () => {
 const closeDetailsDrawer = () => {
   showDetailsDrawer.value = false
 }
+
+onMounted(async() => {
+    if (props.model.taskId && props.model.status === 'received') {
+      await getTaskQuque()
+    }
+})
 </script>
 
 <style scoped>
@@ -544,9 +569,16 @@ const closeDetailsDrawer = () => {
   position: relative;
 }
 
-.model-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+/* 悬停遮罩层 - 只在完成状态下显示 */
+.is-completed .model-image:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 0;
 }
 
 .model-image {
@@ -563,6 +595,8 @@ const closeDetailsDrawer = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .loading-overlay {
@@ -639,6 +673,19 @@ const closeDetailsDrawer = () => {
 
 .status-corner.neutral {
   background: rgba(140, 140, 140, 0.92);
+}
+
+.queue-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 4;
+  background: rgba(250, 140, 22, 0.92);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .card-checkbox {
@@ -866,54 +913,56 @@ const closeDetailsDrawer = () => {
 
 .param-grid {
   margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .param-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 14px;
-  background: linear-gradient(145deg, var(--bg-secondary), rgba(255, 255, 255, 0.02));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
   transition: all 0.3s ease;
 }
 
 .param-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: rgba(128, 128, 128, 0.3);
+  background: linear-gradient(135deg, rgba(100, 100, 100, 0.08), rgba(80, 80, 80, 0.05));
 }
 
 .param-item-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .param-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 13px;
 }
 
 .param-label {
   font-size: 12px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .param-value {
-  margin-top: 10px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   word-break: break-word;
+  text-align: right;
+  max-width: 60%;
 }
 
 .param-value-emphasis {

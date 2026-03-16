@@ -233,13 +233,15 @@ interface Model extends TaskModel {
 // 保存当前选中的tab
 const getInitialTab = () => {
   try {
-    return sessionStorage.getItem('home_active_tab') || 'mesh'
+    // return sessionStorage.getItem('home_active_tab') || '3dgs-scan'
+    return '3dgs'
   } catch {
     return 'mesh'
   }
 }
 
 const activeTypeTab = ref(getInitialTab())
+
 const searchQuery = ref('')
 
 // Management mode state
@@ -636,7 +638,7 @@ const meshTotal = ref(defaultMeshModels.length)
 const model3DTotal = ref(0)
 
 const typeTabs = computed(() => [
-  { key: 'mesh', label: t('home.scan') },
+  // { key: 'mesh', label: t('home.scan') },
   { key: '3dgs', label: t('home.gs3d') },
   // { key: '4dgs', label: t('home.gs4d') }
 ])

@@ -21,23 +21,29 @@
       </div>
 
       <!-- Upload Area -->
-      <FileUpload @upload="handleUpload" :max-image-count="MAX_IMAGE_COUNT" :max-video-duration-seconds="MAX_VIDEO_DURATION_SECONDS" />
-
-      <!-- Upload Progress -->
-      <Transition name="slide-fade">
-      <UploadProgress
-        v-if="uploadTask || imageFiles.length > 0"
-        :task="uploadTask"
-        :image-files="imageFiles"
-        :current-points="currentPoints"
-        :consumed-points="consumedPoints"
-        @open-advanced="openAdvancedDrawer"
-        @remove="removeFile"
-        @cancel="cancelUpload"
-        @submit="submitProject"
-        @remove-image="removeImage"
+      <FileUpload
+        @upload="handleUpload"
+        :max-image-count="MAX_IMAGE_COUNT"
+        :max-video-duration-seconds="MAX_VIDEO_DURATION_SECONDS"
+        :compact="hasUploadedFiles"
       />
-      </Transition>
+
+      <!-- Upload Progress Area -->
+      <div class="upload-progress-wrapper" v-if="hasUploadedFiles">
+        <!-- Upload Progress -->
+        <UploadProgress
+          :task="uploadTask"
+          :image-files="imageFiles"
+          :current-points="currentPoints"
+          :consumed-points="consumedPoints"
+          @open-advanced="openAdvancedDrawer"
+          @remove="removeFile"
+          @cancel="cancelUpload"
+          @submit="submitProject"
+          @remove-image="removeImage"
+          @add-image="triggerAddMoreImages"
+        />
+      </div>
 
       <a-drawer
         :open="showAdvancedOptions"
@@ -174,6 +180,11 @@ const tutorialRef = ref<InstanceType<typeof UploadTutorial> | null>(null)
 
 const showAdvancedOptions = ref(false)
 
+// 检查是否已上传文件
+const hasUploadedFiles = computed(() => {
+  return !!(uploadTask.value || imageFiles.value.length > 0)
+})
+
 const DEFAULT_BG_REMOVE_PARAMS = {
   object_name: 'object',
   frame_idx: 0,
@@ -188,7 +199,7 @@ const advancedForm = ref({
   userObjectDescription: '',
 })
 
-const MAX_VIDEO_DURATION_SECONDS =80
+const MAX_VIDEO_DURATION_SECONDS = 3 * 60
 const MAX_IMAGE_COUNT = 150
 
 // 获取积分规则和当前积分
@@ -241,18 +252,54 @@ const revokePreviewUrl = () => {
 }
 
 const resolveVideoDuration = (file: File): Promise<number> => {
+  const type = file.type.split("/")[1]
   return new Promise((resolve, reject) => {
     const tempUrl = URL.createObjectURL(file)
     const video = document.createElement('video')
     video.preload = 'metadata'
+
+    const timeout = setTimeout(() => {
+      URL.revokeObjectURL(tempUrl)
+      reject(new Error('视频读取超时，请确保视频格式正确'))
+    }, 10000)
+
     video.onloadedmetadata = () => {
+      clearTimeout(timeout)
       const duration = Number(video.duration || 0)
       URL.revokeObjectURL(tempUrl)
       resolve(duration)
     }
     video.onerror = () => {
+      clearTimeout(timeout)
       URL.revokeObjectURL(tempUrl)
-      reject(new Error('读取视频时长失败'))
+      // 更详细的错误信息
+      const error = video.error
+      console.log("error", error);
+      let errorMsg = '读取视频时长失败'
+      if (error) {
+        // MediaError 错误码:
+        // 1 = MEDIA_ERR_ABORTED - 取缔/加载中断
+        // 2 = MEDIA_ERR_NETWORK - 网络错误
+        // 3 = MEDIA_ERR_DECODE - 解码错误（最常见于 H.265/HEVC 等编码）
+        // 4 = MEDIA_ERR_SRC_NOT_SUPPORTED - 格式/容器不支持
+        switch (error.code) {
+          case 1:
+            errorMsg = '视频加载被中断'
+            break
+          case 2:
+            errorMsg = '视频加载失败，请检查网络连接'
+            break
+          case 3:
+            errorMsg = '视频编码不支持（可能是 H.265/HEVC 编码，请转换为 H.264 编码）'
+            break
+          case 4:
+            errorMsg = `视频格式不支持（${type || '该'}格式浏览器无法解析）`
+            break
+          default:
+            errorMsg = '视频无法播放'
+        }
+      }
+      reject(new Error(errorMsg))
     }
     video.src = tempUrl
   })
@@ -290,6 +337,11 @@ const handleUpload = async (files: File[]) => {
     }
     return
   }else if (file.type.startsWith('video/')) {
+
+    // 检查是否上传了多个视频
+    if (files.length > 1) {
+      message.info('已选择多个视频，将只处理第一个视频')
+    }
 
     // 处理视频上传 - 清空图片
     imageFiles.value.forEach(img => {
@@ -360,6 +412,43 @@ const removeImage = (imageId: string) => {
   }
 }
 
+// 添加更多图片
+const triggerAddMoreImages = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.multiple = true
+  input.onchange = async (e) => {
+    const files = (e.target as HTMLInputElement).files
+    if (!files || files.length === 0) return
+    const type=imageFiles.value[0]?.file.type || ''
+    const isvValidFiles = Array.from(files).every(file => file.type === type)
+    if(!isvValidFiles) {
+      message.warning('上传的图像后缀与原来的不一致，请重新选择')
+      return
+    }
+
+    // 检查总图片数量
+    const totalCount = imageFiles.value.length + files.length
+    if (totalCount > MAX_IMAGE_COUNT) {
+      message.warning(`最多只能上传 ${MAX_IMAGE_COUNT} 张图片`)
+      return
+    }
+
+    // 添加新图片到现有列表
+    const newImages = Array.from(files).map(f => ({
+      id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+      name: f.name,
+      size: f.size,
+      file: f,
+      previewUrl: URL.createObjectURL(f),
+    }))
+
+    imageFiles.value = [...imageFiles.value, ...newImages]
+  }
+  input.click()
+}
+
 const openAdvancedDrawer = () => {
   console.log("打开高级选项")
   if (!uploadTask.value && imageFiles.value.length === 0) return
@@ -404,6 +493,7 @@ const submitProject = async () => {
     public: false,
     user_object_description: advancedForm.value.userObjectDescription || '',
   }
+
 
   formData.append('params', JSON.stringify(params))
   formData.append('videos', currentTask.file, currentTask.name)
@@ -530,6 +620,45 @@ onBeforeUnmount(() => {
 .back-btn:hover {
   background: var(--glass-surface-hover);
   color: var(--text-primary);
+}
+
+.upload-progress-wrapper {
+  position: relative;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap:12px;
+}
+
+.reupload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: var(--glass-surface);
+  border: 2px dashed var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.reupload-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.08);
+  transform: scale(1.01);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.reupload-btn :deep(.anticon) {
+  font-size: 20px;
 }
 
 .create-header {
@@ -775,5 +904,16 @@ onBeforeUnmount(() => {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* 上传区域缩小动画 */
+:deep(.file-upload.upload-mini) {
+  transform: scale(0.85);
+  transition: all 0.3s ease;
+}
+
+:deep(.file-upload.upload-mini:hover) {
+  transform: scale(1);
+  opacity: 1;
 }
 </style>
