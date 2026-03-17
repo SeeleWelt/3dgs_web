@@ -165,9 +165,17 @@
             @pure-color-change="updateBackgroundColor"
           />
         </div>
+        <div class="setting-item" style="display: flex; flex-direction: column; gap: 5px">
+          <a-button type="default" block @click="setInitialCameraPosition" :disabled="!skullEntity || !cameraControls" class="custom-motion-btn">
+            <template #icon><CameraOutlined /></template>
+            设置初始化位置
+          </a-button>
+          <div class="setting-item-tip">设置当前相机位置为初始化位置</div>
+        </div>
       </div>
       <div class="panel-footer">
-        <a-button type="primary" size="small" @click.stop="resetAllSettings">重置参数</a-button>
+        <a-button type="primary" size="small" @click.stop="saveSettings">保存设置</a-button>
+        <a-button size="small" @click.stop="resetAllSettings">重置参数</a-button>
       </div>
     </div>
 
@@ -814,7 +822,7 @@ import { ApiServer } from '@/utils/taskService';
 import * as pc from 'playcanvas';
 import CameraControls from '@/utils/controller';
 import { Picker } from '@/utils/picker';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import {
   AppstoreOutlined,
   AimOutlined,
@@ -1122,6 +1130,7 @@ export default {
       originalZoomRange: null, // 保存原始zoomRange
       _isDraggingSlider: false, // 是否正在拖动进度条
       orbitMotionType: 'dolly', // 运镜类型: orbit, ellipse, spiral, dolly, swing, figureEight, custom
+      originalSettings: null, // 进入设置面板时的设置快照，用于检测变化
       orbitMotionParams: { 
         scaleX: 1.0,
         scaleZ: 0.7,
@@ -1189,6 +1198,7 @@ export default {
       annotationMenuPosition: { x: 0, y: 0 },
       annotationMenuEntity: null,
       showSnapshotFlash: false,
+      initialCameraPose:{},
     };
   },
   watch:{
@@ -1386,15 +1396,27 @@ export default {
           }
         });
       },
-    resetCamera(){
+    async resetCamera(){
       this.forceStartInteractionFlag = true;
       if (this.isLoopPlaying || this.loopPlayStartTimer) {
         this.stopLoopPlayback(false);
       }
+      let vec;
       if(this.skullEntity)
       {
-        const vec = this.cameraDataToVector(this.cameraData);
-        this.cameraControls.focusOnEntity(this.skullEntity, vec);
+        if(this.initialCameraPose?.cameraPosition && this.initialCameraPose?.focus)
+        {
+          const position = this.initialCameraPose?.cameraPosition
+          const focus = this.initialCameraPose?.focus
+          vec = new pc.Vec3(position.x, position.y, position.z).clone().sub(
+                new pc.Vec3(focus.x, focus.y ,focus.z)) ;
+          this.cameraControls?.focusOnEntity(this.skullEntity, vec);
+        }else{
+          await this.getCameraData();
+          const vec = this.cameraDataToVector(this.cameraData);
+          this.cameraControls.focusOnEntity(this.skullEntity, vec);
+        }
+        
       }
       this.showControlsTimer();
     },
@@ -1588,8 +1610,39 @@ export default {
       this.updateAnnotationVisibility();
     },
     closeSettingsPanel() {
-      this.isSettingsMenuOpen = false;
-      this.updateAnnotationVisibility();
+      if (this.hasSettingsChanged()) {
+        Modal.confirm({
+          title: '参数设置已修改',
+          content: '参数设置相比进入时发生了变化，是否保存更改？',
+          okText: '保存',
+          cancelText: '不保存',
+          onOk: () => {
+            this.saveSettings();
+            this.isSettingsMenuOpen = false;
+            this.updateAnnotationVisibility();
+          },
+          onCancel: () => {
+            this.restoreSettings();
+            this.isSettingsMenuOpen = false;
+            this.updateAnnotationVisibility();
+          },
+          zIndex: 1002,
+        });
+      } else {
+        this.isSettingsMenuOpen = false;
+        this.updateAnnotationVisibility();
+      }
+    },
+    restoreSettings() {
+      if (!this.originalSettings) return;
+      const orig = this.originalSettings;
+      this.orbitMotionType = orig.orbitMotionType;
+      this.viewerControls.moveSpeed = orig.moveSpeed;
+      this.viewerControls.orbitSpeed = orig.orbitSpeed;
+      this.viewerControls.autoRotateSpeed = orig.autoRotateSpeed;
+      this.viewerControls.pinchSpeed = orig.pinchSpeed;
+      this.viewerControls.backgroundColor = orig.backgroundColor;
+      this.updateCameraControls();
     },
     scheduleAutoLoopPlay(delayMs = 400) {
       this.clearAutoLoopPlayTimer();
@@ -2985,25 +3038,44 @@ export default {
       this.showContorlWidget = true;
       this.skullEntity = new pc.Entity('custom-splat');
       this.skullEntity.addComponent('gsplat', { asset: splatAsset});
-      // this.skullEntity.setLocalEulerAngles(180, 0, 0);
-      // annotation.enabled = false; // 默认隐藏
-      const response = await ApiServer.request({
-        method: 'get',
-        url: API.GET_ANNOTATIONS,
-        params: {
-          taskId: this.task_id
-        }
-      });
-      // console.log("data", response.data);
-      const annotationsData = response.data.data;
-      this.app.root.addChild(this.skullEntity);
+      let annotationsData;
+      try{
+        const response = await ApiServer.request({
+          method: 'get',
+          url: API.GET_ANNOTATIONS,
+          params: {
+            taskId: this.task_id
+          }
+        });
+        // console.log("data", response.data);
+        annotationsData = response.data.data;
+      }catch(e){
+        console.log('获取annotation失败',e)
+      }
       if(this.skullEntity) {
-        console.log(this.skullEntity)
-        const vec = this.cameraDataToVector(this.cameraData);
-        const cameraPose = this.cameraControls?.focusOnEntity(this.skullEntity, vec);
-        // 保存cameraPose用于传递给CustomMotion
+        console.log(this.skullEntity, this.initialCameraPose)
+        this.app.root.addChild(this.skullEntity);
+        let vec, cameraPose;
+        if(this.initialCameraPose?.cameraPosition && this.initialCameraPose?.focus)
+        {
+          const position = this.initialCameraPose?.cameraPosition
+          const focus = this.initialCameraPose?.focus
+          vec = new pc.Vec3(position.x, position.y, position.z).clone().sub(
+                new pc.Vec3(focus.x, focus.y ,focus.z)) ;
+          cameraPose = this.cameraControls?.focusOnEntity(this.skullEntity, vec);
+        }
+        else
+        {
+          await this.getCameraData();
+          vec = this.cameraDataToVector(this.cameraData)
+          cameraPose = this.cameraControls?.focusOnEntity(this.skullEntity, vec);
+          this.initialCameraPose = cameraPose
+          this.saveSettings(false);
+        }
+         // 保存cameraPose用于传递给CustomMotion
         this.customMotionCameraPose = cameraPose;
         this.initLoopPlaybackState(cameraPose);
+
         const aabb = this.cameraControls?.calculateEntityAabb(this.skullEntity);
         const bottomPose = aabb.center.clone().sub(new pc.Vec3(0, aabb.halfExtents.y, 0));
         this.gridEntity.setPosition(bottomPose);
@@ -3044,7 +3116,11 @@ export default {
         });
         this.app.root.addChild(annotation);
         this.updateAnnotationVisibility();
-        
+
+        // 初始化注释快照，用于后续变更检测
+        this.annotationsSnapshot = this.getAnnotationSnapshot();
+        this.annotationsSnapshotSerialized = this.serializeAnnotationSnapshot(this.annotationsSnapshot);
+
       }
       this.app.off('update', this.handleUpdate);
       this.app.on('update', this.handleUpdate);
@@ -3084,12 +3160,93 @@ export default {
       if ([r, g, b].some(value => Number.isNaN(value))) return;
       this.cameraEntity.camera.clearColor = new pc.Color(r, g, b, 1);
     },
+    // 设置初始化位置：保存当前相机位置，focus保持不变
+    setInitialCameraPosition() {
+      if (!this.skullEntity || !this.cameraControls || !this.cameraEntity) return;
+
+      // 获取当前焦点位置（如果已有initialCameraPose则使用，否则计算）
+      let focusPoint;
+      if (this.initialCameraPose?.focus) {
+        focusPoint = new pc.Vec3(
+          this.initialCameraPose.focus.x,
+          this.initialCameraPose.focus.y,
+          this.initialCameraPose.focus.z
+        );
+      } else {
+        // 计算模型中心作为focus
+        const center = this.getModelCenter();
+        if (!center) return;
+        focusPoint = center;
+      }
+
+      // 获取当前相机位置
+      const cameraPos = this.cameraEntity.getPosition().clone();
+
+      // 更新initialCameraPose
+      this.initialCameraPose = {
+        cameraPosition: {
+          x: cameraPos.x,
+          y: cameraPos.y,
+          z: cameraPos.z
+        },
+        focus: {
+          x: focusPoint.x,
+          y: focusPoint.y,
+          z: focusPoint.z
+        }
+      };
+
+      // 静默保存到服务器
+      this.saveSettings(false);
+      // 显示边框闪一下效果
+      this.showSnapshotFlash = true;
+      setTimeout(() => {
+        this.showSnapshotFlash = false;
+      }, 200);
+      showToast({ type: 'success', message: '初始化位置已保存' });
+    },
     toggleSettingsMenu($event = null) {
       if(this.isRecordingVideo || this.isEncodingVideo) return;
       if (!this.isSettingsMenuOpen) {
         this.hideOtherFeatureBubbles('settings');
+        this.snapshotSettings(); // 打开设置面板时保存快照
       }
       this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
+    },
+    snapshotSettings() {
+      this.originalSettings = {
+        orbitMotionType: this.orbitMotionType,
+        moveSpeed: this.viewerControls.moveSpeed,
+        orbitSpeed: this.viewerControls.orbitSpeed,
+        autoRotateSpeed: this.viewerControls.autoRotateSpeed,
+        pinchSpeed: this.viewerControls.pinchSpeed,
+        backgroundColor: this.viewerControls.backgroundColor
+      };
+    },
+    hasSettingsChanged() {
+      if (!this.originalSettings) return false;
+      const orig = this.originalSettings;
+      const curr = {
+        orbitMotionType: this.orbitMotionType,
+        moveSpeed: this.viewerControls.moveSpeed,
+        orbitSpeed: this.viewerControls.orbitSpeed,
+        autoRotateSpeed: this.viewerControls.autoRotateSpeed,
+        pinchSpeed: this.viewerControls.pinchSpeed,
+        backgroundColor: this.viewerControls.backgroundColor
+      };
+      return orig.orbitMotionType !== curr.orbitMotionType ||
+        orig.moveSpeed !== curr.moveSpeed ||
+        orig.orbitSpeed !== curr.orbitSpeed ||
+        orig.autoRotateSpeed !== curr.autoRotateSpeed ||
+        orig.pinchSpeed !== curr.pinchSpeed ||
+        orig.backgroundColor !== curr.backgroundColor;
+    },
+    handleBeforeUnload(e) {
+      if (this.hasSettingsChanged() || this.hasAnnotationChanges()) {
+        console.log(this.hasSettingsChanged() , this.hasAnnotationChanges())
+        e.preventDefault();
+        e.returnValue = '';
+      }
     },
     adjustValue(key, step) {
       switch(key) {
@@ -3116,7 +3273,70 @@ export default {
     resetAllSettings() {
       const {showInfo, isOrbitMode} = this.viewerControls
       this.viewerControls = { ...DEFAULT_SETTINGS, showInfo, isOrbitMode };
+      this.orbitMotionType = 'orbit';
       this.updateCameraControls();
+    },
+    async saveSettings(show = true) {
+      try {
+        const settings = {
+          moveSpeed: this.viewerControls.moveSpeed,
+          orbitSpeed: this.viewerControls.orbitSpeed,
+          autoRotateSpeed: this.viewerControls.autoRotateSpeed,
+          pinchSpeed: this.viewerControls.pinchSpeed,
+          backgroundColor: this.viewerControls.backgroundColor,
+          orbitMotionType: this.orbitMotionType,
+          motionData: this.customMotion ? {
+            keyframes: this.customMotion.keyframes || [],
+            interpolationType: this.customMotion.interpolationType || 'easeInOut',
+            closedLoop: this.customMotion.closedLoop ?? true
+          } : null,
+          initialCameraPose: this.initialCameraPose,
+        };
+        await ApiServer.request({
+          method: 'post',
+          url: API.SAVE_MODEL_SETTING,
+          data: {
+            task_id: this.task_id,
+            setting: settings
+          }
+        });
+        this.originalSettings = settings
+        if(show)
+          showToast('设置保存成功');
+      } catch (error) {
+        console.error('保存设置失败：', error);
+        showToast('设置保存失败');
+      }
+    },
+    async loadSettings() {
+      try {
+        const response = await ApiServer.request({
+          method: 'get',
+          url: `${API.GET_MODEL_SETTING}/${this.task_id}`
+        });
+        const settings = response.data.data;
+        console.log('已经保存的设定', settings)
+        if (settings) {
+          // 使用服务器返回的设置，如果某个字段不存在则使用默认值
+          this.viewerControls.moveSpeed = settings.moveSpeed ?? DEFAULT_SETTINGS.moveSpeed;
+          this.viewerControls.orbitSpeed = settings.orbitSpeed ?? DEFAULT_SETTINGS.orbitSpeed;
+          this.viewerControls.autoRotateSpeed = settings.autoRotateSpeed ?? DEFAULT_SETTINGS.autoRotateSpeed;
+          this.viewerControls.pinchSpeed = settings.pinchSpeed ?? DEFAULT_SETTINGS.pinchSpeed;
+          this.viewerControls.backgroundColor = settings.backgroundColor ?? DEFAULT_SETTINGS.backgroundColor;
+          if (settings.orbitMotionType !== undefined) this.orbitMotionType = 'orbit';
+          if (settings.motionData.keyframes?.length > 0) {
+            this.customMotion = settings.motionData;
+          }
+          if(settings.initialCameraPose !== undefined)
+          {
+            this.initialCameraPose = settings.initialCameraPose;
+          }
+          this.updateCameraControls();
+        }
+        this.originalSettings = settings
+      } catch (error) {
+        console.log('获取设置失败或无设置：', error);
+      }
     },
     destroyPreViewer() {
       this.clearLoopPlayStartTimer();
@@ -3517,7 +3737,10 @@ export default {
       return new pc.Vec3([x, y, z]);
     },
     cameraDataToVector(cameraData){
-      return this.quatRotateVector(cameraData[0].quaternion);
+      if(cameraData?.length > 0)
+        return this.quatRotateVector(cameraData[0]?.quaternion);
+      else 
+        return null
     },
     async getCameraData(){
         try {
@@ -3546,8 +3769,11 @@ export default {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.addEventListener('fullscreenchange', this.syncFullscreenState);
     await this.initViewer();
-    await this.getCameraData();
+        // 加载设置
+    await this.loadSettings();
+  
     await this.getTargetModel();
+
 
     // 加载自定义运镜参数
     if (this.$route.query.customMotion) {
@@ -3593,8 +3819,12 @@ export default {
     //   }
     // };
     // await loadLocalModel();
+
+    // 监听浏览器关闭/刷新事件
+    window.addEventListener('beforeunload', this.handleBeforeUnload);
   },
   beforeUnmount() {
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
     window.receiveFlutterMsg = null;
     document.removeEventListener('fullscreenchange', this.syncFullscreenState);
     this.destroyPreViewer();
@@ -4988,6 +5218,14 @@ export default {
   margin-bottom: 0;
 }
 
+.setting-item-tip {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
 .setting-label {
   font-size: 14px;
   color: #1d1d1f;
@@ -5330,7 +5568,7 @@ export default {
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  z-index: 1001;
+  z-index: 99;
   animation: modeTipFadeIn 0.3s ease;
 }
 

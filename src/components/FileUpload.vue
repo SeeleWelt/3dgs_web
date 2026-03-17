@@ -45,7 +45,7 @@
         <!-- Upload Text -->
         <div class="upload-text">
           <p class="main-text">点击上传或将视频/图片拖入此区域</p>
-          <p class="sub-text">支持视频（mp4, mov）或图片（jpg, png, webp）</p>
+          <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）或图片（jpg, png, webp）</p>
         </div>
 
         <!-- Hidden Input -->

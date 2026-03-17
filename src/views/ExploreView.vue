@@ -334,6 +334,7 @@ const onGaussianMouseLeave = () => {
 
 const handleGaussianCardClick = (model: Model) => {
   if (!gaussianHasDragged.value) {
+    console.log(model);
     openModelDetail(model)
   }
 }

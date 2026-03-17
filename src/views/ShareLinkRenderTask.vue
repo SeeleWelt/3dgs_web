@@ -52,13 +52,14 @@
         <a-slider
           v-model:value="orbitPlaybackAngle"
           :min="0"
-          :max="360"
+          :max="isCustomMotionMode ? orbitTotalTime : 360"
           :step="0.1"
           :disabled="!skullEntity || !viewerControls.isOrbitMode"
           @change="handleOrbitProgressChange"
           @afterChange="isLoopPlaying = true"
           class="orbit-slider"
         />
+        <span class="time-display">{{ formatTime(orbitCurrentTime) }} / {{ formatTime(orbitTotalTime) }}</span>
       </div>
 
       <!-- 功能按钮 -->
@@ -87,16 +88,10 @@
           </a-tooltip>
         </div>
         <div class="btn-group right">
-          <a-tooltip title="嵌入代码">
+          <a-tooltip title="复制代码">
             <a-button type="text" class="control-icon-btn" @click.stop="handleEmbedCodePlaceholder">
               <template #icon><CodeOutlined /></template>
               嵌入
-            </a-button>
-          </a-tooltip>
-          <a-tooltip title="参数设置">
-            <a-button type="text" class="control-icon-btn" @click.stop="toggleSettingsMenu">
-              <template #icon><SettingOutlined /></template>
-              设置
             </a-button>
           </a-tooltip>
           <a-tooltip :title="viewerControls.isOrbitMode ? '切换轨道模式' : '切换飞行模式'">
@@ -124,49 +119,6 @@
             </a-button>
           </a-tooltip>
         </div>
-      </div>
-    </div>
-
-    <!-- 设置面板 -->
-    <div v-if="isSettingsMenuOpen && showContorlWidget" class="feature-panel settings-panel top-right-panel" :class="{ visible: showControls }" @click.stop>
-      <div class="settings-header">
-        <span>参数设置</span>
-        <a-button type="text" size="small" @click.stop="closeSettingsPanel">
-          <template #icon><CloseOutlined /></template>
-        </a-button>
-      </div>
-      <div class="settings-content">
-        <div class="setting-item">
-          <label class="setting-label">飞行速度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
-          </div>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">轨道速度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.orbitSpeed" :min="1" :max="30" :step="0.5" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
-          </div>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">旋转速度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
-          </div>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">缩放灵敏度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="panel-footer">
-        <a-button type="primary" size="small" @click.stop="resetAllSettings">重置参数</a-button>
       </div>
     </div>
 
@@ -275,7 +227,6 @@ import {
   CodeOutlined,
   CaretRightOutlined,
   PauseOutlined,
-  SettingOutlined,
   CloseOutlined,
   BorderOuterOutlined,
   BorderOutlined,
@@ -297,6 +248,16 @@ import { loadGsplat } from '@/utils/load';
 import { Annotation, AnnotationManager } from '../../scripts/esm/annotations.mjs';
 import { Grid } from '../../scripts/esm/grid.mjs';
 import EmbedCodeDialog from '@/components/EmbedCodeDialog.vue';
+import {
+  applyOrbitMotion,
+  applyEllipseOrbit,
+  applySpiralMotion,
+  applyDollyMotion,
+  applySwingMotion,
+  applyFigureEightMotion,
+  applyTimedPathMotion,
+  Easing
+} from '@/utils/camera-motions';
 
 const showToast = (input) => {
   const defaultDuration = 2
@@ -362,7 +323,6 @@ export default {
     CodeOutlined,
     CaretRightOutlined,
     PauseOutlined,
-    SettingOutlined,
     CloseOutlined,
     BorderOuterOutlined,
     BorderOutlined,
@@ -411,7 +371,6 @@ export default {
       lightEntity: null,
       rotation: 0,
       showEmbedCodeDialog: false,
-      isSettingsMenuOpen: false,
       forceStartInteractionFlag: false,
       annotationsSnapshot: null,
       annotationsSnapshotSerialized: '',
@@ -428,6 +387,22 @@ export default {
       orbitPlaybackStartPos: null,
       orbitPlaybackFocus: null,
       orbitPlaybackVector: null,
+      originalZoomRange: null, // 保存原始zoomRange
+      _isDraggingSlider: false, // 是否正在拖动进度条
+      orbitMotionType: 'dolly', // 运镜类型: orbit, ellipse, spiral, dolly, swing, figureEight, custom
+      orbitMotionParams: {
+        scaleX: 1.0,
+        scaleZ: 0.7,
+        heightFactor: 0.3,
+        radiusFactor: 0.1,
+        distanceFactor: 0.3,
+        oscillationPeriod: 2,
+        swingAmplitude: 30,
+        swingCenter: 0,
+      },
+      customMotion: null, // 自定义运镜数据
+      customMotionCameraPose: null, // 初始相机pose传递给CustomMotion
+      loopPlay: true, // 是否循环播放
       loopPlayStartDelayMs: 350,
       loopPlayStartTimer: null,
       autoLoopPlayTimer: null,
@@ -438,6 +413,9 @@ export default {
       gridEntity: null,
       showGestureModal: false,
       hasClickAnnotation: false,
+      cameraData: null, // 相机数据
+      initialCameraPose: null, // 初始相机位姿
+      settings:{},
     };
   },
   watch:{
@@ -452,7 +430,49 @@ export default {
       }
     }
   },
+  computed: {
+    // 计算自定义运镜的总时长
+    customMotionTotalDuration() {
+      if (!this.customMotion || !this.customMotion.keyframes || this.customMotion.keyframes.length < 2) {
+        return 0;
+      }
+      const { keyframes, closedLoop } = this.customMotion;
+      const count = closedLoop ? keyframes.length : keyframes.length - 1;
+      let total = 0;
+      for (let i = 0; i < count; i++) {
+        total += keyframes[i]?.time || 0;
+      }
+      return total;
+    },
+    // 是否使用自定义运镜
+    isCustomMotionMode() {
+      return this.orbitMotionType === 'custom' && this.customMotion;
+    },
+    // 总时间（秒）
+    orbitTotalTime() {
+      if (this.isCustomMotionMode) {
+        return this.customMotionTotalDuration;
+      }
+      const speed = this.viewerControls.autoRotateSpeed || 30;
+      return 360 / speed;
+    },
+    // 当前时间（秒）
+    orbitCurrentTime() {
+      if (this.isCustomMotionMode) {
+        return this.orbitPlaybackAngle;
+      }
+      const speed = this.viewerControls.autoRotateSpeed || 30;
+      return this.orbitPlaybackAngle / speed;
+    }
+  },
   methods: {
+    // 格式化时间显示为 mm:ss
+    formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+
     // 获取当前标注标题
     getCurrentAnnotationTitle() {
       const titles = this.annotataions.map(item => item?.script?.annotation?.title || '未命名').filter(Boolean)
@@ -513,7 +533,16 @@ export default {
       }
       if(this.skullEntity)
       {
-        this.cameraControls.focusOnEntity(this.skullEntity);
+        if(this.initialCameraPose?.cameraPosition && this.initialCameraPose?.focus)
+        {
+          const position = this.initialCameraPose?.cameraPosition
+          const focus = this.initialCameraPose?.focus
+          const vec = new pc.Vec3(position.x, position.y, position.z).clone().sub(
+                new pc.Vec3(focus.x, focus.y ,focus.z)) ;
+          this.cameraControls?.focusOnEntity(this.skullEntity, vec);
+        }else{
+          this.cameraControls.focusOnEntity(this.skullEntity);
+        }
       }
       this.showControlsTimer();
     },
@@ -569,18 +598,97 @@ export default {
     applyOrbitAngle(angle, immediate = true) {
       if (!this.orbitPlaybackVector || !this.orbitPlaybackFocus || !this.cameraControls) return;
 
-      const rad = -angle * pc.math.DEG_TO_RAD;
-      const base = this.orbitPlaybackVector;
-      const cos = Math.cos(rad);
-      const sin = Math.sin(rad);
+      const { orbitMotionType, orbitMotionParams } = this;
+      let targetPos;
 
-      const rotatedVec = new pc.Vec3(
-        base.x * cos + base.z * sin,
-        base.y,
-        -base.x * sin + base.z * cos
-      );
-      const targetPos = this.orbitPlaybackFocus.clone().add(rotatedVec);
+      const options = {
+        focus: this.orbitPlaybackFocus,
+        baseVector: this.orbitPlaybackVector,
+        angle,
+      };
+
+      switch (orbitMotionType) {
+        case 'ellipse':
+          targetPos = applyEllipseOrbit({
+            ...options,
+            scaleX: orbitMotionParams.scaleX,
+            scaleZ: orbitMotionParams.scaleZ,
+          });
+          break;
+        case 'spiral':
+          targetPos = applySpiralMotion({
+            ...options,
+            heightFactor: 0,
+            radiusFactor: orbitMotionParams.radiusFactor,
+          });
+          break;
+        case 'dolly':
+          targetPos = applyDollyMotion({
+            ...options,
+            distanceFactor: orbitMotionParams.distanceFactor,
+            oscillationPeriod: orbitMotionParams.oscillationPeriod,
+          });
+          break;
+        case 'swing':
+          targetPos = applySwingMotion({
+            ...options,
+            swingAmplitude: orbitMotionParams.swingAmplitude,
+            swingCenter: orbitMotionParams.swingCenter,
+          });
+          break;
+        case 'figureEight':
+          targetPos = applyFigureEightMotion(
+            this.orbitPlaybackFocus,
+            this.orbitPlaybackVector,
+            angle
+          );
+          break;
+        case 'custom':
+          // 自定义运镜不使用此方法
+          return;
+        case 'orbit':
+        default:
+          targetPos = applyOrbitMotion(options);
+          break;
+      }
+
       this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate });
+    },
+    // 根据时间应用自定义运镜
+    applyCustomMotionAtTime(currentTime) {
+      if (!this.customMotion || !this.customMotion.keyframes || this.customMotion.keyframes.length < 2) return;
+      if (!this.orbitPlaybackFocus || !this.cameraControls) return;
+
+      const { keyframes, closedLoop, interpolationType } = this.customMotion;
+      const totalDuration = this.customMotionTotalDuration;
+      if (totalDuration <= 0) return;
+
+      const pathPoints = keyframes.map(kf => {
+        return new pc.Vec3(kf.position.x, kf.position.y, kf.position.z);
+      });
+
+      if (closedLoop && keyframes.length >= 3) {
+        const firstPoint = pathPoints[0].clone();
+        pathPoints.push(firstPoint);
+      }
+
+      const segmentCount = closedLoop ? keyframes.length : keyframes.length - 1;
+      const durations = [];
+      for (let i = 0; i < segmentCount; i++) {
+        durations.push(keyframes[i]?.time || 3);
+      }
+
+      const easingMap = {
+        'linear': Easing.linear,
+        'easeIn': Easing.easeInCubic,
+        'easeOut': Easing.easeOutCubic,
+        'easeInOut': Easing.easeInOutCubic,
+      };
+      const easingFn = easingMap[interpolationType] || Easing.easeInOutCubic;
+
+      const targetPos = applyTimedPathMotion(pathPoints, currentTime, durations, easingFn);
+
+      this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate: true });
     },
     clearLoopPlayStartTimer() {
       if (this.loopPlayStartTimer) {
@@ -598,6 +706,11 @@ export default {
       this.clearLoopPlayStartTimer();
       this.isLoopPlaying = false;
       this.orbitPlaybackTravelled = 0;
+      // 恢复原始zoomRange
+      if (this.cameraControls && this.originalZoomRange) {
+        this.cameraControls.zoomRange = new pc.Vec2(this.originalZoomRange.x, this.originalZoomRange.y);
+        this.originalZoomRange = null;
+      }
       if (restoreStart && this.orbitPlaybackFocus && this.orbitPlaybackVector) {
         const returnAngle = this.clamp(this.orbitPlaybackSessionStartAngle || 0, 0, 360);
         this.orbitPlaybackAngle = returnAngle;
@@ -606,7 +719,6 @@ export default {
     },
     toggleLoopPlay() {
       if (!this.skullEntity || !this.viewerControls.isOrbitMode) return;
-      console.log(this.isLoopPlaying)
       if (this.isLoopPlaying) {
         this.stopLoopPlayback(false);
         this.showControlsTimer();
@@ -618,8 +730,27 @@ export default {
         showToast({ type: 'warning', message: '当前相机位置无法开始旋转' });
         return;
       }
-      
+
       this.showControlsTimer();
+
+      // 自定义运镜模式
+      if (this.isCustomMotionMode) {
+        if (!this.orbitPlaybackFocus) {
+          const inited = this.initLoopPlaybackState();
+          if (!inited) {
+            showToast({ type: 'warning', message: '当前相机位置无法开始运镜' });
+            return;
+          }
+        }
+        this.applyCustomMotionAtTime(this.orbitPlaybackAngle);
+        if (this.cameraControls) {
+          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        }
+        this.isLoopPlaying = true;
+        return;
+      }
+
       const startAngle = this.clamp(this.orbitPlaybackAngle, 0, 360);
       this.orbitPlaybackSessionStartAngle = startAngle;
       this.orbitPlaybackTravelled = 0;
@@ -643,9 +774,26 @@ export default {
     },
     handleOrbitProgressChange(value) {
       if (!this.skullEntity || !this.viewerControls.isOrbitMode) return;
-      if (this.isLoopPlaying) {
-        this.stopLoopPlayback(true);
+
+      // 拖动时禁用缩放
+      if (!this._isDraggingSlider) {
+        this._isDraggingSlider = true;
+        if (this.cameraControls) {
+          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        }
       }
+
+      if (this.isLoopPlaying) {
+        this.stopLoopPlayback(false);
+      }
+
+      // 自定义运镜模式
+      if (this.isCustomMotionMode) {
+        this.applyCustomMotionAtTime(Number(value) || 0);
+        return;
+      }
+
       if (!this.orbitPlaybackFocus || !this.orbitPlaybackVector || !this.orbitPlaybackStartPos) {
         const inited = this.initLoopPlaybackState();
         if (!inited) return;
@@ -673,22 +821,11 @@ export default {
     handleEmbedCodePlaceholder($event) {
       this.showEmbedCodeDialog = true;
     },
-    toggleSettingsMenu() {
-      this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
-    },
     toggleGrid() {
       this.showGrid = !this.showGrid;
       if (this.gridEntity) {
         this.gridEntity.enabled = this.showGrid;
       }
-    },
-    closeSettingsPanel() {
-      this.isSettingsMenuOpen = false;
-    },
-    resetAllSettings() {
-      const { showInfo, isOrbitMode } = this.viewerControls;
-      this.viewerControls = { ...DEFAULT_SETTINGS, showInfo, isOrbitMode };
-      this.updateCameraControls();
     },
     toggleMeshCursor() {
       this.viewerControls.isOrbitMode = !this.viewerControls.isOrbitMode;
@@ -929,6 +1066,38 @@ export default {
     retryLoadModel() {
       this.getTargetModel();
     },
+    async loadSettings() {
+      try {
+        const response = await ApiServer.request({
+          method: 'get',
+          url: `${API.GET_MODEL_SETTING}/${this.task_id}`
+        }, this.token);
+        const settings = response.data.data;
+        console.log("settings", settings);
+        if (settings) {
+          this.settings = settings
+          // 使用服务器返回的设置，如果某个字段不存在则使用默认值
+          this.viewerControls.moveSpeed = settings.moveSpeed ?? DEFAULT_SETTINGS.moveSpeed;
+          this.viewerControls.orbitSpeed = settings.orbitSpeed ?? DEFAULT_SETTINGS.orbitSpeed;
+          this.viewerControls.autoRotateSpeed = settings.autoRotateSpeed ?? DEFAULT_SETTINGS.autoRotateSpeed;
+          this.viewerControls.pinchSpeed = settings.pinchSpeed ?? DEFAULT_SETTINGS.pinchSpeed;
+          this.viewerControls.backgroundColor = settings.backgroundColor ?? DEFAULT_SETTINGS.backgroundColor;
+          if (settings.orbitMotionType !== undefined) {
+            this.orbitMotionType = settings.orbitMotionType;
+          }
+          if (settings.motionData) {
+            this.customMotion = settings.motionData;
+            this.loopPlay = this.customMotion?.loopPlay !== false;
+          }
+          if (settings.initialCameraPose !== undefined) {
+            this.initialCameraPose = settings.initialCameraPose;
+          }
+          this.updateCameraControls();
+        }
+      } catch (error) {
+        console.log('获取设置失败或无设置，使用默认设置：', error);
+      }
+    },
     async getTargetModel() {
       const downloadTokenUrl = new URL(`${API.TASK_DETAIL}/${this.task_id}/download-token`, API.BASE_URL);
       downloadTokenUrl.searchParams.append('shareId', this.shareId);
@@ -1010,7 +1179,26 @@ export default {
         this.app.root.addChild(this.skullEntity);
 
         if (this.skullEntity) {
-          const center = this.cameraControls?.focusOnEntity(this.skullEntity);
+          let center, cameraPose;
+          if(this.initialCameraPose?.cameraPosition && this.initialCameraPose?.focus)
+          {
+            const position = this.initialCameraPose?.cameraPosition
+            const focus = this.initialCameraPose?.focus
+            const vec = new pc.Vec3(position.x, position.y, position.z).clone().sub(
+                  new pc.Vec3(focus.x, focus.y ,focus.z)) ;
+            cameraPose = this.cameraControls?.focusOnEntity(this.skullEntity, vec);
+            center = cameraPose?.focus;
+          }
+          else
+          {
+            await this.getCameraData();
+            const vec = this.cameraDataToVector(this.cameraData)
+            cameraPose = this.cameraControls?.focusOnEntity(this.skullEntity, vec);
+            this.initialCameraPose = cameraPose
+          }
+          // 保存cameraPose用于传递给CustomMotion
+          this.customMotionCameraPose = cameraPose;
+          this.initLoopPlaybackState(cameraPose);
           this.cameraControls?.resetUserInteractionFlag?.();
 
           // Set up annotation manager
@@ -1132,11 +1320,31 @@ export default {
       }
 
       if (this.isLoopPlaying) {
-        const speed = this.cameraControls?.autoRotateSpeed || 30;
-        this.orbitPlaybackTravelled = (this.orbitPlaybackTravelled + speed * dt) % 360;
-        const absoluteAngle = (this.orbitPlaybackSessionStartAngle || 0) + this.orbitPlaybackTravelled;
-        this.orbitPlaybackAngle = this.normalizeOrbitAngle(absoluteAngle);
-        this.applyOrbitAngle(this.orbitPlaybackAngle);
+        // 自定义运镜模式：使用时间驱动
+        if (this.isCustomMotionMode) {
+          const totalDuration = this.customMotionTotalDuration;
+          if (totalDuration > 0) {
+            this.orbitPlaybackAngle += dt;
+            let t = this.orbitPlaybackAngle / totalDuration;
+
+            if (this.loopPlay) {
+              t = t % 1;
+              this.orbitPlaybackAngle = this.orbitPlaybackAngle % totalDuration;
+            } else if (t >= 1) {
+              t = 1;
+              this.orbitPlaybackAngle = totalDuration;
+              this.stopLoopPlayback(false);
+            }
+            this.applyCustomMotionAtTime(this.orbitPlaybackAngle);
+          }
+        } else {
+          // 其他运镜模式：使用角度驱动
+          const speed = this.cameraControls?.autoRotateSpeed || 30;
+          this.orbitPlaybackTravelled = (this.orbitPlaybackTravelled + speed * dt) % 360;
+          const absoluteAngle = (this.orbitPlaybackSessionStartAngle || 0) + this.orbitPlaybackTravelled;
+          this.orbitPlaybackAngle = this.normalizeOrbitAngle(absoluteAngle);
+          this.applyOrbitAngle(this.orbitPlaybackAngle);
+        }
       }
 
       this.cameraControls?.update(dt, false, false);
@@ -1167,14 +1375,51 @@ export default {
         this.resizeObserver = null;
       }
     },
+    // 四元数旋转向量
+    quatRotateVector(q) {
+      const [qx, qy, qz, qw] = q;
+      const [vx, vy, vz] = [0,0,-1];
+
+      // 四元数旋转向量的数学公式
+      const x = vx * (1 - 2*qy*qy - 2*qz*qz) + vy * (2*qx*qy - 2*qz*qw) + vz * (2*qx*qz + 2*qy*qw);
+      const y = vx * (2*qx*qy + 2*qz*qw) + vy * (1 - 2*qx*qx - 2*qz*qz) + vz * (2*qy*qz - 2*qx*qw);
+      const z = vx * (2*qx*qz - 2*qy*qw) + vy * (2*qy*qz + 2*qx*qw) + vz * (1 - 2*qx*qx - 2*qy*qy);
+
+      return new pc.Vec3([x, y, z]);
+    },
+    // 将相机数据转换为向量
+    cameraDataToVector(cameraData){
+      if(cameraData?.length > 0)
+        return this.quatRotateVector(cameraData[0]?.quaternion);
+      else
+        return null
+    },
+    // 获取相机数据
+    async getCameraData(){
+      try {
+        const response = await ApiServer.request({
+          method: 'get',
+          url: API.GET_CAMERA_DATA,
+          params:{
+            task_id: this.task_id
+          }
+        }, this.token);
+        const cameraData = response.data.data;
+        this.cameraData = cameraData;
+        // console.log("【vue信息】相机数据：", cameraData);
+      } catch (error) {
+        console.error('获取相机数据失败：', error);
+      }
+    },
   },
   async mounted() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.addEventListener('fullscreenchange', this.syncFullscreenState);
     this.shareId = this.$route.query.shareId || '';
     await this.initViewer();
+    await this.loadSettings();
     await this.getTargetModel();
-
+    
     // 动态计算右侧面板偏移量
     this.$nextTick(() => {
         const offset = 30;
@@ -1362,6 +1607,15 @@ export default {
 
 .progress-section {
   margin-bottom: 12px;
+  position: relative;
+}
+
+.time-display {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
 }
 
 .orbit-slider {

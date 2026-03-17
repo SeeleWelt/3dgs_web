@@ -1,13 +1,19 @@
 <template>
   <a-modal
     v-model:open="visible"
-    title="自定义运镜"
     :width="1200"
     :footer="null"
     :mask-closable="false"
     class="custom-motion-modal"
     @cancel="handleCancel"
+    :zIndex = "1001"
   >
+    <template #title>
+      <div class="custom-modal-title">
+        <CameraOutlined class="title-icon" />
+        <span>自定义运镜</span>
+      </div>
+    </template>
     <div class="custom-motion-container" ref="containerRef" @mousemove="handleMouseMove">
       <!-- 左侧预览区域 -->
       <div class="preview-panel">
@@ -114,7 +120,7 @@
                 <span class="position-value">{{ currentCameraPos.z.toFixed(2) }}</span>
               </div>
             </div>
-            <a-button type="primary" block @click="saveCurrentPosition" class="snapshot-btn">
+            <a-button type="primary" block @click="saveCurrentPosition" class="snapshot-btn" :disabled="isPreviewMode">
               <template #icon><CameraOutlined /></template>
               快照保存当前位置
             </a-button>
@@ -134,13 +140,13 @@
                   'drag-over': index < keyframes.length && dragOverIndex === index,
                   'closed-loop-end': closedLoop && index === keyframes.length
                 }"
-                :draggable="index < keyframes.length"
-                @click="index < keyframes.length && selectKeyframe(index)"
-                @dragstart="index < keyframes.length && handleDragStart($event, index)"
+                :draggable="!isPreviewMode && index < keyframes.length"
+                @click="!isPreviewMode && index < keyframes.length && selectKeyframe(index)"
+                @dragstart="!isPreviewMode && index < keyframes.length && handleDragStart($event, index)"
                 @dragend="handleDragEnd"
-                @dragover.prevent="index < keyframes.length && handleDragOver($event, index)"
+                @dragover.prevent="!isPreviewMode && index < keyframes.length && handleDragOver($event, index)"
                 @dragleave="handleDragLeave"
-                @drop="index < keyframes.length && handleDrop($event, index)"
+                @drop="!isPreviewMode && index < keyframes.length && handleDrop($event, index)"
               >
                 <div class="keyframes-index">
                   {{ index < keyframes.length ? index + 1 : '↺' }}
@@ -161,6 +167,7 @@
                       :step="0.5"
                       size="small"
                       style="width: 70px"
+                      :disabled="isPreviewMode"
                       @click.stop
                       @change="handleTimeChange"
                     />
@@ -169,17 +176,17 @@
                 </div>
                 <div class="keyframes-actions" v-if="index < keyframes.length">
                   <a-tooltip title="更新位置">
-                    <a-button type="text" size="small" @click.stop="updateKeyframePosition(index)">
+                    <a-button type="text" size="small" @click.stop="updateKeyframePosition(index)" :disabled="isPreviewMode">
                       <template #icon><CameraOutlined /></template>
                     </a-button>
                   </a-tooltip>
                   <a-tooltip title="预览">
-                    <a-button type="text" size="small" @click.stop="previewKeyframe(index)">
+                    <a-button type="text" size="small" @click.stop="previewKeyframe(index)" :disabled="isPreviewMode">
                       <template #icon><EyeOutlined /></template>
                     </a-button>
                   </a-tooltip>
                   <a-tooltip title="删除">
-                    <a-button type="text" size="small" danger @click.stop="deleteKeyframe(index)">
+                    <a-button type="text" size="small" danger @click.stop="deleteKeyframe(index)" :disabled="isPreviewMode">
                       <template #icon><DeleteOutlined /></template>
                     </a-button>
                   </a-tooltip>
@@ -231,7 +238,7 @@
         </div>
 
         <div class="config-footer">
-          <a-button @click="handleCancel">取消</a-button>
+          <a-button @click="handleCancel" >取消</a-button>
           <a-button type="primary" @click="handleConfirm">确认</a-button>
         </div>
       </div>
@@ -399,7 +406,7 @@
 import * as pc from 'playcanvas';
 import CameraControls from '@/utils/controller';
 import { loadGsplat } from '@/utils/load';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import API from '@/utils/api';
 import { ApiServer } from '@/utils/taskService';
 import { applyTimedPathMotion, Easing } from '@/utils/camera-motions';
@@ -547,12 +554,13 @@ export default {
 
       // 关键帧（只需要位置）
       keyframes: [],
+      originalMotionData: null, // 进入时的motionData快照，用于检测变化
       selectedKeyframeIndex: -1,
       dragIndex: -1,
       dragOverIndex: -1,
 
       // 运镜设置
-      interpolationType: 'easeInOut',
+      interpolationType: 'linear',
       loopPlay: true,
       closedLoop: false,
 
@@ -569,6 +577,7 @@ export default {
       // 预览标记实体
       previewCameraMarker: null,
       previewTrajectoryEntity: null,
+      previewConnectionLine: null,
 
       // 标注相关
       annotationManager: null,
@@ -631,6 +640,8 @@ export default {
         this.$nextTick(() => {
           this.updateTrajectory();
         });
+        // 如果模型已加载且关键帧已存在，也需要快照
+        this.snapshotMotionData();
       }
     },
     visible(val) {
@@ -663,10 +674,12 @@ export default {
     this.destroyViewer();
   },
   methods: {
+
     // 重置状态（每次关闭后重新打开时使用）
     resetState() {
       this.modelLoaded = false;
       this.keyframes = [];
+      this.originalMotionData = null;
       this.selectedKeyframeIndex = -1;
       this.interpolationType = 'easeInOut';
       this.loopPlay = true;
@@ -679,11 +692,12 @@ export default {
       this.initialCameraPose = null;
       this.cameraData = {};
     },
-
+    
     // 加载自定义运镜参数
     loadCustomMotion() {
       if (this.customMotion) {
         this.keyframes = this.customMotion.keyframes || [];
+        console.log(this.keyframes)
         // 确保每个关键帧都有time属性（到下一个关键帧的时间）
         this.keyframes.forEach((kf, index) => {
           if (kf.time === undefined || kf.time === null) {
@@ -715,6 +729,7 @@ export default {
 
     // 确认
     handleConfirm() {
+      console.log("keyframes", this.keyframes)
       if (this.keyframes.length < 2) {
         showToast({ type: 'warning', message: '请至少添加2个关键帧' });
         return;
@@ -731,7 +746,66 @@ export default {
 
     // 取消
     handleCancel() {
-      this.visible = false;
+      this.visible = true
+      if (this.hasMotionDataChanged()) {
+        Modal.confirm({
+          title: '运镜设置已修改',
+          content: '运镜设置相比进入时发生了变化，是否保存更改？',
+          okText: '保存',
+          cancelText: '不保存',
+          onOk: () => {
+            this.handleConfirm();
+          },
+          onCancel: () => {
+            this.visible = false;
+          },
+          zIndex: 1002,
+        });
+      } else {
+        this.visible = false;
+      }
+    },
+
+    // 快照当前motionData
+    snapshotMotionData() {
+      this.originalMotionData = {
+        keyframes: this.keyframes.map(kf => ({ ...kf })),
+        interpolationType: this.interpolationType,
+        loopPlay: this.loopPlay,
+        closedLoop: this.closedLoop
+      };
+    },
+
+    // 检测motionData是否发生变化
+    hasMotionDataChanged() {
+      if (!this.originalMotionData) return false;
+      const orig = this.originalMotionData;
+      const curr = {
+        keyframes: this.keyframes,
+        interpolationType: this.interpolationType,
+        loopPlay: this.loopPlay,
+        closedLoop: this.closedLoop
+      };
+      // 比较关键帧数量
+      if (orig.keyframes.length !== curr.keyframes.length) return true;
+      // 比较关键帧内容
+      for (let i = 0; i < curr.keyframes.length; i++) {
+        const o = orig.keyframes[i];
+        const c = curr.keyframes[i];
+        if (
+          o.position?.x !== c.position?.x ||
+          o.position?.y !== c.position?.y ||
+          o.position?.z !== c.position?.z ||
+          o.time !== c.time
+        ) {
+          return true;
+        }
+      }
+      // 比较其他设置
+      if (orig.interpolationType !== curr.interpolationType) return true;
+      if (orig.loopPlay !== curr.loopPlay) return true;
+      if (orig.closedLoop !== curr.closedLoop) return true;
+      return false;
     },
 
     // 初始化渲染器
@@ -821,6 +895,8 @@ export default {
 
         // 加载自定义运镜参数
         this.loadCustomMotion();
+        // 快照motionData，用于检测变化
+        this.snapshotMotionData();
       } catch (error) {
         showToast({ type: 'error', message: `初始化渲染器失败：${error.message}` });
         console.error('PlayCanvas初始化失败：', error);
@@ -1095,7 +1171,6 @@ export default {
       };
       this.keyframes.push(newKeyframe);
       this.updateTrajectory();
-      showToast({ type: 'success', message: `已添加关键帧 ${this.keyframes.length}` });
     },
 
     // 更新轨迹线 - 使用 applyPathMotion 计算实际路径
@@ -1270,7 +1345,6 @@ export default {
       this.keyframes[index].position = pos;
       // 更新轨迹显示
       this.updateTrajectory();
-      showToast({ type: 'success', message: `已更新关键帧 ${index + 1} 位置` });
     },
 
     // 删除关键帧
@@ -1340,7 +1414,6 @@ export default {
 
         // 更新轨迹
         this.updateTrajectory();
-        showToast({ type: 'success', message: '已调整关键帧顺序' });
       }
 
       this.dragIndex = -1;
@@ -1404,6 +1477,7 @@ export default {
 
         // 加载camera.glb模型
         const cameraAsset = await this.loadGLBAsset('/camera.glb');
+        console.log(cameraAsset)
         // console.log("cameraAsset", cameraAsset)
         if (cameraAsset) {
           this.previewCameraMarker.addComponent('render', {
@@ -1439,8 +1513,121 @@ export default {
         this.app.root.addChild(this.previewCameraMarker);
       }
 
+      // 创建相机到模型中心的连接线（红色虚线）
+      this.createConnectionLine(focus);
+
       // 创建轨迹线
       this.createPreviewTrajectory();
+    },
+
+    // 创建连接线（相机到模型中心）
+    createConnectionLine(focus) {
+      if (!this.app || !focus) return;
+
+      const startKf = this.keyframes[0];
+      const startPos = new pc.Vec3(startKf.position.x, startKf.position.y, startKf.position.z);
+
+      // 使用虚线效果（通过多个短线段实现）
+      const positions = [];
+      const colors = [];
+      const numSegments = 20; // 虚线段数
+      const dashRatio = 0.5; // 虚线空白比例
+
+      for (let i = 0; i < numSegments; i++) {
+        const t1 = (i / numSegments);
+        const t2 = ((i + dashRatio) / numSegments);
+
+        if (t2 <= 1) {
+          const p1 = new pc.Vec3().lerp(startPos, focus, t1);
+          const p2 = new pc.Vec3().lerp(startPos, focus, t2);
+
+          positions.push(p1.x, p1.y, p1.z);
+          colors.push(1, 0, 0, 1);
+
+          positions.push(p2.x, p2.y, p2.z);
+          colors.push(1, 0, 0, 1);
+        }
+      }
+
+      const vertexFormat = new pc.VertexFormat(this.app.graphicsDevice, [
+        { semantic: pc.SEMANTIC_POSITION, components: 3, type: pc.TYPE_FLOAT32 },
+        { semantic: pc.SEMANTIC_COLOR, components: 4, type: pc.TYPE_FLOAT32 }
+      ]);
+
+      const numVertices = positions.length / 3;
+      const vertexBuffer = new pc.VertexBuffer(this.app.graphicsDevice, vertexFormat, numVertices);
+      const iterator = new pc.VertexIterator(vertexBuffer);
+
+      for (let i = 0; i < numVertices; i++) {
+        iterator.element[pc.SEMANTIC_POSITION].set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+        iterator.element[pc.SEMANTIC_COLOR].set(colors[i * 4], colors[i * 4 + 1], colors[i * 4 + 2], colors[i * 4 + 3]);
+        iterator.next();
+      }
+      iterator.end();
+
+      const mesh = new pc.Mesh(this.app.graphicsDevice);
+      mesh.vertexBuffer = vertexBuffer;
+      mesh.primitive[0].type = pc.PRIMITIVE_LINES;
+      mesh.primitive[0].base = 0;
+      mesh.primitive[0].count = numVertices;
+      mesh.primitive[0].indexed = false;
+
+      const material = new pc.StandardMaterial();
+      material.emissive = new pc.Color(1, 0, 0);
+      material.emissiveVertexColor = true;
+      material.useLighting = false;
+      material.update();
+
+      const meshInstance = new pc.MeshInstance(mesh, material);
+
+      this.previewConnectionLine = new pc.Entity('preview-connection-line');
+      this.previewConnectionLine.addComponent('render', {
+        meshInstances: [meshInstance]
+      });
+      this.app.root.addChild(this.previewConnectionLine);
+    },
+
+    // 更新连接线位置
+    updateConnectionLine() {
+      if (!this.app || !this.previewConnectionLine || !this.previewCameraMarker) return;
+
+      const focus = this.getModelCenter();
+      if (!focus) return;
+
+      const cameraPos = this.previewCameraMarker.getPosition();
+
+      // 重建虚线
+      const positions = [];
+      const colors = [];
+      const numSegments = 20;
+      const dashRatio = 0.5;
+
+      for (let i = 0; i < numSegments; i++) {
+        const t1 = (i / numSegments);
+        const t2 = ((i + dashRatio) / numSegments);
+
+        if (t2 <= 1) {
+          const p1 = new pc.Vec3().lerp(cameraPos, focus, t1);
+          const p2 = new pc.Vec3().lerp(cameraPos, focus, t2);
+
+          positions.push(p1.x, p1.y, p1.z);
+          colors.push(1, 0, 0, 1);
+
+          positions.push(p2.x, p2.y, p2.z);
+          colors.push(1, 0, 0, 1);
+        }
+      }
+
+      // 更新顶点缓冲区
+      const vertexBuffer = this.previewConnectionLine.render.meshInstances[0].mesh.vertexBuffer;
+      const iterator = new pc.VertexIterator(vertexBuffer);
+
+      for (let i = 0; i < positions.length / 3; i++) {
+        iterator.element[pc.SEMANTIC_POSITION].set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+        iterator.element[pc.SEMANTIC_COLOR].set(colors[i * 4], colors[i * 4 + 1], colors[i * 4 + 2], colors[i * 4 + 3]);
+        iterator.next();
+      }
+      iterator.end();
     },
 
     // 加载GLB模型资源
@@ -1549,18 +1736,16 @@ export default {
       this.app.root.addChild(this.previewTrajectoryEntity);
     },
 
-    // 开始预览动画
+    // 开始预览动画（动画更新放在 handleUpdate 中处理）
     startPreviewAnimation() {
       this.previewProgress = 0;
-      this.previewAnimationFrame = requestAnimationFrame(this.updatePreviewAnimation.bind(this));
     },
 
-    // 更新预览动画
-    updatePreviewAnimation() {
+    // 更新预览动画（使用真实的 dt）
+    updatePreviewAnimation(dt) {
       if (!this.isPreviewMode || !this.previewCameraMarker || this.keyframes.length < 2 || this.totalDuration <= 0) return;
 
-      // 使用dt来累加时间
-      const dt = 1 / 60;
+      // 使用传入的真实 dt 来累加时间
       this.previewProgress += dt;
 
       let currentTime = this.previewProgress;
@@ -1595,17 +1780,12 @@ export default {
 
       this.previewCameraMarker.setPosition(targetPos.x, targetPos.y, targetPos.z);
 
-      if (this.isPreviewMode) {
-        this.previewAnimationFrame = requestAnimationFrame(this.updatePreviewAnimation.bind(this));
-      }
+      // 更新连接线位置
+      this.updateConnectionLine();
     },
 
     // 停止预览动画
     stopPreviewAnimation() {
-      if (this.previewAnimationFrame) {
-        cancelAnimationFrame(this.previewAnimationFrame);
-        this.previewAnimationFrame = null;
-      }
       this.previewProgress = 0;
     },
 
@@ -1620,6 +1800,11 @@ export default {
         this.app.root.removeChild(this.previewTrajectoryEntity);
         this.previewTrajectoryEntity.destroy();
         this.previewTrajectoryEntity = null;
+      }
+      if (this.previewConnectionLine && this.app) {
+        this.app.root.removeChild(this.previewConnectionLine);
+        this.previewConnectionLine.destroy();
+        this.previewConnectionLine = null;
       }
     },
 
@@ -1666,6 +1851,11 @@ export default {
       //   this.applyKeyframePosition(0);
       // }
       console.log("开始播放")
+      // 停止预览动画
+      this.stopPreviewAnimation();
+      // 移除预览标记
+      this.removePreviewMarkers();
+      this.isPreviewMode = false;
       this.isLoopPlaying = true;
       // 隐藏 annotation
       this.hideAnnotations();
@@ -1734,11 +1924,11 @@ export default {
           this.originalZoomRange = null;
         }
       }
-      // 开始播放（会重新设置zoomRange为0）
-      this.startPlayback();
+      // // 开始播放（会重新设置zoomRange为0）
+      // this.startPlayback();
     },
 
-    // 根据时间应用运镜
+    // 根据时间应用运镜（使用 applyTimedPathMotion 与预览轨迹保持一致）
     applyPathAtTime(currentTime) {
       if (this.keyframes.length < 2 || this.totalDuration <= 0) return;
 
@@ -1746,7 +1936,7 @@ export default {
       const focus = this.getModelCenter();
       if (!focus) return;
 
-      // 直接使用关键帧位置
+      // 构建路径点
       const pathPoints = this.keyframes.map(kf => {
         return new pc.Vec3(kf.position.x, kf.position.y, kf.position.z);
       });
@@ -1757,43 +1947,16 @@ export default {
         pathPoints.push(firstPoint);
       }
 
-      // 计算当前时间在哪个时间段
-      let accumulatedTime = 0;
-      let currentSegment = 0;
-      let segmentT = 0;
-
-      // 非闭环：最后一个关键帧的时间不算
-      // 闭环：所有关键帧的时间都算
-      const count = this.closedLoop ? this.keyframes.length : this.keyframes.length - 1;
-
-      if (currentTime >= this.totalDuration) {
-        currentSegment = count - 1;
-        segmentT = 1;
-      } else {
-        for (let i = 0; i < count; i++) {
-          const time = this.keyframes[i]?.time || 3;
-          if (currentTime <= accumulatedTime + time) {
-            currentSegment = i;
-            segmentT = time > 0 ? (currentTime - accumulatedTime) / time : 0;
-            break;
-          }
-          accumulatedTime += time;
-        }
+      // 构建每段时间数组
+      const segmentCount = this.closedLoop ? this.keyframes.length : this.keyframes.length - 1;
+      const durations = [];
+      for (let i = 0; i < segmentCount; i++) {
+        durations.push(this.keyframes[i]?.time || 3);
       }
 
-      // 获取缓动函数并计算 easedT
+      // 使用与预览轨迹相同的计算方式
       const easingFn = this.getEasingFunction(this.interpolationType);
-      const easedT = easingFn(segmentT);
-
-      // 获取当前段的首尾关键帧位置
-      const startPos = pathPoints[currentSegment];
-      const endPos = pathPoints[currentSegment + 1];
-
-      if (!startPos || !endPos) return;
-
-      // 线性插值计算目标位置
-      const targetPos = new pc.Vec3();
-      targetPos.lerp(startPos, endPos, easedT);
+      const targetPos = applyTimedPathMotion(pathPoints, currentTime, durations, easingFn);
 
       this.cameraControls.reset(focus, targetPos, { immediate: true });
     },
@@ -1893,6 +2056,11 @@ export default {
 
       // 更新播放
       this.updatePlayback(dt);
+
+      // 更新预览动画（使用真实的 dt）
+      if (this.isPreviewMode) {
+        this.updatePreviewAnimation(dt);
+      }
 
       // 更新相机控制器
       this.cameraControls?.update(dt, false, false, false);
@@ -2574,6 +2742,31 @@ export default {
 }
 
 .custom-motion-modal .ant-modal-body {
+  padding: 0;
+}
+
+/* 自定义标题样式 */
+.custom-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.custom-modal-title .title-icon {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.custom-motion-modal .ant-modal-header {
+  padding: 16px 24px;
+  margin: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.custom-motion-modal .ant-modal-title {
   padding: 0;
 }
 </style>

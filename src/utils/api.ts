@@ -115,6 +115,10 @@ const API = {
   SET_WEBHOOKS: '/api/apiKey/setWebhooks',
   GET_WEBHOOKS: '/api/apiKey/getWebhooks',
   DELETE_WEBHOOKS: '/api/apiKey/deleteWebhooks',
+
+  // 保存模型设置
+  SAVE_MODEL_SETTING: "/api/saveModelSetting",
+  GET_MODEL_SETTING: "/api/getModelSetting",
 } as const;
 
 export default API;
