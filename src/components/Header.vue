@@ -263,6 +263,7 @@ const handleLogout = async () => {
   // 清除本地存储
   localStorage.removeItem('token')
   localStorage.removeItem('user')
+  localStorage.removeItem('has_seen_tutorial')
   
   // 跳转到登录页
   router.push('/login')

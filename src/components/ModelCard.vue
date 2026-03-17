@@ -359,7 +359,7 @@ const formatDateTime = (value: string | undefined) => {
 
 const statItems = computed(() => [
   { label: '查看数', value: displayValue(props.model.viewCount, '0'), icon: EyeOutlined, bgColor: 'rgba(24, 144, 255, 0.10)' },
-  { label: '点赞数', value: displayValue(props.model.likeCount, '0'), icon: HeartOutlined, bgColor: 'rgba(250, 140, 22, 0.12)' },
+  // { label: '点赞数', value: displayValue(props.model.likeCount, '0'), icon: HeartOutlined, bgColor: 'rgba(250, 140, 22, 0.12)' },
   { label: '下载量', value: displayValue(props.model.downloadCount, '0'), icon: DownloadOutlined, bgColor: 'rgba(82, 196, 26, 0.12)' },
   { label: '转发量', value: displayValue(props.model.shareCount, '0'), icon: ShareAltOutlined, bgColor: 'rgba(212, 136, 6, 0.12)' },
 ])

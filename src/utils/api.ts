@@ -120,6 +120,9 @@ const API = {
   GET_INVITE_HREF: '/api/invite/getInviteHref',
   GRANT_INVITE_REWARD: '/api/invite/grantReward',
   GET_INVITE_RECORDS: '/api/invite/getInviteRecords',
+  // 保存模型设置
+  SAVE_MODEL_SETTING: "/api/saveModelSetting",
+  GET_MODEL_SETTING: "/api/getModelSetting",
 } as const;
 
 export default API;
