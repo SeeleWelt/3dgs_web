@@ -1219,7 +1219,7 @@ export default {
         }
         // 自动开始播放
         if (this.customMotion && this.skullEntity && this.viewerControls.isOrbitMode) {
-          this.applyCustomMotionAtTime(0);
+          this.applyCustomMotionAtTime(0, false);
           this.isLoopPlaying = true;
         }
       } else if (oldVal === 'custom') {
@@ -1524,7 +1524,7 @@ export default {
       this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate });
     },
     // 根据时间应用自定义运镜
-    applyCustomMotionAtTime(currentTime) {
+    applyCustomMotionAtTime(currentTime, immediate = true) {
       if (!this.customMotion || !this.customMotion.keyframes || this.customMotion.keyframes.length < 2) return;
       if (!this.orbitPlaybackFocus || !this.cameraControls) return;
 
@@ -1561,8 +1561,7 @@ export default {
 
       // 使用 applyTimedPathMotion 计算目标位置
       const targetPos = applyTimedPathMotion(pathPoints, currentTime, durations, easingFn);
-
-      this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate: true });
+      this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate: immediate });
     },
     normalizeOrbitAngle(angle) {
       const normalized = angle % 360;
@@ -1688,6 +1687,14 @@ export default {
 
       this.showControlsTimer();
 
+      const startAngle = this.clamp(this.orbitPlaybackAngle, 0, 360);
+      this.orbitPlaybackSessionStartAngle = startAngle;
+      this.orbitPlaybackTravelled = 0;
+      this.clearLoopPlayStartTimer();
+      const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
+      this.forceStartInteractionFlag = false;
+      this.cameraControls?.resetUserInteractionFlag?.();
+
       // 自定义运镜模式
       if (this.isCustomMotionMode) {
         // 如果没有焦点，先初始化
@@ -1698,30 +1705,35 @@ export default {
             return;
           }
         }
-        // 应用当前位置
-        this.applyCustomMotionAtTime(this.orbitPlaybackAngle);
-        // 禁用缩放（设置zoomRange最小值为0）
-        if (this.cameraControls) {
-          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        if (!shouldDelayStart && !this.hasClickAnnotation) {
+          this.applyCustomMotionAtTime(this.orbitPlaybackAngle, true);
+          this.isLoopPlaying = true;
+          return;
         }
-        this.isLoopPlaying = true;
+        // 应用当前位置
+        this.applyCustomMotionAtTime(this.orbitPlaybackAngle, false);
+        this.loopPlayStartTimer = setTimeout(() => {
+          this.loopPlayStartTimer = null;
+          if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
+          // 禁用缩放
+          if (this.cameraControls) {
+            this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+            this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+          }
+          this.isLoopPlaying = true;
+        }, this.loopPlayStartDelayMs);
+        this.hasClickAnnotation = false;
         return;
       }
 
-      const startAngle = this.clamp(this.orbitPlaybackAngle, 0, 360);
-      this.orbitPlaybackSessionStartAngle = startAngle;
-      this.orbitPlaybackTravelled = 0;
-      this.clearLoopPlayStartTimer();
-      const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
-      this.forceStartInteractionFlag = false;
-      this.cameraControls?.resetUserInteractionFlag?.();
+
       // 禁用缩放（设置zoomRange最小值为0）
       if (this.cameraControls) {
         this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
         this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
       }
       if (!shouldDelayStart && !this.hasClickAnnotation) {
+
         this.applyOrbitAngle(startAngle, true);
         this.isLoopPlaying = true;
         return;
@@ -2844,10 +2856,9 @@ export default {
       }
 
       const shouldStopByUserInput = !!this.cameraControls?.hasUserInteracted;
-      if (shouldStopByUserInput) {
+      if (shouldStopByUserInput && (this.isLoopPlaying || this.loopPlayStartTimer)) {
         this.cameraControls?.resetUserInteractionFlag?.();
-        if( (this.isLoopPlaying || this.loopPlayStartTimer))
-          this.stopLoopPlayback(false);
+        this.stopLoopPlayback(false);
       }
 
       if (this.isLoopPlaying && !this.isRecordingVideo && !this.isEncodingVideo) {
@@ -3323,7 +3334,7 @@ export default {
           this.viewerControls.autoRotateSpeed = settings.autoRotateSpeed ?? DEFAULT_SETTINGS.autoRotateSpeed;
           this.viewerControls.pinchSpeed = settings.pinchSpeed ?? DEFAULT_SETTINGS.pinchSpeed;
           this.viewerControls.backgroundColor = settings.backgroundColor ?? DEFAULT_SETTINGS.backgroundColor;
-          if (settings.orbitMotionType !== undefined) this.orbitMotionType = 'orbit';
+          if (settings.orbitMotionType !== undefined) this.orbitMotionType = settings.orbitMotionType ?? 'orbit';
           if (settings.motionData.keyframes?.length > 0) {
             this.customMotion = settings.motionData;
           }

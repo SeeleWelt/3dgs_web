@@ -67,11 +67,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  ReadOutlined,
   PlayCircleOutlined,
   LeftOutlined,
   RightOutlined,
@@ -122,7 +121,7 @@ const steps = computed(() => [
 const currentStep = ref(0)
 
 function nextStep() {
-  if (currentStep.value < steps.length - 1) currentStep.value++
+  if (currentStep.value < steps.value.length - 1) currentStep.value++
 }
 
 function prevStep() {

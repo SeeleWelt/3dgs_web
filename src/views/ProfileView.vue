@@ -494,8 +494,10 @@ const userStore = useUserStore()
 const pointsStore = usePointsStore()
 const user = computed(() => userStore.userInfo || null)
 const userStatus = computed(() => {
-  if (user.value?.userStatus === 0) return '正常'
-  if (user.value?.userStatus === 1) return '封禁'
+  if (user.value?.userStatus === 0) return '封禁'
+  if (user.value?.userStatus === 1) return '正常'
+  if (user.value?.userStatus === 2) return '注销中'
+  if (user.value?.userStatus === 3) return '已注销'
   return '未知'
 })
 

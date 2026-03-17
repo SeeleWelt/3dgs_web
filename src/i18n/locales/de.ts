@@ -334,6 +334,24 @@ export default {
       pwdChanged: 'Passwort erfolgreich geändert',
       pwdChangeFailed: 'Passwortänderung fehlgeschlagen'
     },
+    feedbackLang: {
+      contact: 'Kontakt',
+      contactPlaceholder: 'E-Mail oder Telefonnummer eingeben',
+      contactHint: 'Optional, damit wir Ihnen antworten können',
+      content: 'Feedback-Inhalt',
+      contentPlaceholder: 'Beschreiben Sie Ihr Problem oder Ihre Anregung im Detail...',
+      contentHint: 'Bitte beschreiben Sie Ihr Problem oder Ihre Anregung im Detail (5-500 Zeichen)',
+      submit: 'Feedback absenden',
+      successTitle: 'Erfolgreich gesendet',
+      successDesc: 'Vielen Dank für Ihr Feedback, wir werden es sorgfältig bearbeiten',
+      gotIt: 'Verstanden',
+      contentEmpty: 'Bitte Feedback-Inhalt eingeben',
+      contentTooLong: 'Inhalt ist zu lang',
+      contentLowQuality: 'Inhaltsqualität ist zu niedrig, bitte aussagekräftigeres Feedback eingeben',
+      invalidContact: 'Bitte gültige E-Mail oder Telefonnummer eingeben',
+      submitFail: 'Absenden fehlgeschlagen',
+      networkError: 'Netzwerkfehler'
+    },
     common: {
       confirm: 'Bestätigen',
       cancel: 'Abbrechen'

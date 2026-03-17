@@ -744,6 +744,18 @@ const toc = computed<TocItem[]>(() => [
 	display: flex;
 	flex-direction: column;
 	gap: 32px;
+	animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .hero {

@@ -417,6 +417,24 @@ export default {
       pwdChanged: '密码修改成功',
       pwdChangeFailed: '密码修改失败'
     },
+    feedbackLang: {
+      contact: '联系方式',
+      contactPlaceholder: '输入邮箱或手机号',
+      contactHint: '选填，便于我们回复您',
+      content: '反馈内容',
+      contentPlaceholder: '详细描述您遇到的问题或建议...',
+      contentHint: '请详细描述您遇到的问题或您的建议（5-500字）',
+      submit: '提交反馈',
+      successTitle: '提交成功',
+      successDesc: '感谢您的反馈，我们会认真处理',
+      gotIt: '我知道了',
+      contentEmpty: '请输入反馈内容',
+      contentTooLong: '内容过长',
+      contentLowQuality: '内容质量过低，请输入更有意义的反馈',
+      invalidContact: '请输入有效的手机号或邮箱',
+      submitFail: '提交失败',
+      networkError: '网络错误'
+    },
     common: {
       confirm: '确认',
       cancel: '取消'

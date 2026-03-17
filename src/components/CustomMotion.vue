@@ -98,9 +98,6 @@
 
       <!-- 右侧配置区域 -->
       <div class="config-panel">
-        <div class="config-header">
-          <span class="config-title">运镜配置</span>
-        </div>
 
         <div class="config-content">
           <!-- 当前相机位置 -->
@@ -120,7 +117,7 @@
                 <span class="position-value">{{ currentCameraPos.z.toFixed(2) }}</span>
               </div>
             </div>
-            <a-button type="primary" block @click="saveCurrentPosition" class="snapshot-btn" :disabled="isPreviewMode">
+            <a-button type="primary" block @click="saveCurrentPosition" class="snapshot-btn" :disabled="isPreviewMode || keyframes.length >= maxKeyframesNum">
               <template #icon><CameraOutlined /></template>
               快照保存当前位置
             </a-button>
@@ -128,7 +125,12 @@
 
           <!-- 关键帧列表 -->
           <div class="config-section">
-            <div class="section-title">关键帧 ({{ displayKeyframes.length }})</div>
+            <div class="section-title">
+              <span>关键帧</span>
+              <span class="keyframes-count" :class="{ 'has-keyframes': displayKeyframes.length > 0 }">
+                {{ displayKeyframes.length }}/{{ maxKeyframesNum }}
+              </span>
+            </div>
             <div class="keyframes-list" v-if="displayKeyframes.length > 0">
               <div
                 v-for="(kf, index) in displayKeyframes"
@@ -166,7 +168,7 @@
                       :max="30"
                       :step="0.5"
                       size="small"
-                      style="width: 70px"
+                      style="width: 60px"
                       :disabled="isPreviewMode"
                       @click.stop
                       @change="handleTimeChange"
@@ -175,14 +177,14 @@
                   </div>
                 </div>
                 <div class="keyframes-actions" v-if="index < keyframes.length">
-                  <a-tooltip title="更新位置">
-                    <a-button type="text" size="small" @click.stop="updateKeyframePosition(index)" :disabled="isPreviewMode">
-                      <template #icon><CameraOutlined /></template>
-                    </a-button>
-                  </a-tooltip>
                   <a-tooltip title="预览">
                     <a-button type="text" size="small" @click.stop="previewKeyframe(index)" :disabled="isPreviewMode">
                       <template #icon><EyeOutlined /></template>
+                    </a-button>
+                  </a-tooltip>
+                  <a-tooltip title="更新位置">
+                    <a-button type="text" size="small" @click.stop="updateKeyframePosition(index)" :disabled="isPreviewMode">
+                      <template #icon><CameraOutlined /></template>
                     </a-button>
                   </a-tooltip>
                   <a-tooltip title="删除">
@@ -219,10 +221,10 @@
               <span class="setting-label">闭环播放</span>
               <a-checkbox v-model:checked="closedLoop" :disabled="keyframes.length < 3">自动回到起点</a-checkbox>
             </div>
-            <div class="setting-row" v-if="keyframes.length >= 2">
+            <!-- <div class="setting-row" v-if="keyframes.length >= 2">
               <span class="setting-label">总时长</span>
               <span class="total-duration">{{ totalDuration.toFixed(1) }}秒</span>
-            </div>
+            </div> -->
             <div class="preview-btn-wrapper">
               <a-button
                 type="primary"
@@ -230,7 +232,10 @@
                 @click="togglePreviewMode"
                 :disabled="!skullEntity || keyframes.length < 2"
               >
-                <template #icon><PlayCircleOutlined /></template>
+                <template #icon>
+                  <PauseCircleOutlined v-if="isPreviewMode" />
+                  <PlayCircleOutlined v-else />
+                </template>
                 {{ isPreviewMode ? '停止预览' : '预览轨迹' }}
               </a-button>
             </div>
@@ -252,6 +257,7 @@
       :mask-closable="true"
       width="560px"
       class="gesture-modal"
+      :zIndex = "1002"
     >
       <div class="gesture-content">
         <!-- 第一步：添加关键帧 -->
@@ -423,6 +429,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
   PauseOutlined,
+  PauseCircleOutlined,
   CaretRightOutlined,
   QuestionCircleOutlined,
   AimOutlined,
@@ -434,6 +441,9 @@ import {
   SettingOutlined,
   LineChartOutlined,
 } from '@ant-design/icons-vue';
+
+// 最大关键帧数量限制
+const MAX_KEYFRAMES_NUM = 20;
 
 const showToast = (input) => {
   const defaultDuration = 2;
@@ -493,6 +503,7 @@ export default {
     SyncOutlined,
     SettingOutlined,
     LineChartOutlined,
+    PauseCircleOutlined,
   },
   props: {
     open: {
@@ -602,6 +613,10 @@ export default {
     };
   },
   computed: {
+    // 最大关键帧数量
+    maxKeyframesNum() {
+      return MAX_KEYFRAMES_NUM;
+    },
     // 显示用的关键帧列表（闭环时在最后添加起点作为终点）
     displayKeyframes() {
       if (this.closedLoop && this.keyframes.length >= 3) {
@@ -696,7 +711,8 @@ export default {
     // 加载自定义运镜参数
     loadCustomMotion() {
       if (this.customMotion) {
-        this.keyframes = this.customMotion.keyframes || [];
+        this.keyframes = this.customMotion.keyframes ? 
+            this.customMotion.keyframes.map(kf => ({ ...kf })) : [];
         console.log(this.keyframes)
         // 确保每个关键帧都有time属性（到下一个关键帧的时间）
         this.keyframes.forEach((kf, index) => {
@@ -764,6 +780,16 @@ export default {
       } else {
         this.visible = false;
       }
+    },
+
+    // 从快照恢复
+    restoreFromSnapshot() {
+      if (!this.originalMotionData) return;
+      console.log(this.originalMotionData)
+      this.keyframes = this.originalMotionData.keyframes.map(kf => ({ ...kf }));
+      this.interpolationType = this.originalMotionData.interpolationType;
+      this.loopPlay = this.originalMotionData.loopPlay;
+      this.closedLoop = this.originalMotionData.closedLoop;
     },
 
     // 快照当前motionData
@@ -1162,6 +1188,10 @@ export default {
 
     // 保存当前相机位置
     saveCurrentPosition() {
+      if (this.keyframes.length >= MAX_KEYFRAMES_NUM) {
+        showToast({ type: 'warning', message: `关键帧数量已达上限(${MAX_KEYFRAMES_NUM}个)` });
+        return;
+      }
       const pos = { ...this.currentCameraPos };
       // time表示到下一个关键帧的运动时间，第一个关键帧默认为3秒
       const time = this.keyframes.length === 0 ? 3 : 3;
@@ -1517,7 +1547,7 @@ export default {
       this.createConnectionLine(focus);
 
       // 创建轨迹线
-      this.createPreviewTrajectory();
+      // this.createPreviewTrajectory();
     },
 
     // 创建连接线（相机到模型中心）
@@ -2410,27 +2440,63 @@ export default {
 .config-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 12px 16px;
+}
+
+/* 面板滚动条 */
+.config-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.config-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.config-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.config-content::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }
 
 .config-section {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .section-title {
   font-size: 13px;
   font-weight: 600;
   color: #1d1d1f;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.keyframes-count {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f0f0f0;
+  color: #8c8c8c;
+}
+
+.keyframes-count.has-keyframes {
+  background: #e6f7ff;
+  color: #1890ff;
 }
 
 .camera-position-display {
   display: flex;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   background: #f5f5f5;
   border-radius: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .position-item {
@@ -2460,21 +2526,42 @@ export default {
 .keyframes-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 180px;
+  gap: 4px;
+  max-height: 300px;
   overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* 自定义滚动条样式 */
+.keyframes-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.keyframes-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.keyframes-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.keyframes-list::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }
 
 .keyframes-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 6px;
+  padding: 6px 8px;
   background: #fafafa;
   border-radius: 6px;
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 52px;
 }
 
 .keyframes-item:hover {
@@ -2512,15 +2599,15 @@ export default {
 }
 
 .keyframes-index {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #1890ff;
   color: #fff;
   border-radius: 50%;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -2528,23 +2615,28 @@ export default {
 .keyframes-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .keyframes-position {
-  font-size: 11px;
+  font-size: 10px;
   color: #1d1d1f;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: 'Monaco', 'Consolas', monospace;
+  letter-spacing: 0.3px;
 }
 
 .keyframes-duration {
-  font-size: 10px;
+  font-size: 9px;
   color: #8c8c8c;
-  margin-top: 2px;
+  margin-top: 1px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .keyframes-duration .duration-label {
@@ -2564,7 +2656,18 @@ export default {
 
 .keyframes-actions {
   display: flex;
-  gap: 2px;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.keyframes-actions .ant-btn {
+  padding: 2px 4px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.keyframes-actions .ant-btn .anticon {
+  font-size: 12px;
 }
 
 .keyframes-empty {
@@ -2632,14 +2735,33 @@ export default {
 }
 
 .gesture-content {
-  padding: 8px 0;
-  max-height: 60vh;
+  padding: 20px 24px;
+  max-height: 65vh;
   overflow-y: auto;
 }
 
+/* 说明对话框滚动条 */
+.gesture-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gesture-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.gesture-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.gesture-content::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
 .gesture-section {
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
   border-bottom: 1px dashed #e8e8e8;
 }
 
@@ -2653,11 +2775,10 @@ export default {
   font-size: 14px;
   font-weight: 600;
   color: #1d1d1f;
-  margin-bottom: 12px;
-  padding: 8px 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
   background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
   border-radius: 6px;
-  border-left: none;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2671,48 +2792,50 @@ export default {
 .gesture-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .gesture-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 14px;
+  padding: 14px 16px;
   background: #fafafa;
   border-radius: 8px;
   transition: all 0.2s ease;
+  border: 1px solid #f0f0f0;
 }
 
 .gesture-item:hover {
-  background: #f0f0f0;
-  transform: translateX(4px);
+  background: #f5f5f5;
+  transform: translateX(6px);
+  border-color: #e0e0e0;
 }
 
 .gesture-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #e6f7ff;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #1890ff;
-  font-size: 14px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
 .gesture-key {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #1d1d1f;
-  border-radius: 4px;
+  border-radius: 6px;
   color: #fff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -2723,15 +2846,16 @@ export default {
 }
 
 .gesture-action {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: #1d1d1f;
-  margin-bottom: 1px;
+  margin-bottom: 4px;
 }
 
 .gesture-detail {
-  font-size: 11px;
-  color: #8c8c8c;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
 }
 </style>
 

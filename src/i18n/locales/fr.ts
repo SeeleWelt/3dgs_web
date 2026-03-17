@@ -331,6 +331,24 @@ export default {
       pwdChanged: 'Mot de passe changé avec succès',
       pwdChangeFailed: 'Échec du changement de mot de passe'
     },
+    feedbackLang: {
+      contact: 'Contact',
+      contactPlaceholder: 'Entrez votre e-mail ou numéro de téléphone',
+      contactHint: 'Optionnel, pour que nous puissions vous répondre',
+      content: 'Contenu du commentaire',
+      contentPlaceholder: 'Décrivez votre problème ou suggestion en détail...',
+      contentHint: 'Veuillez décrire votre problème ou suggestion en détail (5-500 caractères)',
+      submit: 'Soumettre le commentaire',
+      successTitle: 'Soumis avec succès',
+      successDesc: 'Merci pour votre commentaire, nous le traiterons avec soin',
+      gotIt: 'Compris',
+      contentEmpty: 'Veuillez entrer le contenu du commentaire',
+      contentTooLong: 'Le contenu est trop long',
+      contentLowQuality: 'La qualité du contenu est trop faible,Veuillez fournir un commentaire plus significatif',
+      invalidContact: 'Veuillez entrer un e-mail ou numéro de téléphone valide',
+      submitFail: 'Échec de la soumission',
+      networkError: 'Erreur réseau'
+    },
     common: {
       confirm: 'Confirmer',
       cancel: 'Annuler'

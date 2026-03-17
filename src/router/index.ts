@@ -169,6 +169,7 @@ router.beforeEach((to, from, next) => {
 
   const token = localStorage.getItem('token')
   const isAuthenticated = !!token
+  console.log("权限:", isAuthenticated)
 
   if(to.path === '/login' && isAuthenticated) {
     // 如果已经登录但访问登录页，重定向到主页
@@ -184,6 +185,7 @@ router.beforeEach((to, from, next) => {
 
   // 如果访问需要登录的页面且未登录，则跳转到登录页
   if (to.meta.requiresAuth && !isAuthenticated) {
+    console.log("重定向到登录页")
     next('/login')
     return
   }

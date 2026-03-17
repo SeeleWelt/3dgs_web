@@ -331,6 +331,24 @@ export default {
       pwdChanged: 'パスワードが変更されました',
       pwdChangeFailed: 'パスワードの変更に失敗しました'
     },
+    feedbackLang: {
+      contact: '連絡先',
+      contactPlaceholder: 'メールまたは電話番号を入力',
+      contactHint: '任意回答нами,ご連絡先为您提供回答するため',
+      content: 'フィードバック内容',
+      contentPlaceholder: '問題や提案を詳細に説明してください...',
+      contentHint: '問題や提案を詳細に説明してください（5-500文字）',
+      submit: 'フィードバックを送信',
+      successTitle: '送信に成功しました',
+      successDesc: 'フィードバックありがとうございます。大切に取り扱います',
+      gotIt: '了解',
+      contentEmpty: 'フィードバック内容を入力してください',
+      contentTooLong: '内容が長すぎます',
+      contentLowQuality: '内容が浅すぎます。より意味のあるフィードバックを入力してください',
+      invalidContact: '有効なメールまたは電話番号を入力してください',
+      submitFail: '送信に失敗しました',
+      networkError: 'ネットワークエラー'
+    },
     common: {
       confirm: '確認',
       cancel: 'キャンセル'

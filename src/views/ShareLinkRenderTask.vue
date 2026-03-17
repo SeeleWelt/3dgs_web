@@ -742,12 +742,26 @@ export default {
             return;
           }
         }
-        this.applyCustomMotionAtTime(this.orbitPlaybackAngle);
-        if (this.cameraControls) {
-          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
+        this.forceStartInteractionFlag = false;
+        this.cameraControls?.resetUserInteractionFlag?.();
+        if (!shouldDelayStart && !this.hasClickAnnotation) {
+          this.applyCustomMotionAtTime(this.orbitPlaybackAngle, true);
+          this.isLoopPlaying = true;
+          return;
         }
-        this.isLoopPlaying = true;
+        // 应用当前位置，使用非immediate模式实现平滑过渡
+        this.applyCustomMotionAtTime(this.orbitPlaybackAngle, false);
+        this.loopPlayStartTimer = setTimeout(() => {
+          this.loopPlayStartTimer = null;
+          if (!this.skullEntity || !this.viewerControls.isOrbitMode) return;
+          if (this.cameraControls) {
+            this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+            this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+          }
+          this.isLoopPlaying = true;
+        }, this.loopPlayStartDelayMs);
+        this.hasClickAnnotation = false;
         return;
       }
 

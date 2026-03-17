@@ -331,6 +331,24 @@ export default {
       pwdChanged: 'Contraseña cambiada exitosamente',
       pwdChangeFailed: 'Error al cambiar la contraseña'
     },
+    feedbackLang: {
+      contact: 'Contacto',
+      contactPlaceholder: 'Ingresa email o número de teléfono',
+      contactHint: 'Opcional, para que podamos responderte',
+      content: 'Contenido del feedback',
+      contentPlaceholder: 'Describe tu problema o sugerencia en detalle...',
+      contentHint: 'Por favor describe tu problema o sugerencia en detalle (5-500 caracteres)',
+      submit: 'Enviar feedback',
+      successTitle: 'Enviado exitosamente',
+      successDesc: 'Gracias por tu feedback, lo trataremos con cuidado',
+      gotIt: 'Entendido',
+      contentEmpty: 'Por favor ingresa el contenido del feedback',
+      contentTooLong: 'El contenido es muy largo',
+      contentLowQuality: 'La calidad del contenido es muy baja, por favor proporciona feedback más significativo',
+      invalidContact: 'Por favor ingresa un email o número de teléfono válido',
+      submitFail: 'Error al enviar',
+      networkError: 'Error de red'
+    },
     common: {
       confirm: 'Confirmar',
       cancel: 'Cancelar'

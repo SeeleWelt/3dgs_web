@@ -64,7 +64,7 @@
         <div class="info-row">
           <span class="info-label">视频上传：</span>
           <span class="info-content">
-            · 支持的格式：mp4, mov
+            · 支持的格式：mp4, mov, avi, mvk, webm
             · 视频时长限制：最长 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
             · 一次仅支持 1 个视频
             · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下

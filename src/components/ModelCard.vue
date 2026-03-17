@@ -336,9 +336,6 @@ const getTaskQuque = async() =>{
   const response = await ApiServer.request({
     url: API.GET_TASK_QUEUE,
     method: 'post',
-    data:{
-      task_id: props.model.taskId
-    }
   })
   console.log("response", response.data);
   queueLength.value = response.data.length || 0
@@ -554,6 +551,7 @@ const closeDetailsDrawer = () => {
 
 onMounted(async() => {
     if (props.model.taskId && props.model.status === 'received') {
+      console.log("rec")
       await getTaskQuque()
     }
 })

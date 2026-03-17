@@ -3,12 +3,17 @@
     <div class="progress-header">
       <h3 class="progress-title">{{ task ? '视频任务' : '图片任务' }}</h3>
       <div class="header-actions">
+        <!-- 算力点不足警告 -->
+        <div v-if="isPointsInsufficient" class="points-warning">
+          <ExclamationCircleOutlined />
+          <span>算力点不足</span>
+        </div>
         <a-tooltip>
           <template #title>
             <div class="points-tooltip-content">
               <p>当前算力点: {{ currentPoints }}</p>
               <p>本次消耗: -{{ consumedPoints }}</p>
-              <p>剩余算力点: {{ Math.max(0, currentPoints - consumedPoints) }}</p>
+              <p>剩余算力点: {{ remainingPoints }}</p>
             </div>
           </template>
           <ExclamationCircleOutlined class="points-help-icon" />
@@ -118,28 +123,35 @@
     </div>
 
     <div class="action-buttons">
-      <button
-        class="btn btn-secondary"
-        :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false)"
-        @click="$emit('remove')"
+      <div v-if="queueLength > 0" class="queue-bar-left">
+        <span class="queue-icon">⚡</span>
+        <span>{{ queueLength }}个任务进行中</span>
+      </div>
+      <div v-else></div>
+      <div class="btn-group">
+        <button
+          class="btn btn-secondary"
+          :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false)"
+          @click="$emit('remove')"
+        >
+          {{ task ? '移除视频' : '移除全部图片' }}
+        </button>
+        <button
+          v-if="task?.status === 'uploading'"
+          class="btn btn-danger"
+          @click="$emit('cancel')"
+        >
+          取消上传
+        </button>
+        <button
+          v-else
+          class="btn btn-primary"
+          :disabled="!canSubmit"
+          @click="$emit('submit')"
       >
-        {{ task ? '移除视频' : '移除全部图片' }}
-      </button>
-      <button
-        v-if="task?.status === 'uploading'"
-        class="btn btn-danger"
-        @click="$emit('cancel')"
-      >
-        取消上传
-      </button>
-      <button
-        v-else
-        class="btn btn-primary"
-        :disabled="!canSubmit"
-        @click="$emit('submit')"
-      >
-        开始生成模型
-      </button>
+          开始生成模型
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -182,7 +194,40 @@ const emit = defineEmits<{
   cancel: []
   'remove-image': [imageId: string]
   'add-image': []
+  'queue-update': [length: number]
 }>()
+
+// 内部队列状态
+const queueLength = ref(0)
+
+// 获取队列信息
+import API from '@/utils/api'
+import { ApiServer } from '@/utils/taskService'
+
+const fetchQueueLength = async () => {
+  try {
+    const response = await ApiServer.request({
+      url: API.GET_TASK_QUEUE,
+      method: 'post',
+    })
+    queueLength.value = response.data?.length || 0
+    emit('queue-update', queueLength.value)
+  } catch (error) {
+    console.error('获取队列失败:', error)
+    queueLength.value = 0
+  }
+}
+
+// 组件挂载时获取队列
+import { onMounted } from 'vue'
+onMounted(() => {
+  fetchQueueLength()
+})
+
+defineExpose({
+  queueLength,
+  refreshQueue: fetchQueueLength
+})
 
 const hasFiles = computed(() => {
   return !!props.task || (props.imageFiles && props.imageFiles.length > 0)
@@ -193,6 +238,14 @@ const canSubmit = computed(() => {
     return ['pending', 'failed', 'cancelled'].includes(props.task.status)
   }
   return props.imageFiles && props.imageFiles.length > 0
+})
+
+const isPointsInsufficient = computed(() => {
+  return props.currentPoints < props.consumedPoints
+})
+
+const remainingPoints = computed(() => {
+  return Math.max(0, props.currentPoints - props.consumedPoints)
 })
 
 const statusTextMap: Record<UploadTaskStatus, string> = {
@@ -289,7 +342,9 @@ const handleVideoTimeout = () => {
 }
 
 const checkVideoBlackScreen = (video: HTMLVideoElement) => {
+  
   try {
+    videoWarning.value = ""
     // 创建 canvas 来检测画面
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
@@ -367,6 +422,33 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 
 .points-help-icon:hover {
   transform: scale(1.1);
+}
+
+.queue-info {
+  display: inline-flex;
+  align-items: center;
+}
+
+.queue-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: rgba(250, 173, 20, 0.15);
+  color: #d48806;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.points-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 4px 10px;
+  background: rgba(245, 34, 45, 0.15);
+  color: #cf1322;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid rgba(245, 34, 45, 0.3);
 }
 
 .points-tooltip-content {
@@ -719,8 +801,30 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 
 .action-buttons {
   display: flex;
+  align-items: center;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: space-between;
+}
+
+.queue-bar-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: rgba(250, 173, 20, 0.1);
+  border-radius: 16px;
+  color: #d48806;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.queue-bar-left .queue-icon {
+  font-size: 11px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 12px;
 }
 
 .btn {

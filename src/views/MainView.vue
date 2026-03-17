@@ -23,7 +23,6 @@ import AnimatedBackground from '../components/AnimatedBackground.vue'
 import Sidebar from '../components/Sidebar.vue'
 import Header from '../components/Header.vue'
 import { notification } from 'ant-design-vue'
-  import { openMessageDrawer, addMessage, type MessageItem } from '@/utils/messageHelper';
 
 const themeStore = useThemeStore()
 const userPointsStore = usePointsStore()

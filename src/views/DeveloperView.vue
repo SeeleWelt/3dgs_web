@@ -704,6 +704,18 @@ getWebhooks()
   --bg-card: var(--bg-secondary, #fafafa);
   --text-main: var(--text-primary, #111827);
   --text-muted: var(--text-secondary, #6b7280);
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .top-nav {

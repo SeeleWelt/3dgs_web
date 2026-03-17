@@ -81,6 +81,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { CloseOutlined, PlayCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue';
 
 const props = defineProps<{
   modelValue?: boolean
@@ -134,8 +135,15 @@ onMounted(() => {
 })
 
 const handleClose = () => {
+  const hasSeenTutorial = localStorage.getItem('has_seen_tutorial')
+  if(!hasSeenTutorial && currentStep.value !== tutorialSteps.length-1)
+  {
+    message.info("请先完成引导流程")
+    return;
+  }
   show.value = false
   showFloatingBtn.value = true
+  localStorage.setItem('has_seen_tutorial', 'true');
   emit('update:modelValue', false)
   emit('close')
 }

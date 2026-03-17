@@ -478,6 +478,12 @@ const submitProject = async () => {
 
   if (uploadTask.value.status === 'uploading') return
 
+  // 检查算力点是否充足
+  if (currentPoints.value < consumedPoints.value) {
+    message.warning('算力点不足，请充值后继续')
+    return
+  }
+
   const currentTask = uploadTask.value
   currentTask.status = 'uploading'
   currentTask.progress = 0
@@ -523,6 +529,8 @@ const submitProject = async () => {
     uploadTask.value.progress = 100
     uploadTask.value.abortController = null
     message.success('上传成功，模型开始生成')
+    // 刷新算力点
+    pointsStore.getPoints()
 
     window.setTimeout(() => {
       if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
