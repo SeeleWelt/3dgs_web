@@ -65,6 +65,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  official: {
+    type: String,
+    default: false
+  }
 });
 
 const emit = defineEmits(['update:open']);
@@ -171,6 +175,7 @@ onMounted(async () => {
       data: {
         taskId: props.taskId,
         expireAt: 0, 
+        official: props.official
       }
     }
     

@@ -189,6 +189,11 @@ const ProfileIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke:
   h('circle', { cx: '12', cy: '7', r: '4' })
 ])
 
+const InviteIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+  h('path', { d: 'M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 10-7.07-7.07L10 5' }),
+  h('path', { d: 'M14 11a5 5 0 01-7.07 0L4.1 8.17a5 5 0 017.07-7.07L14 3' })
+])
+
 const mainMenu = computed(() => [
   { name: 'home', label: t('sidebar.home'), path: '/', icon: HomeIcon },
   { name: 'explore3d', label: t('sidebar.explore3d'), path: '/explore', icon: Explore3DIcon },
@@ -197,6 +202,7 @@ const mainMenu = computed(() => [
 
 const toolsMenu = computed(() => [
   { name: 'profile', label: '个人中心', path: '/tools/profile', icon: ProfileIcon },
+  { name: 'invite', label: '邀请链接', path: '/tools/invite', icon: InviteIcon },
   { name: 'developer', label: '开发者中心', path: '/tools/developer', icon: APIIcon },
   { name: 'api', label: t('sidebar.api'), path: '/tools/api', icon: APIIcon },
   // { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },

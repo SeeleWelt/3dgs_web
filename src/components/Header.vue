@@ -10,9 +10,9 @@
     </div>
     
     <div class="header-right">
-      <button class="upgrade-btn" @click="handleUpgrade">
+      <!-- <button class="upgrade-btn" @click="handleUpgrade">
         {{ t('header.upgrade') }}
-      </button>
+      </button> -->
 
       <div class="language-menu-wrapper" ref="languageMenuRef">
         <button class="header-language-btn" @click="toggleLanguageSelector">
@@ -118,13 +118,13 @@
                 </svg>
                 <span>{{ t('header.tutorial') }}</span>
               </button>
-              <button class="menu-item" @click="navigateTo('/tools/settings')">
+              <!-- <button class="menu-item" @click="navigateTo('/tools/settings')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="3"/>
                   <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
                 </svg>
                 <span>{{ t('header.settings') }}</span>
-              </button>
+              </button> -->
               <button class="menu-item" @click="navigateTo('/tools/feedback')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
@@ -174,7 +174,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const userPointsStore = usePointsStore()
-const { t, locale } = useI18n()
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const emit = defineEmits<{
   'toggle-sidebar': []

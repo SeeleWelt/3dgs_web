@@ -7,14 +7,14 @@
           :class="{ active: currentTab === 'api' }"
           @click="currentTab = 'api'"
         >
-          {{ t('developerLang.api') }}
+          API
         </button>
         <button
           class="pill-tab"
           :class="{ active: currentTab === 'webhook' }"
           @click="currentTab = 'webhook'"
         >
-          {{ t('developerLang.webhook') }}
+          Webhook
         </button>
       </div>
     </div>
@@ -22,28 +22,28 @@
     <!-- API Tab -->
     <div v-if="currentTab === 'api'" class="tab-content">
       <div class="section-header">
-        <h2>{{ t('developerLang.apiKeys') }}</h2>
+        <h2>API Keys</h2>
         <a-button
           type="primary"
           :loading="isCreatingApiKey"
           :disabled="isCreatingApiKey"
           @click="showCreateApiKeyModal = true"
         >
-          {{ t('developerLang.createApiKey') }}
+          Create API Key
         </a-button>
       </div>
       
-      <p style="color: #1890ff; font-weight: bold;" class="section-desc">{{ t('developerLang.bonusTip') }}</p>
-      <p class="section-desc">{{ t('developerLang.securityTip') }}</p>
+      <p style="color: #1890ff; font-weight: bold;" class="section-desc">第一次创建 API 密钥后，将自动赠送开发算力点给您进行测试</p>
+      <p class="section-desc">请妥善保管您的 API 密钥，生成后仅会显示一次。请勿与他人分享或在客户端代码中暴露您的 API 密钥。</p>
 
 
       <div class="custom-card table-container">
         <table class="custom-table">
           <thead>
             <tr>
-              <th>{{ t('developerLang.name') }}</th>
-              <th>{{ t('developerLang.key') }}</th>
-              <th>{{ t('developerLang.created') }}</th>
+              <th>Name</th>
+              <th>Key</th>
+              <th>Created</th>
               <th width="50"></th>
             </tr>
           </thead>
@@ -58,14 +58,14 @@
                   <template #overlay>
                     <a-menu>
                       <a-menu-item @click="openRenameModal(key)">
-                        {{ t('developerLang.rename') }}
+                        重命名
                       </a-menu-item>
                       <a-menu-item
                         :disabled="isDeletingApiKey"
                         @click="deleteApiKey(key.id)"
                         style="color: #ff4d4f"
                       >
-                        {{ t('developerLang.delete') }}
+                        删除
                       </a-menu-item>
                     </a-menu>
                   </template>
@@ -73,36 +73,36 @@
               </td>
             </tr>
             <tr v-if="apiKeys.length === 0">
-              <td colspan="5" class="empty-text">{{ t('developerLang.noApiKeys') }}</td>
+              <td colspan="5" class="empty-text">No API keys found.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <div class="section-header mt-8">
-        <h2>{{ t('developerLang.usageTitle') }}</h2>
+        <h2>Usage</h2>
       </div>
-      <p class="section-desc">{{ t('developerLang.usageDesc') }}</p>
+      <p class="section-desc">API使用情况</p>
 
       <div class="usage-cards">
         <div class="custom-card usage-card">
-          <div class="card-label">{{ t('developerLang.totalUsage') }}</div>
+          <div class="card-label">总 API 使用量</div>
           <div class="card-value">{{ usage.total }}</div>
           <div class="card-hint">
             <svg viewBox="0 0 24 24" class="hint-icon" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
             </svg>
-            <a-tooltip :title="t('developerLang.costTooltip')">
-              <span>{{ t('developerLang.costQuestion') }}</span>
+            <a-tooltip title="每次调用消耗1开发算力点">
+              <span>每次 API 调用的费用是多少？</span>
             </a-tooltip>
           </div>
         </div>
         <div class="custom-card usage-card">
           <div class="card-flex">
             <div>
-              <div class="card-label">{{ t('developerLang.leftCredits') }}</div>
+              <div class="card-label">剩余开发算力点</div>
               <div class="card-value">{{ usage.left }}</div>
-              <div class="card-bottom-text">{{ t('developerLang.validity') }}</div>
+              <div class="card-bottom-text">开发算力点有效期：永久</div>
             </div>
             <!-- <button class="btn-cyan btn-topup">
               <svg viewBox="0 0 24 24" fill="currentColor" class="btn-icon" width="16" height="16">
@@ -152,7 +152,7 @@
       </div> -->
 
       <div class="section-header mt-8">
-        <h3>{{ t('developerLang.historyTitle') }}</h3>
+        <h3>算力点变更情况</h3>
       </div>
       <div class="custom-card table-container no-padding">
         <a-table
@@ -168,19 +168,19 @@
     <!-- Webhook Tab -->
     <div v-else class="tab-content">
       <div class="section-header">
-        <h2>{{ t('developerLang.webhooksTitle') }}</h2>
+        <h2>Webhooks</h2>
         <a-button type="primary" @click="openWebhookModal()">
-          {{ hasWebhook ? t('developerLang.editWebhook') : t('developerLang.addWebhook') }}
+          {{ hasWebhook ? 'Edit Webhook' : 'Add Webhook' }}
         </a-button>
       </div>
-      <p class="section-desc">{{ t('developerLang.webhookDesc') }}</p>
+      <p class="section-desc">使用webHooks监听模型状态改变事件</p>
 
       <div class="custom-card table-container">
         <table class="custom-table">
           <thead>
             <tr>
-              <th>{{ t('developerLang.callbackUrl') }}</th>
-              <th>{{ t('developerLang.created') }}</th>
+              <th>Callback URL</th>
+              <th>Created</th>
               <th width="50"></th>
             </tr>
           </thead>
@@ -193,10 +193,10 @@
                   <template #overlay>
                     <a-menu>
                       <a-menu-item @click="openWebhookModal(wh)">
-                        {{ t('developerLang.editWebhook') }}
+                        编辑
                       </a-menu-item>
                       <a-menu-item @click="deleteWebhook" style="color: #ff4d4f">
-                        {{ t('developerLang.delete') }}
+                        删除
                       </a-menu-item>
                     </a-menu>
                   </template>
@@ -204,7 +204,7 @@
               </td>
             </tr>
             <tr v-if="webhooks.length === 0">
-              <td colspan="4" class="empty-text">{{ t('developerLang.noWebhooks') }}</td>
+              <td colspan="4" class="empty-text">No Webhooks found.</td>
             </tr>
           </tbody>
         </table>
@@ -214,83 +214,84 @@
     <!-- Modals -->
     <a-modal
       v-model:open="showCreateApiKeyModal"
-      :title="t('developerLang.createApiKey')"
+      title="Create API Key"
       @ok="createApiKey"
       @cancel="showCreateApiKeyModal = false"
-      :okText="t('developerLang.create')"
-      :cancelText="t('developerLang.cancel')"
+      okText="Create"
+      cancelText="Cancel"
       :okButtonProps="{ disabled: !newKeyName, loading: isCreatingApiKey }"
     >
       <div class="form-group">
-        <label>{{ t('developerLang.name') }}</label>
-        <a-input v-model:value="newKeyName" :placeholder="t('developerLang.enterName')" />
+        <label>Name</label>
+        <a-input v-model:value="newKeyName" placeholder="Enter API key name..." />
       </div>
     </a-modal>
 
     <!-- 不显示关闭按钮 -->
     <a-modal
       v-model:open="showApiKeyResultModal"
-      :title="t('developerLang.createApiKey')"
+      title="Create API Key"
       @ok="closeApiKeyResult"
       @cancel="closeApiKeyResult"
-      :okText="t('developerLang.gotIt')"
+      okText="完成"
       :closable="false"
       :maskClosable="false"
       :cancelButtonProps="{ style: { display: 'none' } }"
     >
       <p class="result-desc">
-        {{ t('developerLang.createSuccessModal') }}
+        API key正确生成了！请复制并妥善保管您的 API key，
+        <strong>关闭此对话框后将无法再次查看该密钥</strong>。
       </p>
       <div class="result-row">
         <a-input :value="createdApiKey" readonly />
-        <a-button class="copy-btn" @click="copyApiKey">{{ t('developerLang.copy') }}</a-button>
+        <a-button class="copy-btn" @click="copyApiKey">复制</a-button>
       </div>
     </a-modal>
 
     <a-modal
       v-model:open="showCreateWebhookModal"
-      :title="isEditingWebhook ? t('developerLang.editWebhook') : t('developerLang.addWebhook')"
+      :title="isEditingWebhook ? 'Edit Webhook' : 'Create Webhook'"
       @ok="createWebhook"
       @cancel="closeWebhookModal"
-      :okText="isEditingWebhook ? t('developerLang.save') : t('developerLang.add')"
-      :cancelText="t('developerLang.cancel')"
+      :okText="isEditingWebhook ? 'Save' : 'Add'"
+      cancelText="Cancel"
       :okButtonProps="{ disabled: !isWebhookFormValid, loading: isCreatingWebhook }"
     >
       <div class="form-group">
-        <label>{{ t('developerLang.callbackUrl') }}</label>
+        <label>Callback URL</label>
         <a-input-group compact>
           <a-input style="width: 110px" value="https://" disabled />
           <a-input
             v-model:value="newWebhookUrl"
             :maxlength="80"
-            :placeholder="t('developerLang.callbackPlaceholder')"
+            placeholder="example.com/webhook"
             style="width: calc(100% - 110px)"
           />
         </a-input-group>
         <p v-if="webhookUrlError" class="form-error">{{ webhookUrlError }}</p>
-        <p class="form-help">{{ t('developerLang.webhookUrlHelp') }}</p>
+        <p class="form-help">每当模型重建进度发生改变时，相关信息会发送到此 URL地址</p>
       </div>
       <div class="form-group mt-4">
         <label>Secret</label>
         <a-input-password v-model:value="newWebhookSecret" placeholder="********" :maxlength="50" />
         <p v-if="webhookSecretError" class="form-error">{{ webhookSecretError }}</p>
-        <p class="form-help">{{ t('developerLang.secretHelp') }}</p>
+        <p class="form-help">用于签署每个请求的密钥，并通过 X-Signature 头验证 webhook 是否来自 MetaST</p>
       </div>
     </a-modal>
 
     <!-- Rename API Key Modal -->
     <a-modal
       v-model:open="showRenameModal"
-      :title="t('developerLang.renameModalTitle')"
+      title="Rename API Key"
       @ok="confirmRename"
       @cancel="showRenameModal = false"
-      :okText="t('developerLang.confirm')"
-      :cancelText="t('developerLang.cancel')"
+      okText="Confirm"
+      cancelText="Cancel"
       :okButtonProps="{ style: { background: '#15DFCD', borderColor: '#15DFCD' }, loading: isRenamingApiKey }"
     >
       <div class="form-group">
-        <label>{{ t('developerLang.newName') }}</label>
-        <a-input v-model:value="editingKeyName" :placeholder="t('developerLang.enterNewName')" />
+        <label>New Name</label>
+        <a-input v-model:value="editingKeyName" placeholder="Enter new API key name..." />
       </div>
     </a-modal>
   </div>
@@ -299,12 +300,9 @@
 <script setup lang="ts">
 import { ref, createVNode, computed } from 'vue'
 import { Modal, message } from 'ant-design-vue'
-import { useI18n } from 'vue-i18n'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import API from '@/utils/api'
 import { ApiServer } from '@/utils/taskService'
-
-const { t } = useI18n()
 const currentTab = ref('api')
 
 const showCreateApiKeyModal = ref(false)
@@ -401,14 +399,14 @@ const isValidWebhookUrl = computed(() => {
 
 const webhookUrlError = computed(() => {
   if (!newWebhookUrl.value) return ''
-  return isValidWebhookUrl.value ? '' : t('developerLang.invalidDomain')
+  return isValidWebhookUrl.value ? '' : '请输入合法域名'
 })
 
 const webhookSecretError = computed(() => {
   if (!newWebhookSecret.value) return ''
   const length = newWebhookSecret.value.length
-  if (length < 6) return t('developerLang.secretMinLength')
-  return length > 50 ? t('developerLang.secretMaxLength') : ''
+  if (length < 6) return 'Secret长度不能少于6'
+  return length > 50 ? 'Signing Secret长度不能超过50' : ''
 })
 
 const isWebhookSecretValid = computed(() => {
@@ -421,21 +419,21 @@ const isWebhookFormValid = computed(() => isValidWebhookUrl.value && isWebhookSe
 const history = ref([
 ])
 
-const historyColumns = computed(() => [
-  { title: t('developerLang.timeColumn'), dataIndex: 'date', key: 'date' },
+const historyColumns = [
+  { title: '时间', dataIndex: 'date', key: 'date' },
   {
-    title: t('developerLang.reasonColumn'),
+    title: '原因',
     dataIndex: 'rewards_type',
     key: 'rewards_type',
-    customRender: ({ text }: { text: number }) => text === 1 ? t('developerLang.reasonRegister') : text === 2 ? t('developerLang.reasonConsume') : text === 3 ? t('developerLang.reasonRefund') : text === 5 ? t('developerLang.reasonRecharge') : t('developerLang.reasonUnknown')
+    customRender: ({ text }: { text: number }) => text === 1 ? "注册赠送开发算力点" : text === 2 ? "重建模型扣除开发算力点" : text === 3 ? "重建失败返还开发算力点" : text === 5 ? "充值获得算力点" : "未知"
   },
   {
-    title: t('developerLang.amountColumn'),
+    title: '数额',
     dataIndex: 'usage',
     key: 'usage',
-    customRender: ({ text }: { text: number }) => `${text} ${t('developerLang.currencyUnit')}`
+    customRender: ({ text }: { text: number }) => `${text} 算力点`
   }
-])
+]
 
 const createApiKey = async () => {
   if (!newKeyName.value || isCreatingApiKey.value) return
@@ -459,7 +457,7 @@ const createApiKey = async () => {
       showCreateApiKeyModal.value = false
       showApiKeyResultModal.value = true
       newKeyName.value = ''
-      message.success(t('developerLang.createSuccess'))
+      message.success('API Key created successfully')
       fetchApiKeys()
     } else {
     //   message.error('Failed to create API Key')
@@ -475,7 +473,7 @@ const copyApiKey = async () => {
   if (!createdApiKey.value) return
   try {
     await navigator.clipboard.writeText(createdApiKey.value)
-    message.success(t('developerLang.copySuccess'))
+    message.success('Copied to clipboard')
   } catch (error) {
     // message.error('Copy failed')
   }
@@ -506,7 +504,7 @@ const confirmRename = async () => {
         }
       })
       if (response?.data?.code == 200) {
-        message.success(t('developerLang.renameSuccess'))
+        message.success('API Key renamed successfully')
         fetchApiKeys()
       } else {
         // message.error('Failed to rename API Key')
@@ -521,12 +519,12 @@ const confirmRename = async () => {
 
 const deleteApiKey = (id: ApiKey['id']) => {
   Modal.confirm({
-    title: t('developerLang.deleteApiKeyTitle'),
+    title: '删除 API Key',
     icon: createVNode(ExclamationCircleOutlined),
-    content: t('developerLang.deleteApiKeyContent'),
-    okText: t('developerLang.delete'),
+    content: '您确定要删除此 API Key 吗？此操作无法撤销。',
+    okText: '删除',
     okType: 'danger',
-    cancelText: t('developerLang.cancel'),
+    cancelText: '取消',
     async onOk() {
       if (isDeletingApiKey.value) return
       isDeletingApiKey.value = true
@@ -536,7 +534,7 @@ const deleteApiKey = (id: ApiKey['id']) => {
           method: 'delete'
         })
         if (response?.data?.code == 200) {
-          message.success(t('developerLang.deleteSuccess'))
+          message.success('API Key 删除成功')
           fetchApiKeys()
         } else {
         //   message.error('删除 API Key 失败')
@@ -564,7 +562,7 @@ const createWebhook = async () => {
       data: payload
     })
     if (response?.data?.code == 200) {
-      message.success(isEditingWebhook.value ? t('developerLang.editSuccess') : t('developerLang.createSuccess'))
+      message.success(isEditingWebhook.value ? '修改成功' : '创建成功')
       getWebhooks()
     }
     closeWebhookModal()
@@ -600,19 +598,19 @@ const closeWebhookModal = () => {
 
 const deleteWebhook = () => {
   Modal.confirm({
-    title: t('developerLang.deleteWebhookTitle'),
+    title: '删除 Webhook',
     icon: createVNode(ExclamationCircleOutlined),
-    content: t('developerLang.deleteWebhookContent'),
-    okText: t('developerLang.delete'),
+    content: '您确定要删除此 Webhook 吗？此操作无法撤销。',
+    okText: '删除',
     okType: 'danger',
-    cancelText: t('developerLang.cancel'),
+    cancelText: '取消',
     onOk() {
       ApiServer.request({
         url: API.DELETE_WEBHOOKS,
         method: 'delete'
       }).then(response => {
         if (response?.data?.code == 200) {
-          message.success(t('developerLang.deleteWebhookSuccess'))
+          message.success('Webhook 删除成功')
           webhooks.value = []
         } else {
           // message.error('删除 Webhook 失败')

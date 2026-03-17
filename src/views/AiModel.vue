@@ -188,7 +188,7 @@ const initPlayCanvas = async () => {
   app.scene.ambientLight = new pc.Color(0.8, 0.8, 0.8)
 
   // Load GLB model
-  const modelUrl = "https://szgm.tenyunn.com:50585/aimodel/test.glb"
+  const modelUrl = "https://3dgs-web.metast.xyz/aimodel/test.glb"
   try {
     const asset = new pc.Asset('model', 'container', { url: modelUrl })
     asset.on('load', () => {

@@ -39,14 +39,12 @@
         {{ t('login.back') }}
       </button>
       <div class="auth-mode-switch-content">
-          <a-tooltip :title="modeTooltip" placement="leftTop" color="#5d86f7" v-if="currentView === 'welcome'">
+          <!-- <a-tooltip :title="modeTooltip" placement="leftTop" color="#5d86f7" v-if="currentView === 'welcome'">
             <div class="corner-img-wrapper" @click="handleChangeMode">
-              <!-- 账号图标  -->
               <UserOutlined class="corner-img account-img" v-if="currentMode==='qr'"/>
-              <!-- 二维码图片 -->
               <QrcodeOutlined class="corner-img account-img" v-else-if="currentMode==='account'"/>
             </div>
-          </a-tooltip>
+          </a-tooltip> -->
               <div class="auth-wrapper" v-if="currentMode === 'account'">
         <!-- Welcome View -->
         <div v-if="currentView === 'welcome'" class="auth-view welcome-view">
@@ -292,6 +290,7 @@
           <PhoneAuth
             ref="phoneAuthRef"
             :agree="acceptedTerms"
+            :share-code="shareCode"
             @require-agree="checkAndProceedPhoneAuth"
           />
 
@@ -352,7 +351,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useThemeStore } from '../stores/theme'
 import { useUserStore } from '@/stores/user'
@@ -370,6 +369,7 @@ import API from '@/utils/api'
 import { ApiServer } from '@/utils/taskService'
 
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n() 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -382,7 +382,26 @@ const isEmailCodeStep = ref(false)
 const emailCode = ref('')
 const pendingRegister = ref<{ email: string; password: string }>({ email: '', password: '' })
 // const googleAuthUrl = 'https://localhost:6026/api/auth/google/verify'
-const googleAuthUrl = 'https://szgm.tenyunn.com:50585/api/auth/google/verify'
+const googleAuthUrl = 'https://3dgs-web.metast.xyz/backend/api/auth/google/verify'
+const shareCode = ref('')
+
+const SHARE_CODE_COOKIE = 'shareCode'
+
+const setCookie = (name: string, value: string, days = 30) => {
+  const maxAge = Math.max(1, Math.floor(days)) * 24 * 60 * 60
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax${secure}`
+}
+
+const getCookie = (name: string) => {
+  const escapedName = name.replace(/[$()*+./?[\\\]^{|}-]/g, '\\$&')
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`))
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
+const clearCookie = (name: string) => {
+  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`
+}
 
 // 服务条款同意状态
 const acceptedTerms = ref(false)
@@ -568,6 +587,8 @@ const doLogin = async () => {
   try {
     const success = await userStore.emailLogin(loginForm.value.email, loginForm.value.password)
     if (success) {
+      clearCookie(SHARE_CODE_COOKIE)
+      shareCode.value = ''
       router.push('/')
     }
   } finally {
@@ -644,7 +665,12 @@ const submitEmailRegister = async (code: string) => {
 
   isLoading.value = true
   try {
-    const success = await userStore.emailRegister(pendingRegister.value.email, pendingRegister.value.password, code)
+    const success = await userStore.emailRegister(
+      pendingRegister.value.email,
+      pendingRegister.value.password,
+      code,
+      shareCode.value || undefined
+    )
     if (success) {
       currentView.value = 'login'
       loginForm.value.email = pendingRegister.value.email
@@ -693,7 +719,10 @@ const handleGoogleCredential = async ({ credential }: { credential: string }) =>
     const response = await fetch(googleAuthUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential })
+      body: JSON.stringify({
+        credential,
+        ...(shareCode.value ? { inviteCode: shareCode.value } : {})
+      })
     })
 
     if (!response.ok) {
@@ -704,6 +733,8 @@ const handleGoogleCredential = async ({ credential }: { credential: string }) =>
     const payload = await response.json()
     console.log('Google login successful, payload:', payload)
     persistGoogleUser(payload)
+    clearCookie(SHARE_CODE_COOKIE)
+    shareCode.value = ''
     router.push('/')
   } catch (error: any) {
     message.error(error?.message || t('login.loginFailed') || '登录失败')
@@ -737,6 +768,17 @@ const checkAndProceedPhoneAuth = () => {
 }
 
 onMounted(() => {
+  const rawCode = Array.isArray(route.query.code) ? route.query.code[0] : route.query.code
+  const incomingCode = typeof rawCode === 'string' ? rawCode.trim() : ''
+  if (incomingCode) {
+    setCookie(SHARE_CODE_COOKIE, incomingCode)
+    shareCode.value = incomingCode
+    const nextQuery = { ...route.query }
+    delete nextQuery.code
+    router.replace({ path: '/login', query: nextQuery })
+  } else {
+    shareCode.value = getCookie(SHARE_CODE_COOKIE)
+  }
   resetAutoPlay()
   themeStore.init()
 })

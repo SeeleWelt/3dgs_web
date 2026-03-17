@@ -41,7 +41,7 @@
             @click="prevStep"
             class="nav-btn prev"
           >
-            <LeftOutlined /> 上一步
+            <LeftOutlined /> {{ t('tutorialLang.prevStep') }}
           </a-button>
           <div class="step-indicators">
             <span
@@ -59,7 +59,7 @@
             @click="nextStep"
             class="nav-btn next"
           >
-            下一步 <RightOutlined />
+            {{ t('tutorialLang.nextStep') }} <RightOutlined />
           </a-button>
         </div>
       </div>
@@ -68,7 +68,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   ReadOutlined,
   PlayCircleOutlined,
@@ -77,44 +78,46 @@ import {
   CheckCircleFilled
 } from '@ant-design/icons-vue'
 
-const steps = [
+const { t } = useI18n()
+
+const steps = computed(() => [
   {
-    title: '上传视频',
-    description: '在首页点击上传按钮，选择您想要进行3D重建的视频文件。您可以一次性上传多个视频，支持主流视频格式。',
+    title: t('tutorialLang.step1Title'),
+    description: t('tutorialLang.step1Desc'),
     tips: [
-      '支持 MP4、MOV、AVI 等格式',
-      '单个视频最大支持 1GB',
-      '建议使用清晰稳定的视频素材'
+      t('tutorialLang.step1Tip1'),
+      t('tutorialLang.step1Tip2'),
+      t('tutorialLang.step1Tip3')
     ]
   },
   {
-    title: '配置参数',
-    description: '根据您的需求设置重建参数，包括模型精度、输出格式、渲染方式等选项。',
+    title: t('tutorialLang.step2Title'),
+    description: t('tutorialLang.step2Desc'),
     tips: [
-      '高精度模式需要更长的处理时间',
-      '可以预览估算的处理时间',
-      '参数设置会影响最终效果'
+      t('tutorialLang.step2Tip1'),
+      t('tutorialLang.step2Tip2'),
+      t('tutorialLang.step2Tip3')
     ]
   },
   {
-    title: '开始训练',
-    description: '确认参数后即可开始3D模型训练。训练过程可在任务列表中实时查看进度。',
+    title: t('tutorialLang.step3Title'),
+    description: t('tutorialLang.step3Desc'),
     tips: [
-      '支持后台运行，不影响其他操作',
-      '可随时暂停或恢复任务',
-      '训练完成会有消息通知'
+      t('tutorialLang.step3Tip1'),
+      t('tutorialLang.step3Tip2'),
+      t('tutorialLang.step3Tip3')
     ]
   },
   {
-    title: '查看与下载',
-    description: '训练完成后，您可以在模型库中查看生成的3D模型，支持多种格式下载和在线预览。',
+    title: t('tutorialLang.step4Title'),
+    description: t('tutorialLang.step4Desc'),
     tips: [
-      '支持 GLB、OBJ、FBX 等格式',
-      '可以在线预览3D效果',
-      '一键分享到社区'
+      t('tutorialLang.step4Tip1'),
+      t('tutorialLang.step4Tip2'),
+      t('tutorialLang.step4Tip3')
     ]
   }
-]
+])
 
 const currentStep = ref(0)
 

@@ -53,6 +53,12 @@ const router = createRouter({
               meta: { title: '个人资料' }
             }
             ,{
+              path: 'invite',
+              name: 'invite',
+              component: () => import('../views/InviteLinkView.vue'),
+              meta: { title: '邀请链接' }
+            }
+            ,{
               path: 'settings',
               name: 'settings',
               component: () => import('../views/SettingsView.vue'),

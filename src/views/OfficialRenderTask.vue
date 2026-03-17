@@ -459,6 +459,7 @@
     <ShareDialog
       v-model:open="showShareDialog"
       :task-id="task_id"
+      :official="true"
     />
 
     <OfficialExportDialog
@@ -470,6 +471,7 @@
     <EmbedCodeDialog
       v-model:open="showEmbedCodeDialog"
       :task-id="task_id"
+      :official="true"
     />
 
     <a-modal

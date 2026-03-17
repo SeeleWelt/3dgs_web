@@ -3,7 +3,7 @@
 
 const API = {
   // 基础请求地址
-  BASE_URL: "https://szgm.tenyunn.com:50585",
+  BASE_URL: "https://3dgs-web.metast.xyz/backend",
 
   // 用户注册
   REGISTER: '/api/register',
@@ -115,6 +115,11 @@ const API = {
   SET_WEBHOOKS: '/api/apiKey/setWebhooks',
   GET_WEBHOOKS: '/api/apiKey/getWebhooks',
   DELETE_WEBHOOKS: '/api/apiKey/deleteWebhooks',
+
+  // 邀请链接
+  GET_INVITE_HREF: '/api/invite/getInviteHref',
+  GRANT_INVITE_REWARD: '/api/invite/grantReward',
+  GET_INVITE_RECORDS: '/api/invite/getInviteRecords',
 } as const;
 
 export default API;

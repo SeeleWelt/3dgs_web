@@ -1,0 +1,689 @@
+                                                                               <
+td>String</td>                                                                  -                                                                              <
+td>是</td>                                                                      +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                                                                                                           <
+td>Bearer &lt;API_KEY&gt;</td>                                                                                                                          </tr>
+                                                                        <tr>
+                                                                               <
+td>Form</td>                                                                                                                                                   <
+td>videos</td>                                                                                                                                                 <
+td>File</td>                                                                    -                                                                              <
+td>是</td>                                                                      -                                                                              <
+td>上传视频文件，字段名固定为 videos，支持 .mp4/.avi/.mov/.mkv/.webm，只支持单文件；最大 1GB</td>                                                               +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                            +                                                                              <
+td>{{ $t('apiDocs.scan.videoDesc') }}</td>                                                                                                              </tr>
+                                                                        <tr>
+                                                                               <
+td>Form</td>                                                                                                                                                   <
+td>params</td>                                                                                                                                                 <
+td>String(JSON)</td>                                                            -                                                                              <
+td>是</td>                                                                      -                                                                              <
+td>JSON 字符串，见 Attributes</td>                                              +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                            +                                                                              <
+td>{{ $t('apiDocs.scan.paramsDesc') }}</td>                                                                                                             </tr>
+                                                                </tbody>
+                                                        </table>
+                                                        <div class="code-card">
+-                                                               <div class="code
+-title">请求示例</div>                                                          +                                                               <div class="code
+-title">{{ $t('apiDocs.scan.reqExample') }}</div>                                                                                               <pre><code class
+="language-bash">curl -X POST "https://szgm.tenyunn.com:50585/v1/open/videoUpload" \                                                                               -H "Authorization: Bearer &lt;API_KEY&gt;" \
+   -F "videos=@/path/to/video.mp4" \
+@@ -144,7 +144,7 @@
+                                                <div>
+                                                        <h4>Response</h4>
+                                                        <div class="code-card">
+-                                                               <div class="code
+-title">成功响应示例</div>                                                      +                                                               <div class="code
+-title">{{ $t('apiDocs.scan.resSuccess') }}</div>                                                                                               <pre><code class
+="language-json">{                                                                 "code": 200,
+   "message": "Success",
+@@ -158,30 +158,30 @@
+                                                        <table class="param-tabl
+e">                                                                                                                                             <thead>
+                                                                        <tr>
+-                                                                              <
+th>字段</th>                                                                    -                                                                              <
+th>类型</th>                                                                    -                                                                              <
+th>必填</th>                                                                    -                                                                              <
+th>说明</th>                                                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqField') }}</th>                                       +                                                                              <
+th>{{ $t('apiDocs.scan.reqType') }}</th>                                        +                                                                              <
+th>{{ $t('apiDocs.scan.reqRequired') }}</th>                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqDesc') }}</th>                                                                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        <tr>
+                                                                               <
+td>task_name</td>                                                                                                                                              <
+td>String</td>                                                                  -                                                                              <
+td>是</td>                                                                      -                                                                              <
+td>1-50 字符，仅中文/字母/数字/下划线</td>                                      +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                            +                                                                              <
+td>{{ $t('apiDocs.scan.taskNameDesc') }}</td>                                                                                                           </tr>
+                                                                        <tr>
+                                                                               <
+td>bg_remove</td>                                                                                                                                              <
+td>Boolean</td>                                                                 -                                                                              <
+td>否</td>                                                                      -                                                                              <
+td>是否开启背景移除</td>                                                        +                                                                              <
+td>{{ $t('apiDocs.scan.no') }}</td>                                             +                                                                              <
+td>{{ $t('apiDocs.scan.bgRemoveDesc') }}</td>                                                                                                           </tr>
+                                                                        <tr>
+                                                                               <
+td>user_object_description</td>                                                                                                                                <
+td>String</td>                                                                  -                                                                              <
+td>否</td>                                                                      -                                                                              <
+td>用户自定义物体描述</td>                                                      +                                                                              <
+td>{{ $t('apiDocs.scan.no') }}</td>                                             +                                                                              <
+td>{{ $t('apiDocs.scan.userObjectDesc') }}</td>                                                                                                         </tr>
+                                                                </tbody>
+                                                        </table>
+@@ -189,37 +189,37 @@
+                                        </div>
+ 
+                                        <!-- <div id="scan-image" class="sub-sec
+tion">                                                                          -                                               <h3>图片上传</h3>
++                                               <h3>{{ $t('apiDocs.scan.imageUpl
+oad') }}</h3>                                                                                                                   <div class="endpoint-card">
+                                                        <div class="endpoint">PO
+ST /api/upload</div>                                                            -                                                       <div class="endpoint-met
+a">支持多图上传（待补充）</div>                                                 +                                                       <div class="endpoint-met
+a">{{ $t('apiDocs.scan.supportMultiImage') }}</div>                                                                             </div>
+-                                               <div class="placeholder">请求参
+数与响应示例待补充。</div>                                                      +                                               <div class="placeholder">{{ $t('
+apiDocs.scan.paramResponseTbd') }}</div>                                                                                </div> -->
+                                </section>
+ 
+                                <section id="model" class="doc-section">
+                                        <div class="section-header">
+-                                               <h2>模型</h2>
+-                                               <p>查询重建任务状态并下载模型。<
+/p>                                                                             +                                               <h2>{{ $t('apiDocs.model.title')
+ }}</h2>                                                                        +                                               <p>{{ $t('apiDocs.model.desc') }
+}</p>                                                                                                                   </div>
+ 
+                                        <div id="model-status" class="sub-sectio
+n">                                                                             -                                               <h3>获取重建任务状态</h3>
++                                               <h3>{{ $t('apiDocs.model.getStat
+us') }}</h3>                                                                                                                    <div class="endpoint-card">
+                                                        <div class="endpoint">GE
+T /v1/open/getModelStatus</div>                                                 -                                                       <div class="endpoint-met
+a">返回任务状态</div>                                                           +                                                       <div class="endpoint-met
+a">{{ $t('apiDocs.model.statusReturn') }}</div>                                                                                 </div>
+                                                <div>
+                                                        <h4>Request</h4>
+                                                        <table class="param-tabl
+e">                                                                                                                                             <thead>
+                                                                        <tr>
+-                                                                              <
+th>位置</th>                                                                    -                                                                              <
+th>字段</th>                                                                    -                                                                              <
+th>类型</th>                                                                    -                                                                              <
+th>必填</th>                                                                    -                                                                              <
+th>说明</th>                                                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqPos') }}</th>                                         +                                                                              <
+th>{{ $t('apiDocs.scan.reqField') }}</th>                                       +                                                                              <
+th>{{ $t('apiDocs.scan.reqType') }}</th>                                        +                                                                              <
+th>{{ $t('apiDocs.scan.reqRequired') }}</th>                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqDesc') }}</th>                                                                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+@@ -227,15 +227,15 @@
+                                                                               <
+td>Header</td>                                                                                                                                                 <
+td>Authorization</td>                                                                                                                                          <
+td>String</td>                                                                  -                                                                              <
+td>是</td>                                                                      +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                                                                                                           <
+td>Bearer &lt;API_KEY&gt;</td>                                                                                                                          </tr>
+                                                                        <tr>
+                                                                               <
+td>Query</td>                                                                                                                                                  <
+td>task_id</td>                                                                                                                                                <
+td>String</td>                                                                  -                                                                              <
+td>是</td>                                                                      -                                                                              <
+td>任务 ID</td>                                                                 +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                            +                                                                              <
+td>{{ $t('apiDocs.model.taskIdDesc') }}</td>                                                                                                            </tr>
+                                                                </tbody>
+                                                        </table>
+@@ -243,7 +243,7 @@
+                                                <div>
+                                                        <h4>Response</h4>
+                                                        <div class="code-card">
+-                                                               <div class="code
+-title">成功响应示例</div>                                                      +                                                               <div class="code
+-title">{{ $t('apiDocs.scan.resSuccess') }}</div>                                                                                               <pre><code class
+="language-json">{                                                                 "code": 200,
+   "message": "Success",
+@@ -258,79 +258,79 @@
+                                                        <table class="param-tabl
+e">                                                                                                                                             <thead>
+                                                                        <tr>
+-                                                                              <
+th>字段</th>                                                                    -                                                                              <
+th>类型</th>                                                                    -                                                                              <
+th>说明</th>                                                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqField') }}</th>                                       +                                                                              <
+th>{{ $t('apiDocs.scan.reqType') }}</th>                                        +                                                                              <
+th>{{ $t('apiDocs.scan.reqDesc') }}</th>                                                                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        <tr>
+                                                                               <
+td>code</td>                                                                                                                                                   <
+td>Number</td>                                                                  -                                                                              <
+td>200 表示成功</td>                                                            +                                                                              <
+td>{{ $t('apiDocs.model.code200') }}</td>                                                                                                               </tr>
+                                                                        <tr>
+                                                                               <
+td>message</td>                                                                                                                                                <
+td>String</td>                                                                  -                                                                              <
+td>返回消息</td>                                                                +                                                                              <
+td>{{ $t('apiDocs.model.resMsg') }}</td>                                                                                                                </tr>
+                                                                        <tr>
+                                                                               <
+td>data.status</td>                                                                                                                                            <
+td>String</td>                                                                  -                                                                              <
+td>任务状态</td>                                                                +                                                                              <
+td>{{ $t('apiDocs.model.taskStatus') }}</td>                                                                                                            </tr>
+                                                                </tbody>
+                                                        </table>
+                                                </div>
+             <div>
+-              <h4>任务状态</h4>
++              <h4>{{ $t('apiDocs.model.taskStatus') }}</h4>
+                                                <table class="param-table">
+                                                        <thead>
+                                                                <tr>
+-                                                                       <th>状态
+</th>                                                                           -                                                                       <th>说明
+</th>                                                                           +                                                                       <th>{{ $
+t('apiDocs.model.statusTab') }}</th>                                            +                                                                       <th>{{ $
+t('apiDocs.scan.reqDesc') }}</th>                                                                                                               </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                                <tr>
+                                                                        <td>rece
+ived</td>                                                                       -                                                                       <td>已接
+收，等待处理</td>                                                               +                                                                       <td>{{ $
+t('apiDocs.model.statusReceived') }}</td>                                                                                                       </tr>
+                                                                <tr>
+                                                                        <td>slic
+ing</td>                                                                        -                                                                       <td>视频
+切片中</td>                                                                     +                                                                       <td>{{ $
+t('apiDocs.model.statusSlicing') }}</td>                                                                                                        </tr>
+                                                                <tr>
+                                                                        <td>reco
+nstructing_colmap</td>                                                          -                                                                       <td>COLM
+AP 重建中</td>                                                                  +                                                                       <td>{{ $
+t('apiDocs.model.statusColmap') }}</td>                                                                                                         </tr>
+                                                                <tr>
+                                                                        <td>reco
+nstructing_3dgs</td>                                                            -                                                                       <td>3DGS
+ 训练中</td>                                                                    +                                                                       <td>{{ $
+t('apiDocs.model.status3dgs') }}</td>                                                                                                           </tr>
+                                                                <tr>
+                                                                        <td>reco
+nstructing_lightning</td>                                                       -                                                                       <td>Ligh
+tning 快速重建中</td>                                                           +                                                                       <td>{{ $
+t('apiDocs.model.statusLightning') }}</td>                                                                                                      </tr>
+                                                                <tr>
+                                                                        <td>proc
+essing_bg_removal</td>                                                          -                                                                       <td>背景
+去除处理中</td>                                                                 +                                                                       <td>{{ $
+t('apiDocs.model.statusBgRemoval') }}</td>                                                                                                      </tr>
+                                                                <tr>
+                                                                        <td>paus
+ed</td>                                                                         -                                                                       <td>已暂
+停</td>                                                                         +                                                                       <td>{{ $
+t('apiDocs.model.statusPaused') }}</td>                                                                                                         </tr>
+                                                                <tr>
+                                                                        <td>resu
+ming</td>                                                                       -                                                                       <td>恢复
+中</td>                                                                         +                                                                       <td>{{ $
+t('apiDocs.model.statusResuming') }}</td>                                                                                                       </tr>
+                                                                <tr>
+                                                                        <td>comp
+leted</td>                                                                      -                                                                       <td>已完
+成</td>                                                                         +                                                                       <td>{{ $
+t('apiDocs.model.statusCompleted') }}</td>                                                                                                      </tr>
+                                                                <tr>
+                                                                        <td>fail
+ed</td>                                                                         -                                                                       <td>失败
+</td>                                                                           +                                                                       <td>{{ $
+t('apiDocs.model.statusFailed') }}</td>                                                                                                         </tr>
+                                                        </tbody>
+                                                </table>
+@@ -338,7 +338,7 @@
+                                        </div>
+ 
+                                        <div id="model-download" class="sub-sect
+ion">                                                                           -                                               <h3>下载 3D 模型</h3>
++                                               <h3>{{ $t('apiDocs.model.downloa
+dMode') }}</h3>                                                                                                                 <div class="endpoint-card">
+                                                        <div class="endpoint">GE
+T /v1/open/downModel</div>                                                                                                      </div>
+@@ -347,11 +347,11 @@
+                                                        <table class="param-tabl
+e">                                                                                                                                             <thead>
+                                                                        <tr>
+-                                                                              <
+th>位置</th>                                                                    -                                                                              <
+th>字段</th>                                                                    -                                                                              <
+th>类型</th>                                                                    -                                                                              <
+th>必填</th>                                                                    -                                                                              <
+th>说明</th>                                                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqPos') }}</th>                                         +                                                                              <
+th>{{ $t('apiDocs.scan.reqField') }}</th>                                       +                                                                              <
+th>{{ $t('apiDocs.scan.reqType') }}</th>                                        +                                                                              <
+th>{{ $t('apiDocs.scan.reqRequired') }}</th>                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqDesc') }}</th>                                                                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+@@ -359,20 +359,20 @@
+                                                                               <
+td>Header</td>                                                                                                                                                 <
+td>Authorization</td>                                                                                                                                          <
+td>String</td>                                                                  -                                                                              <
+td>是</td>                                                                      +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                                                                                                           <
+td>Bearer &lt;API_KEY&gt;</td>                                                                                                                          </tr>
+                                                                        <tr>
+                                                                               <
+td>Query</td>                                                                                                                                                  <
+td>task_id</td>                                                                                                                                                <
+td>String</td>                                                                  -                                                                              <
+td>是</td>                                                                      -                                                                              <
+td>任务 ID</td>                                                                 +                                                                              <
+td>{{ $t('apiDocs.scan.yes') }}</td>                                            +                                                                              <
+td>{{ $t('apiDocs.model.taskIdDesc') }}</td>                                                                                                            </tr>
+                                                                </tbody>
+                                                        </table>
+                                                        <div class="code-card">
+-                                                               <div class="code
+-title">请求示例</div>                                                          +                                                               <div class="code
+-title">{{ $t('apiDocs.scan.reqExample') }}</div>                                                                                               <pre><code class
+="language-bash">curl -L -o model.sog "https://szgm.tenyunn.com:50585/v1/open/downModel?task_id=YOUR_TASK_ID" \                                                    -H "Authorization: Bearer &lt;API_KEY&gt;"</code></pre>
+                                                        </div>
+@@ -380,7 +380,7 @@
+                                                <div>
+                                                        <h4>Response</h4>
+                                                        <div class="code-card">
+-                                                               <div class="code
+-title">成功响应说明</div>                                                      +                                                               <div class="code
+-title">{{ $t('apiDocs.model.downRes') }}</div>                                                                                                 <pre><code class
+="language-text">Content-Type: application/octet-stream                          Content-Disposition: attachment; filename="&lt;task_name&gt;.sog"
+ Binary file stream</code></pre>
+@@ -391,21 +391,21 @@ Binary file stream</code></pre>
+                                                        <table class="param-tabl
+e">                                                                                                                                             <thead>
+                                                                        <tr>
+-                                                                              <
+th>字段</th>                                                                    -                                                                              <
+th>类型</th>                                                                    -                                                                              <
+th>说明</th>                                                                    +                                                                              <
+th>{{ $t('apiDocs.scan.reqField') }}</th>                                       +                                                                              <
+th>{{ $t('apiDocs.scan.reqType') }}</th>                                        +                                                                              <
+th>{{ $t('apiDocs.scan.reqDesc') }}</th>                                                                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        <tr>
+                                                                               <
+td>task_id</td>                                                                                                                                                <
+td>String</td>                                                                  -                                                                              <
+td>任务 ID，任务需已完成且更新不超过 7 天</td>                                  +                                                                              <
+td>{{ $t('apiDocs.model.downTaskId') }}</td>                                                                                                            </tr>
+                                                                        <tr>
+-                                                                              <
+td>响应文件</td>                                                                +                                                                              <
+td>{{ $t('apiDocs.model.resFile') }}</td>                                                                                                                      <
+td>Binary</td>                                                                  -                                                                              <
+td>返回 .sog 文件流</td>                                                        +                                                                              <
+td>{{ $t('apiDocs.model.resSog') }}</td>                                                                                                                </tr>
+                                                                </tbody>
+                                                        </table>
+@@ -415,23 +415,23 @@ Binary file stream</code></pre>
+ 
+                                <section id="quota" class="doc-section">
+                                        <div class="section-header">
+-                                               <h2>额度</h2>
+-                                               <p>查询剩余算力点额度。</p>
++                                               <h2>{{ $t('apiDocs.quota.title')
+ }}</h2>                                                                        +                                               <p>{{ $t('apiDocs.quota.desc') }
+}</p>                                                                                                                   </div>
+                                        <div class="endpoint-card">
+                                                <div class="endpoint">GET /v1/op
+en/getCredits</div>                                                             -                                               <div class="endpoint-meta">返回
+当前算力点余额</div>                                                            +                                               <div class="endpoint-meta">{{ $t
+('apiDocs.quota.returnCredits') }}</div>                                                                                </div>
+                                        <div>
+                                                <h4>Request</h4>
+                                                <table class="param-table">
+                                                        <thead>
+                                                                <tr>
+-                                                                       <th>位置
+</th>                                                                           -                                                                       <th>字段
+</th>                                                                           -                                                                       <th>类型
+</th>                                                                           -                                                                       <th>必填
+</th>                                                                           -                                                                       <th>说明
+</th>                                                                           +                                                                       <th>{{ $
+t('apiDocs.scan.reqPos') }}</th>                                                +                                                                       <th>{{ $
+t('apiDocs.scan.reqField') }}</th>                                              +                                                                       <th>{{ $
+t('apiDocs.scan.reqType') }}</th>                                               +                                                                       <th>{{ $
+t('apiDocs.scan.reqRequired') }}</th>                                           +                                                                       <th>{{ $
+t('apiDocs.scan.reqDesc') }}</th>                                                                                                               </tr>
+                                                        </thead>
+                                                        <tbody>
+@@ -439,7 +439,7 @@ Binary file stream</code></pre>
+                                                                        <td>Head
+er</td>                                                                                                                                                 <td>Auth
+orization</td>                                                                                                                                          <td>Stri
+ng</td>                                                                         -                                                                       <td>是</
+td>                                                                             +                                                                       <td>{{ $
+t('apiDocs.scan.yes') }}</td>                                                                                                                           <td>Bear
+er &lt;API_KEY&gt;</td>                                                                                                                         </tr>
+                                                        </tbody>
+@@ -448,7 +448,7 @@ Binary file stream</code></pre>
+                                        <div>
+                                                <h4>Response</h4>
+                                                <div class="code-card">
+-                                                       <div class="code-title">
+成功响应示例</div>                                                              +                                                       <div class="code-title">
+{{ $t('apiDocs.scan.resSuccess') }}</div>                                                                                               <pre><code class="langua
+ge-json">{                                                                         "code": 200,
+   "data": {
+@@ -464,26 +464,26 @@ Binary file stream</code></pre>
+                                                <table class="param-table">
+                                                        <thead>
+                                                                <tr>
+-                                                                       <th>字段
+</th>                                                                           -                                                                       <th>类型
+</th>                                                                           -                                                                       <th>说明
+</th>                                                                           +                                                                       <th>{{ $
+t('apiDocs.scan.reqField') }}</th>                                              +                                                                       <th>{{ $
+t('apiDocs.scan.reqType') }}</th>                                               +                                                                       <th>{{ $
+t('apiDocs.scan.reqDesc') }}</th>                                                                                                               </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                                <tr>
+                                                                        <td>open
+_credits_total</td>                                                                                                                                     <td>Numb
+er</td>                                                                         -                                                                       <td>总额
+度</td>                                                                         +                                                                       <td>{{ $
+t('apiDocs.quota.totalCredits') }}</td>                                                                                                         </tr>
+                                                                <tr>
+                                                                        <td>open
+_credits_available</td>                                                                                                                                 <td>Numb
+er</td>                                                                         -                                                                       <td>可用
+额度</td>                                                                       +                                                                       <td>{{ $
+t('apiDocs.quota.availCredits') }}</td>                                                                                                         </tr>
+                                                                <tr>
+                                                                        <td>open
+_credits_used</td>                                                                                                                                      <td>Numb
+er</td>                                                                         -                                                                       <td>已使
+用额度</td>                                                                     +                                                                       <td>{{ $
+t('apiDocs.quota.usedCredits') }}</td>                                                                                                          </tr>
+                                                        </tbody>
+                                                </table>
+@@ -492,35 +492,35 @@ Binary file stream</code></pre>
+ 
+                                <section id="webhook" class="doc-section">
+                                        <div class="section-header">
+-                                               <h2>使用 Webhook</h2>
+-                                               <p>用于接收任务完成等事件通知。<
+/p>                                                                             +                                               <h2>{{ $t('apiDocs.webhook.title
+') }}</h2>                                                                      +                                               <p>{{ $t('apiDocs.webhook.desc')
+ }}</p>                                                                                                                 </div>
+                                        <div class="info-card">
+-                                               <div class="info-title">Webhook 
+需要满足以下三项要素</div>                                                      +                                               <div class="info-title">{{ $t('a
+piDocs.webhook.needsRules') }}</div>                                                                                            <ol class="doc-list">
+                                                        <li>
+-                                                               Webhook 可在开发
+者中心“设置 &gt; Webhooks”中创建与管理。                                        +                                                               {{ $t('apiDocs.w
+ebhook.rule1') }}                                                                                                                       </li>
+                                                        <li>
+-                                                               回调地址（Callba
+ck URL）：当模型状态变更时，系统会向该地址发送 POST 请求。                      +                                                               {{ $t('apiDocs.w
+ebhook.rule2') }}                                                                                                                       </li>
+                                                        <li>
+-                                                               签名密钥（Secret
+）：长度 6-50 的随机字符串，用于签名每次请求。                                  -                                                               用于加密回调内容
+，请在服务端使用相同密钥解密。                                                  +                                                               {{ $t('apiDocs.w
+ebhook.rule3Start') }}                                                          +                                                               {{ $t('apiDocs.w
+ebhook.rule3End') }}                                                                                                                    </li>
+                                                </ol>
+                                        </div>
+ 
+                                        <div class="sub-section">
+-                                               <h3>重要说明</h3>
++                                               <h3>{{ $t('apiDocs.webhook.impor
+tant') }}</h3>                                                                                                                  <ol class="doc-list emphasis">
+-                                                       <li>请确保 NotifyUrl 可
+被公网访问。</li>                                                               -                                                       <li>回调为 POST JSON，字
+段为 data/iv/tag，需用 secret 解密。</li>                                       -                                                       <li>收到通知后请返回 HTT
+P 200，否则每 30s 重试一次，最多 3 次。</li>                                    +                                                       <li>{{ $t('apiDocs.webho
+ok.warn1') }}</li>                                                              +                                                       <li>{{ $t('apiDocs.webho
+ok.warn2') }}</li>                                                              +                                                       <li>{{ $t('apiDocs.webho
+ok.warn3') }}</li>                                                                                                              </ol>
+                                        </div>
+                                        <div class="code-card">
+-                                               <div class="code-title">参数解密
+示例 (Node.js)</div>                                                            +                                               <div class="code-title">{{ $t('a
+piDocs.webhook.decryptNode') }}</div>                                                                                           <pre><code class="language-javas
+cript">const crypto = require('crypto');                                         
+ function decryptWebhookPayload(payload, secret) {
+@@ -538,7 +538,7 @@ function decryptWebhookPayload(payload, secret) {
+ </code></pre>
+                                        </div>
+                                        <div class="code-card">
+-                                               <div class="code-title">参数解密
+示例 (Python)</div>                                                             +                                               <div class="code-title">{{ $t('a
+piDocs.webhook.decryptPython') }}</div>                                                                                         <pre><code class="language-pytho
+n">import base64                                                                 import hashlib
+ import json
+@@ -558,77 +558,77 @@ def decrypt_webhook_payload(payload, secret):
+ 
+                                <section id="errors" class="doc-section">
+                                        <div class="section-header">
+-                                               <h2>错误</h2>
+-                                               <p>所有错误返回统一格式。</p>
++                                               <h2>{{ $t('apiDocs.errors.title'
+) }}</h2>                                                                       +                                               <p>{{ $t('apiDocs.errors.desc') 
+}}</p>                                                                                                                  </div>
+                                        <div class="code-card">
+-                                               <div class="code-title">错误响应
+示例</div>                                                                      +                                               <div class="code-title">{{ $t('a
+piDocs.errors.errResList') }}</div>                                                                                             <pre><code class="language-json"
+>{                                                                                      "code": 2002,
+-       "message": "任务ID格式不正确"
++       "message": "{{ $t('apiDocs.errors.err2002') }}"
+ }</code></pre>
+                                        </div>
+                                        <div>
+-                                               <h4>业务错误码</h4>
++                                               <h4>{{ $t('apiDocs.errors.bizCod
+es') }}</h4>                                                                                                                    <table class="param-table">
+                                                        <thead>
+                                                                <tr>
+-                                                                       <th>错误
+码</th>                                                                         -                                                                       <th>说明
+</th>                                                                           +                                                                       <th>{{ $
+t('apiDocs.errors.errCode') }}</th>                                             +                                                                       <th>{{ $
+t('apiDocs.scan.reqDesc') }}</th>                                                                                                               </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                                <tr>
+                                                                        <td>2001
+</td>                                                                           -                                                                       <td>缺少
+ task_id</td>                                                                   +                                                                       <td>{{ $
+t('apiDocs.errors.err2001') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2002
+</td>                                                                           -                                                                       <td>任务
+ID格式不正确</td>                                                               +                                                                       <td>{{ $
+t('apiDocs.errors.err2002') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2003
+</td>                                                                           -                                                                       <td>无权
+访问此任务</td>                                                                 +                                                                       <td>{{ $
+t('apiDocs.errors.err2003') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2004
+</td>                                                                           -                                                                       <td>任务
+未找到</td>                                                                     +                                                                       <td>{{ $
+t('apiDocs.errors.err2004') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2005
+</td>                                                                           -                                                                       <td>任务
+尚未完成</td>                                                                   +                                                                       <td>{{ $
+t('apiDocs.errors.err2005') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2006
+</td>                                                                           -                                                                       <td>模型
+已超过7天，不提供下载</td>                                                      +                                                                       <td>{{ $
+t('apiDocs.errors.err2006') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2007
+</td>                                                                           -                                                                       <td>不支
+持的格式</td>                                                                   +                                                                       <td>{{ $
+t('apiDocs.errors.err2007') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2008
+</td>                                                                           -                                                                       <td>模型
+文件未找到</td>                                                                 +                                                                       <td>{{ $
+t('apiDocs.errors.err2008') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2010
+</td>                                                                           -                                                                       <td>剩余
+可用算力点不足</td>                                                             +                                                                       <td>{{ $
+t('apiDocs.errors.err2010') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2011
+</td>                                                                           -                                                                       <td>任务
+名称不符合要求</td>                                                             +                                                                       <td>{{ $
+t('apiDocs.errors.err2011') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2012
+</td>                                                                           -                                                                       <td>参数
+不合格</td>                                                                     +                                                                       <td>{{ $
+t('apiDocs.errors.err2012') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2500
+</td>                                                                           -                                                                       <td>服务
+器错误</td>                                                                     +                                                                       <td>{{ $
+t('apiDocs.errors.err2500') }}</td>                                                                                                             </tr>
+                                                                <tr>
+                                                                        <td>2501
+</td>                                                                           -                                                                       <td>上传
+失败</td>                                                                       +                                                                       <td>{{ $
+t('apiDocs.errors.err2501') }}</td>                                                                                                             </tr>
+                                                        </tbody>
+                                                </table>
+@@ -637,52 +637,52 @@ def decrypt_webhook_payload(payload, secret):
+ 
+                                <section id="status-codes" class="doc-section">
+                                        <div class="section-header">
+-                                               <h2>状态码</h2>
+-                                               <p>HTTP 状态码说明。</p>
++                                               <h2>{{ $t('apiDocs.statusCodes.t
+itle') }}</h2>                                                                  +                                               <p>{{ $t('apiDocs.statusCodes.de
+sc') }}</p>                                                                                                             </div>
+                                        <table class="param-table">
+                                                <thead>
+                                                        <tr>
+-                                                               <th>状态码</th>
+-                                                               <th>含义</th>
+-                                                               <th>说明</th>
++                                                               <th>{{ $t('apiDo
+cs.statusCodes.title') }}</th>                                                  +                                                               <th>{{ $t('apiDo
+cs.statusCodes.meaning') }}</th>                                                +                                                               <th>{{ $t('apiDo
+cs.scan.reqDesc') }}</th>                                                                                                               </tr>
+                                                </thead>
+                                                <tbody>
+                                                        <tr>
+                                                                <td>200</td>
+                                                                <td>OK</td>
+-                                                               <td>请求成功</td
+>                                                                               +                                                               <td>{{ $t('apiDo
+cs.statusCodes.sc200') }}</td>                                                                                                          </tr>
+                                                        <tr>
+                                                                <td>400</td>
+                                                                <td>Bad Request<
+/td>                                                                            -                                                               <td>请求参数错误
+</td>                                                                           +                                                               <td>{{ $t('apiDo
+cs.statusCodes.sc400') }}</td>                                                                                                          </tr>
+                                                        <tr>
+                                                                <td>401</td>
+                                                                <td>Unauthorized
+</td>                                                                           -                                                               <td>鉴权失败</td
+>                                                                               +                                                               <td>{{ $t('apiDo
+cs.statusCodes.sc401') }}</td>                                                                                                          </tr>
+                                                        <tr>
+                                                                <td>403</td>
+                                                                <td>Forbidden</t
+d>                                                                              -                                                               <td>无权访问资源
+</td>                                                                           +                                                               <td>{{ $t('apiDo
+cs.statusCodes.sc403') }}</td>                                                                                                          </tr>
+                                                        <tr>
+                                                                <td>404</td>
+                                                                <td>Not Found</t
+d>                                                                              -                                                               <td>资源未找到</
+td>                                                                             +                                                               <td>{{ $t('apiDo
+cs.statusCodes.sc404') }}</td>                                                                                                          </tr>
+                                                        <tr>
+                                                                <td>420</td>
+                                                                <td>Insufficient
+ Credits</td>                                                                   -                                                               <td>算力点不足</
+td>                                                                             +                                                               <td>{{ $t('apiDo
+cs.statusCodes.sc420') }}</td>                                                                                                          </tr>
+                                                        <tr>
+                                                                <td>500</td>
+                                                                <td>Server Error
+</td>                                                                           -                                                               <td>服务器错误</
+td>                                                                             +                                                               <td>{{ $t('apiDo
+cs.errors.err2500') }}</td>                                                                                                             </tr>
+                                                </tbody>
+                                        </table>
+@@ -699,38 +699,7 @@ type TocItem = {
+        children?: TocItem[]
+ }
+ 
+-const toc: TocItem[] = [
+-       { id: 'overview', label: '3DGS API' },
+-       { id: 'quickstart', label: '快速入门' },
+-       {
+-               id: 'auth',
+-               label: '验证',
+-               children: [
+-                       { id: 'auth-create-key', label: '创建 API 密钥' },
+-                       { id: 'auth-use-key', label: '使用 API 密钥' }
+-               ]
+-       },
+-       {
+-               id: 'scan',
+-               label: '3DGS 扫描',
+-               children: [
+-                       { id: 'scan-video', label: '视频上传' },
+-                       // { id: 'scan-image', label: '图片上传' }
+-               ]
+-       },
+-       {
+-               id: 'model',
+-               label: '模型',
+-               children: [
+-                       { id: 'model-status', label: '获取重建任务状态' },
+-                       { id: 'model-download', label: '下载 3D 模型' }
+-               ]
+-       },
+-       { id: 'quota', label: '额度' },
+-       { id: 'webhook', label: '创建 Webhook' },
+-       { id: 'errors', label: '错误' },
+-       { id: 'status-codes', label: '状态码' }
+-]
++
+ </script>
+ 
+ <style scoped>

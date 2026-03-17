@@ -127,6 +127,7 @@ import { useRouter } from 'vue-router'
 // 定义 props
 const props = defineProps<{
   agree?: boolean
+  shareCode?: string
 }>()
 
 // 定义 emit
@@ -147,6 +148,11 @@ const selectedAreaCode = ref('+86')
 const verificationCode = ref('')
 let timer = ref<number>(0)
 const conuntTime = 60
+const SHARE_CODE_COOKIE = 'shareCode'
+
+const clearCookie = (name: string) => {
+  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`
+}
 const resolveRequestErrorMessage = (err: any, defaultMessage: string) => {
   if (err?.message && String(err.message).length > 0) {
     return String(err.message)
@@ -350,8 +356,14 @@ const handlePhoneAuth = async () => {
       code: verificationCode.value
     }
     console.log('提交验证数据：', submitData)
-    const success = await userStore.phoneLogin(submitData.areaCode, submitData.phone, submitData.code)
+    const success = await userStore.phoneLogin(
+      submitData.areaCode,
+      submitData.phone,
+      submitData.code,
+      props.shareCode
+    )
     if (success) {
+      clearCookie(SHARE_CODE_COOKIE)
       router.push('/') // 登录成功后跳转到首页或其他页面
     }
   } finally {

@@ -28,7 +28,7 @@
 							<div class="info-grid">
                 <div>
 									<div class="info-label">请求地址</div>
-									<div class="info-value">https://szgm.tenyunn.com:50585</div>
+									<div class="info-value">https://szgm.tenyunn.com:50585/backend/api</div>
 								</div>
 							</div>
 						</div>
@@ -693,44 +693,48 @@ def decrypt_webhook_payload(payload, secret):
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
 type TocItem = {
 	id: string
 	label: string
 	children?: TocItem[]
 }
 
-const toc: TocItem[] = [
-	{ id: 'overview', label: '3DGS API' },
-	{ id: 'quickstart', label: '快速入门' },
+const { t } = useI18n()
+
+const toc = computed<TocItem[]>(() => [
+	{ id: 'overview', label: t('apiDocs.overview.title') },
+	{ id: 'quickstart', label: t('apiDocs.quickstart.title') },
 	{
 		id: 'auth',
-		label: '验证',
+		label: t('apiDocs.auth.title'),
 		children: [
-			{ id: 'auth-create-key', label: '创建 API 密钥' },
-			{ id: 'auth-use-key', label: '使用 API 密钥' }
+			{ id: 'auth-create-key', label: t('apiDocs.auth.createTitle') },
+			{ id: 'auth-use-key', label: t('apiDocs.auth.useTitle') }
 		]
 	},
 	{
 		id: 'scan',
-		label: '3DGS 扫描',
+		label: t('apiDocs.scan.title'),
 		children: [
-			{ id: 'scan-video', label: '视频上传' },
-			// { id: 'scan-image', label: '图片上传' }
+			{ id: 'scan-video', label: t('apiDocs.scan.videoUpload') }
 		]
 	},
 	{
 		id: 'model',
-		label: '模型',
+		label: t('apiDocs.model.title'),
 		children: [
-			{ id: 'model-status', label: '获取重建任务状态' },
-			{ id: 'model-download', label: '下载 3D 模型' }
+			{ id: 'model-status', label: t('apiDocs.model.getStatus') },
+			{ id: 'model-download', label: t('apiDocs.model.downloadMode') }
 		]
 	},
-	{ id: 'quota', label: '额度' },
-	{ id: 'webhook', label: '创建 Webhook' },
-	{ id: 'errors', label: '错误' },
-	{ id: 'status-codes', label: '状态码' }
-]
+	{ id: 'quota', label: t('apiDocs.quota.title') },
+	{ id: 'webhook', label: t('apiDocs.webhook.title') },
+	{ id: 'errors', label: t('apiDocs.errors.title') },
+	{ id: 'status-codes', label: t('apiDocs.statusCodes.title') }
+])
 </script>
 
 <style scoped>

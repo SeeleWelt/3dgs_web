@@ -7,32 +7,33 @@
         <div class="form-card">
           <div class="form-label">
             <UserOutlined class="label-icon" />
-            <span>联系方式</span>
+            <span>{{ t('feedbackLang.contact') }}</span>
           </div>
           <a-input
             v-model:value="phone"
-            placeholder="请输入手机号或邮箱"
+            :maxlength="40"
+            :placeholder="t('feedbackLang.contactPlaceholder')"
             size="large"
             class="form-input"
           />
-          <div class="form-hint">便于我们回复您（选填）</div>
+          <div class="form-hint">{{ t('feedbackLang.contactHint') }}</div>
         </div>
 
         <!-- 反馈内容 -->
         <div class="form-card">
           <div class="form-label">
             <FileTextOutlined class="label-icon" />
-            <span>反馈内容</span>
+            <span>{{ t('feedbackLang.content') }}</span>
           </div>
           <a-textarea
             v-model:value="content"
-            placeholder="请详细描述您的建议或问题..."
+            :placeholder="t('feedbackLang.contentPlaceholder')"
             :maxlength="500"
             show-count
             :rows="6"
             class="form-textarea"
           />
-          <div class="form-hint">{{ feedbackTip }}</div>
+          <div class="form-hint">{{ t('feedbackLang.contentHint') }}</div>
         </div>
 
         <!-- 提交按钮 -->
@@ -43,12 +44,11 @@
           @click="submitFeedback"
           class="submit-btn"
         >
-          <SendOutlined /> 提交反馈
+          <SendOutlined /> {{ t('feedbackLang.submit') }}
         </a-button>
       </div>
 
-      <!-- 常见问题 -->
-      <div class="faq-section">
+      <!-- <div class="faq-section">
         <div class="faq-header">
           <QuestionCircleOutlined class="faq-icon" />
           <div class="faq-title">
@@ -67,7 +67,7 @@
             <div class="faq-answer" v-html="faq.answer"></div>
           </a-collapse-panel>
         </a-collapse>
-      </div>
+      </div> -->
     </div>
 
     <!-- 成功提示弹窗 -->
@@ -83,10 +83,10 @@
         <div class="success-icon">
           <CheckCircleFilled />
         </div>
-        <h3>提交成功</h3>
-        <p>感谢您的反馈，我们会认真处理！</p>
+        <h3>{{ t('feedbackLang.successTitle') }}</h3>
+        <p>{{ t('feedbackLang.successDesc') }}</p>
         <a-button type="primary" size="large" @click="successModal = false" class="modal-btn">
-          我知道了
+          {{ t('feedbackLang.gotIt') }}
         </a-button>
       </div>
     </a-modal>
@@ -96,6 +96,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { message } from 'ant-design-vue'
+import { useI18n } from 'vue-i18n'
 import {
   MessageOutlined,
   UserOutlined,
@@ -111,6 +112,8 @@ const phone = ref('')
 const content = ref('')
 const loading = ref(false)
 const successModal = ref(false)
+
+const { t } = useI18n()
 
 // 常见问题
 const activeFaqKeys = ref<string[]>([])
@@ -149,8 +152,6 @@ const faqList = ref<FaqItem[]>([
   }
 ])
 
-const feedbackTip = '请详细描述您的建议或问题，避免纯数字、无意义内容。我们会认真处理每一条反馈！'
-
 function isQualityContent(text: string): boolean {
   if (/^\d+$/.test(text.trim())) return false
   const lowQualityList = ['测试', '111', '222', '333', '好', '不错', '无', '无反馈', '无意见', '无建议', 'ok', 'test', 'hello', 'hi']
@@ -161,22 +162,22 @@ function isQualityContent(text: string): boolean {
 
 async function submitFeedback() {
   if (!content.value || content.value.trim().length === 0) {
-    message.error('反馈内容不能为空')
+    message.error(t('feedbackLang.contentEmpty'))
     return
   }
   if (content.value.length > 500) {
-    message.error('反馈内容不能超过500字')
+    message.error(t('feedbackLang.contentTooLong'))
     return
   }
   if (!isQualityContent(content.value)) {
-    message.error('请填写有价值的反馈内容')
+    message.error(t('feedbackLang.contentLowQuality'))
     return
   }
   if (phone.value) {
     const phoneRegex = /^1[3-9]\d{9}$/
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
     if (!phoneRegex.test(phone.value) && !emailRegex.test(phone.value)) {
-      message.error('请输入正确的手机号或邮箱')
+      message.error(t('feedbackLang.invalidContact'))
       return
     }
   }
@@ -195,11 +196,11 @@ async function submitFeedback() {
       content.value = ''
       phone.value = ''
     } else {
-      message.error(res?.data?.msg || '提交失败，请稍后再试')
+      message.error(res?.data?.msg || t('feedbackLang.submitFail'))
     }
   } catch (err: any) {
     loading.value = false
-    message.error(err?.message || '提交失败，请检查网络')
+    message.error(err?.message || t('feedbackLang.networkError'))
   }
 }
 </script>

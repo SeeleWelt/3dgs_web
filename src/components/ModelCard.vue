@@ -52,7 +52,7 @@
       </p>
 
       <div class="card-actions" @click.stop>
-        <a-tooltip :title="pauseResumeLabel" :disabled="!canPauseOrResume || isPausing || isResuming">
+        <!-- <a-tooltip :title="pauseResumeLabel" :disabled="!canPauseOrResume || isPausing || isResuming">
           <a-button
             type="text"
             size="small"
@@ -64,7 +64,7 @@
               <PauseCircleOutlined v-else />
             </template>
           </a-button>
-        </a-tooltip>
+        </a-tooltip> -->
 
         <a-tooltip title="查看详情">
           <a-button type="text" size="small" @click="openDetailsDrawer">
@@ -375,15 +375,15 @@ const techItems = computed(() => {
       color: '#2f54eb',
       iconBg: 'rgba(47, 84, 235, 0.15)',
     },
-    {
-      label: '快速重建',
-      value: props.model.lightning ? '是' : '否',
-      icon: ThunderboltOutlined,
-      emphasis: false,
-      visible: true,
-      color: '#fa8c16',
-      iconBg: 'rgba(250, 140, 22, 0.15)',
-    },
+    // {
+    //   label: '快速重建',
+    //   value: props.model.lightning ? '是' : '否',
+    //   icon: ThunderboltOutlined,
+    //   emphasis: false,
+    //   visible: true,
+    //   color: '#fa8c16',
+    //   iconBg: 'rgba(250, 140, 22, 0.15)',
+    // },
     {
       label: '开始时间',
       value: formatDateTime(props.model.createdAt),

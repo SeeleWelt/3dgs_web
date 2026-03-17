@@ -159,7 +159,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const emailRegister = async (email: string, password: string, code: string) => {
+  const emailRegister = async (email: string, password: string, code: string, inviteCode?: string) => {
     isLoading.value = true
     try {
       await ApiServer.request({
@@ -168,7 +168,8 @@ export const useUserStore = defineStore('user', () => {
         data: {
           email: email,
           password,
-          code
+          code,
+          ...(inviteCode ? { inviteCode } : {})
         }
       })
       message.success('注册成功，请登录')
@@ -187,7 +188,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // 手机号登录/注册
-  const phoneLogin = async (areaCode: string, phone: string, code: string) => {
+  const phoneLogin = async (areaCode: string, phone: string, code: string, inviteCode?: string) => {
     isLoading.value = true
     try {
       const response = await ApiServer.request({
@@ -196,7 +197,8 @@ export const useUserStore = defineStore('user', () => {
         data: {
           areaCode,
           phone,
-          code
+          code,
+          ...(inviteCode ? { inviteCode } : {})
         }
       })
       console.log('手机号登录响应:', response.data)
@@ -225,8 +227,8 @@ export const useUserStore = defineStore('user', () => {
     }
   }
   
-  const register = async (email: string, password: string) => {
-    return emailRegister(email, password, '')
+  const register = async (email: string, password: string, inviteCode?: string) => {
+    return emailRegister(email, password, '', inviteCode)
   }
 
   // 登出

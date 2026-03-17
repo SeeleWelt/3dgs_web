@@ -203,7 +203,7 @@ const MeshModel = ref<Model[]>([
     objectDescription: '流浪者号',
     ownerUsername: 'ric',
     authorAvatar: undefined,
-    preview: 'https://szgm.tenyunn.com:50585/aimodel/test.jpg',
+    preview: 'https://3dgs-web.metast.xyz/aimodel/test.jpg',
     headimg: 'assets/logo.png',
     nickname: 'ric',
     isNew: true,
