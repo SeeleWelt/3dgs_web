@@ -175,12 +175,12 @@
                   <PlusOutlined />绑定邮箱
                 </a-button>
               </div>
-              <div class="info-item">
+              <!-- <div class="info-item">
                 <div class="info-label">账户状态</div>
                 <div class="info-value">
                   <a-tag color="success">{{userStatus}}</a-tag>
                 </div>
-              </div>
+              </div> -->
               <div class="info-item">
                 <div class="info-label">上次登录</div>
                 <div class="info-value">{{ formatLoginTime(user?.loginTime || '') || '-' }}</div>

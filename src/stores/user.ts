@@ -55,7 +55,7 @@ export const useUserStore = defineStore('user', () => {
       phone: data?.phone ?? null,
       point: typeof data?.point === 'number' ? data.point : 0,
       token: data?.token,
-      userStatus: typeof data?.userStatus === 'number' ? data.userStatus : (data?.status || 0),
+      userStatus: typeof data?.userStatus === 'number' ? data.userStatus : (data?.status || 1),
       username: data?.username ?? data?.name ?? account,
       email: data?.email ?? extractedEmail ?? account,
       name: data?.name ?? data?.username ?? null,
