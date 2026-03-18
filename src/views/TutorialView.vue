@@ -41,7 +41,7 @@
             @click="prevStep"
             class="nav-btn prev"
           >
-            <LeftOutlined /> {{ t('tutorialLang.prevStep') }}
+            <LeftOutlined /> 上一步
           </a-button>
           <div class="step-indicators">
             <span
@@ -59,7 +59,7 @@
             @click="nextStep"
             class="nav-btn next"
           >
-            {{ t('tutorialLang.nextStep') }} <RightOutlined />
+            下一步 <RightOutlined />
           </a-button>
         </div>
       </div>
@@ -68,8 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref } from 'vue'
 import {
   PlayCircleOutlined,
   LeftOutlined,
@@ -77,51 +76,49 @@ import {
   CheckCircleFilled
 } from '@ant-design/icons-vue'
 
-const { t } = useI18n()
-
-const steps = computed(() => [
+const steps = [
   {
-    title: t('tutorialLang.step1Title'),
-    description: t('tutorialLang.step1Desc'),
+    title: '上传视频',
+    description: '上传您想要转换为3D模型的视频。支持多种格式，确保视频清晰度高。',
     tips: [
-      t('tutorialLang.step1Tip1'),
-      t('tutorialLang.step1Tip2'),
-      t('tutorialLang.step1Tip3')
+      '支持 mp4, mov, avi, mkv, webm 格式',
+      '支持 jpg, png, jpeg 格式',
+      '视频时长建议 30秒-3分钟'
     ]
   },
   {
-    title: t('tutorialLang.step2Title'),
-    description: t('tutorialLang.step2Desc'),
+    title: 'AI 自动处理',
+    description: '我们的AI算法会自动分析视频，提取特征信息并进行3D重建。处理时间取决于内容复杂度。',
     tips: [
-      t('tutorialLang.step2Tip1'),
-      t('tutorialLang.step2Tip2'),
-      t('tutorialLang.step2Tip3')
+      '自动识别主体和背景',
+      '智能提取深度信息',
+      '生成高质量3D模型'
     ]
   },
   {
-    title: t('tutorialLang.step3Title'),
-    description: t('tutorialLang.step3Desc'),
+    title: '预览与调整',
+    description: '3D模型生成完成后，您可以预览效果并进行调整。也可以选择开启背景移除等高级选项。',
     tips: [
-      t('tutorialLang.step3Tip1'),
-      t('tutorialLang.step3Tip2'),
-      t('tutorialLang.step3Tip3')
+      '360度预览3D模型',
+      '可调整背景设置',
+      '支持导出多种格式'
     ]
   },
   {
-    title: t('tutorialLang.step4Title'),
-    description: t('tutorialLang.step4Desc'),
+    title: '下载使用',
+    description: '满意后即可下载您的3D模型。模型可用于游戏、VR/AR、3D打印等多种场景。',
     tips: [
-      t('tutorialLang.step4Tip1'),
-      t('tutorialLang.step4Tip2'),
-      t('tutorialLang.step4Tip3')
+      '支持多种导出格式',
+      '模型可直接用于创作',
+      '永久保存您的作品'
     ]
   }
-])
+]
 
 const currentStep = ref(0)
 
 function nextStep() {
-  if (currentStep.value < steps.value.length - 1) currentStep.value++
+  if (currentStep.value < steps.length - 1) currentStep.value++
 }
 
 function prevStep() {
@@ -133,7 +130,6 @@ function prevStep() {
 .tutorial-page {
   min-height: calc(100vh - 64px);
   padding: 24px;
-  background: var(--bg-primary);
 }
 
 /* 页面头部 */

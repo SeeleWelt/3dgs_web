@@ -56,7 +56,7 @@
           :step="0.1"
           :disabled="!skullEntity || !viewerControls.isOrbitMode"
           @change="handleOrbitProgressChange"
-          @afterChange="isLoopPlaying = true"
+          @afterChange="isLoopPlaying = false"
           class="orbit-slider"
         />
         <span class="time-display">{{ formatTime(orbitCurrentTime) }} / {{ formatTime(orbitTotalTime) }}</span>
@@ -655,7 +655,7 @@ export default {
       this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate });
     },
     // 根据时间应用自定义运镜
-    applyCustomMotionAtTime(currentTime) {
+    applyCustomMotionAtTime(currentTime, immediate = true) {
       if (!this.customMotion || !this.customMotion.keyframes || this.customMotion.keyframes.length < 2) return;
       if (!this.orbitPlaybackFocus || !this.cameraControls) return;
 
@@ -688,7 +688,7 @@ export default {
 
       const targetPos = applyTimedPathMotion(pathPoints, currentTime, durations, easingFn);
 
-      this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate: true });
+      this.cameraControls.reset(this.orbitPlaybackFocus, targetPos, { immediate: immediate });
     },
     clearLoopPlayStartTimer() {
       if (this.loopPlayStartTimer) {
@@ -1113,7 +1113,8 @@ export default {
       }
     },
     async getTargetModel() {
-      const downloadTokenUrl = new URL(`${API.TASK_DETAIL}/${this.task_id}/download-token`, API.BASE_URL);
+      const fullUrlString = `${API.BASE_URL}${API.TASK_DETAIL}/${this.task_id}/download-token`;
+      const downloadTokenUrl = new URL(fullUrlString);
       downloadTokenUrl.searchParams.append('shareId', this.shareId);
       try {
         const response = await ApiServer.request({

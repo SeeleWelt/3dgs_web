@@ -34,6 +34,7 @@ const API = {
 
   // 创建任务（上传视频）
   UPLOAD_TASK: '/api/upload',
+  UPLOAD_IMAGES: "/api/upload-images",
 
   // 获取任务列表
   TASK_LIST: '/api/tasks',

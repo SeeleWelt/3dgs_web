@@ -1,11 +1,31 @@
 <template>
   <div
-    :class="props.compact ? 'file-upload-compact' : 'file-upload'"
+    :class="[props.compact ? 'file-upload-compact' : 'file-upload', { 'is-processing': isProcessingFiles }]"
     @dragenter.prevent="handleDragEnter"
     @dragleave.prevent="handleDragLeave"
     @dragover.prevent
     @drop.prevent="handleDrop"
   >
+    <!-- Processing Overlay -->
+    <div v-if="isProcessingFiles" class="processing-overlay" :class="{ 'compact-mode': props.compact }">
+      <!-- Normal Mode: Full content with text -->
+      <div v-if="!props.compact" class="processing-content">
+        <a-spin size="large" />
+        <p class="processing-text">正在读取文件...</p>
+        <div v-if="processingProgress > 0" class="processing-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: `${processingProgress}%` }"></div>
+          </div>
+          <span class="progress-text">{{ processingProgress }}%</span>
+        </div>
+        <p class="processing-file" v-if="processingFileName">{{ processingFileName }}</p>
+      </div>
+      <!-- Compact Mode: Small spinner only -->
+      <div v-else class="processing-compact">
+        <a-spin size="small" />
+      </div>
+    </div>
+
     <!-- Compact Mode (Re-upload) -->
     <div v-if="props.compact" class="compact-zone">
       <UploadOutlined />
@@ -13,7 +33,7 @@
       <input
         ref="fileInput"
         type="file"
-        accept="image/png,image/jpg,image/jpeg,image/webp,video/quicktime,video/mp4,video/webm,video/x-msvideo,video/x-matroska,.mp4,.mov,.mkv,.avi,.webm"
+        :accept="videoAcceptTypes"
         multiple
         class="file-input"
         @change="handleFileSelect"
@@ -26,11 +46,10 @@
       <div class="upload-zone">
         <!-- Floating Format Icons -->
         <div class="floating-icons">
-          <span class="icon icon-jpg">JPG</span>
-          <span class="icon icon-png">PNG</span>
+          <!-- <span class="icon icon-jpg">JPG</span>
+          <span class="icon icon-png">PNG</span> -->
           <span class="icon icon-mov">MOV</span>
           <span class="icon icon-mp4">MP4</span>
-          <span class="icon icon-webp">WEBP</span>
         </div>
 
         <!-- Upload Icon -->
@@ -43,16 +62,21 @@
         </div>
 
         <!-- Upload Text -->
-        <div class="upload-text">
+        <!-- <div class="upload-text">
           <p class="main-text">点击上传或将视频/图片拖入此区域</p>
-          <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）或图片（jpg, png, webp）</p>
+          <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）或图片（jpg, png,jpeg）</p>
+        </div> -->
+
+         <div class="upload-text">
+          <p class="main-text">点击上传或将视频拖入此区域</p>
+          <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）</p>
         </div>
 
         <!-- Hidden Input -->
         <input
           ref="fileInput"
           type="file"
-          accept="image/png,image/jpg,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm,video/x-msvideo,video/x-matroska,.mp4,.mov,.mkv,.avi,.webm"
+          :accept="videoAcceptTypes"
           multiple
           class="file-input"
           @change="handleFileSelect"
@@ -65,26 +89,27 @@
           <span class="info-label">视频上传：</span>
           <span class="info-content">
             · 支持的格式：mp4, mov, avi, mvk, webm
-            · 视频时长限制：最长 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
+            · 最少 {{ props.minVideoDurationSeconds || 30 }} 秒，最多 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
             · 一次仅支持 1 个视频
             · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下
           </span>
         </div>
-        <div class="info-row">
+        <!-- <div class="info-row">
           <span class="info-label">图片上传：</span>
           <span class="info-content">
-            · 支持的格式：jpg, png, webp
-            · 最多上传 {{ props.maxImageCount || 15 }} 张图片
+            · 支持的格式：jpg, png, jpeg
+            · 最少 {{ props.minImageCount || 30 }} 张，最多 {{ props.maxImageCount || 150 }} 张
             · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下
           </span>
-        </div>
+        </div> -->
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { message } from 'ant-design-vue';
+import { message } from 'ant-design-vue'
+import { Spin as aSpin } from 'ant-design-vue'
 import { UploadOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
 
@@ -92,10 +117,15 @@ const emit = defineEmits<{
   upload: [files: File[]]
 }>()
 
+const videoAcceptTypes = ref('video/mp4,video/quicktime,video/webm,video/x-msvideo,video/x-matroska,.mp4,.mov,.mkv,.avi,.webm')
+const imageAcceptTypes = ref('image/png,image/jpg,image/jpeg')
+
 const props = defineProps<{
   maxVideoDurationSeconds?: number
   maxImageCount?: number
   maxResolution?: { width: number; height: number }
+  minImageCount?: number
+  minVideoDurationSeconds?: number
   compact?: boolean
 }>()
 
@@ -106,7 +136,7 @@ const RESOLUTION_4K = { width: 3840, height: 2160 }
 const RESOLUTION_8K = { width: 7680, height: 4320 }
 
 // 默认 2K 分辨率
-const DEFAULT_MAX_RESOLUTION = RESOLUTION_2K
+const DEFAULT_MAX_RESOLUTION = RESOLUTION_8K
 
 // 获取分辨率标签
 const getResolutionLabel = (width: number, height: number): string => {
@@ -122,6 +152,11 @@ const getMaxResolution = () => props.maxResolution || DEFAULT_MAX_RESOLUTION
 const fileInput = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 
+// 文件读取进度相关
+const isProcessingFiles = ref(false)
+const processingProgress = ref(0)
+const processingFileName = ref('')
+
 // 获取图片分辨率
 const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
   return new Promise((resolve) => {
@@ -130,7 +165,7 @@ const getImageDimensions = (file: File): Promise<{ width: number; height: number
       resolve({ width: img.naturalWidth, height: img.naturalHeight })
       URL.revokeObjectURL(img.src)
     }
-    img.onerror = () => { 
+    img.onerror = () => {
       resolve({ width: 0, height: 0 })
       URL.revokeObjectURL(img.src)
     }
@@ -201,14 +236,26 @@ const handleDrop = async (e: DragEvent) => {
   const files = e.dataTransfer?.files
   if (files && files.length > 0) {
     const fileArray = Array.from(files)
-    // 检查所有文件的分辨率
-    for (const file of fileArray) {
-      const isValid = await checkFileResolution(file)
-      if (!isValid) {
-        return
+
+    // 开始处理文件，显示加载动画
+    isProcessingFiles.value = true
+    processingProgress.value = 0
+    processingFileName.value = fileArray.length === 1 ? fileArray[0].name : `${fileArray.length} 个文件`
+
+    try {
+      // 检查所有文件的分辨率，并显示进度
+      for (let i = 0; i < fileArray.length; i++) {
+        processingProgress.value = Math.round(((i + 1) / fileArray.length) * 100)
+        const isValid = await checkFileResolution(fileArray[i])
+        if (!isValid) {
+          isProcessingFiles.value = false
+          return
+        }
       }
+      emit('upload', fileArray)
+    } finally {
+      isProcessingFiles.value = false
     }
-    emit('upload', fileArray)
   }
 }
 
@@ -225,15 +272,26 @@ const handleFileSelect = async (e: Event) => {
     return
   }
   if (files && files.length > 0) {
-    // 检查所有文件的分辨率
-    for (const file of files) {
-      const isValid = await checkFileResolution(file)
-      if (!isValid) {
-        target.value = ''
-        return
+    // 开始处理文件，显示加载动画
+    isProcessingFiles.value = true
+    processingProgress.value = 0
+    processingFileName.value = files.length === 1 ? files[0].name : `${files.length} 个文件`
+
+    try {
+      // 检查所有文件的分辨率，并显示进度
+      for (let i = 0; i < files.length; i++) {
+        processingProgress.value = Math.round(((i + 1) / files.length) * 100)
+        const isValid = await checkFileResolution(files[i])
+        if (!isValid) {
+          isProcessingFiles.value = false
+          target.value = ''
+          return
+        }
       }
+      emit('upload', files)
+    } finally {
+      isProcessingFiles.value = false
     }
-    emit('upload', files)
   }
   target.value = ''
 }
@@ -445,5 +503,101 @@ const handleFileSelect = async (e: Event) => {
   .info-content {
     padding-left: 96px;
   }
+}
+
+/* Processing Overlay */
+.file-upload.is-processing,
+.file-upload-compact.is-processing {
+  pointer-events: none;
+}
+
+.processing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Compact Mode - smaller background */
+.processing-overlay.compact-mode {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.processing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.processing-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.processing-file {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  max-width: 300px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.processing-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 200px;
+}
+
+.processing-progress .progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.processing-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4aa, #00b4d8);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.processing-progress .progress-text {
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Compact Mode Processing */
+.processing-overlay.compact-mode {
+  border-radius: 12px;
+}
+
+.processing-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.processing-compact :deep(.ant-spin) {
+  color: white;
+}
+
+.processing-compact :deep(.ant-spin-dot-item) {
+  background-color: white;
 }
 </style>

@@ -21,12 +21,24 @@
       </div>
 
       <!-- Upload Area -->
-      <FileUpload
-        @upload="handleUpload"
-        :max-image-count="MAX_IMAGE_COUNT"
-        :max-video-duration-seconds="MAX_VIDEO_DURATION_SECONDS"
-        :compact="hasUploadedFiles"
-      />
+      <div class="upload-area-wrapper">
+        <FileUpload
+          @upload="handleUpload"
+          :max-image-count="MAX_IMAGE_COUNT"
+          :max-video-duration-seconds="MAX_VIDEO_DURATION_SECONDS"
+          :compact="hasUploadedFiles"
+          :min-image-count="MIN_IMAGE_COUNT"
+          :min-video-duration-seconds="MIN_VIDEO_DURATION"
+        />
+
+        <!-- Loading Animation when processing files -->
+        <div v-if="isProcessingFiles" class="processing-overlay">
+          <div class="processing-content">
+            <a-spin size="large" />
+            <p class="processing-text">正在处理文件，请稍候...</p>
+          </div>
+        </div>
+      </div>
 
       <!-- Upload Progress Area -->
       <div class="upload-progress-wrapper" v-if="hasUploadedFiles">
@@ -172,11 +184,13 @@ interface ImageFile {
   size: number
   file: File
   previewUrl: string
+  thumbnailUrl?: string  // 缩略图 URL，用于优化预览性能
 }
 
 const uploadTask = ref<UploadTask | null>(null)
 const imageFiles = ref<ImageFile[]>([])
 const tutorialRef = ref<InstanceType<typeof UploadTutorial> | null>(null)
+const isProcessingFiles = ref(false)  // 是否正在处理文件（生成缩略图等）
 
 const showAdvancedOptions = ref(false)
 
@@ -200,7 +214,9 @@ const advancedForm = ref({
 })
 
 const MAX_VIDEO_DURATION_SECONDS = 3 * 60
-const MAX_IMAGE_COUNT = 150
+const MAX_IMAGE_COUNT = 500
+const MIN_IMAGE_COUNT = 30  // 最少30张图片
+const MIN_VIDEO_DURATION = 30  // 最少30秒视频
 
 // 获取积分规则和当前积分
 onMounted(async () => {
@@ -249,6 +265,51 @@ const getTaskNameFromFile = (fileName: string) => {
 const revokePreviewUrl = () => {
   if (!uploadTask.value?.previewUrl) return
   URL.revokeObjectURL(uploadTask.value.previewUrl)
+}
+
+// 生成图片缩略图（用于预览，优化大量图片时的性能）
+const generateThumbnail = (file: File, maxSize: number = 300): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      // 计算缩放后的尺寸
+      let width = img.naturalWidth
+      let height = img.naturalHeight
+
+      if (width > height) {
+        if (width > maxSize) {
+          height = Math.round((height * maxSize) / width)
+          width = maxSize
+        }
+      } else {
+        if (height > maxSize) {
+          width = Math.round((width * maxSize) / height)
+          height = maxSize
+        }
+      }
+
+      // 创建 canvas 进行缩放
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height)
+        // 导出为 JPEG 格式，质量 0.8
+        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8)
+        URL.revokeObjectURL(img.src)
+        resolve(thumbnailUrl)
+      } else {
+        URL.revokeObjectURL(img.src)
+        resolve(URL.createObjectURL(file))
+      }
+    }
+    img.onerror = () => {
+      // 缩略图生成失败，返回原图
+      resolve(URL.createObjectURL(file))
+    }
+    img.src = URL.createObjectURL(file)
+  })
 }
 
 const resolveVideoDuration = (file: File): Promise<number> => {
@@ -312,8 +373,17 @@ const handleUpload = async (files: File[]) => {
   if(file.type.startsWith('image/')) {
     if(files?.length > MAX_IMAGE_COUNT) {
       message.warning(`最多支持上传${MAX_IMAGE_COUNT}张图片`)
+      isProcessingFiles.value = false
       return
     }
+    if(files?.length < MIN_IMAGE_COUNT) {
+      message.warning(`图片数量不足，最少需要 ${MIN_IMAGE_COUNT} 张图片`)
+      isProcessingFiles.value = false
+      return
+    }
+
+    // 开始处理文件，显示加载动画
+    isProcessingFiles.value = true
 
     // 处理图片上传 - 清空视频
     if (uploadTask.value?.status === 'uploading' && uploadTask.value.abortController) {
@@ -322,14 +392,21 @@ const handleUpload = async (files: File[]) => {
     revokePreviewUrl()
     uploadTask.value = null
 
-    // 处理图片列表
-    imageFiles.value = files.map(f => ({
-      id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
-      name: f.name,
-      size: f.size,
-      file: f,
-      previewUrl: URL.createObjectURL(f),
+    // 处理图片列表（生成缩略图优化性能）
+    const imageFileList = await Promise.all(files.map(async (f) => {
+      const thumbnailUrl = await generateThumbnail(f, 300)
+      return {
+        id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+        name: f.name,
+        size: f.size,
+        file: f,
+        previewUrl: thumbnailUrl,  // 使用缩略图作为预览
+      }
     }))
+    imageFiles.value = imageFileList
+
+    // 处理完成，隐藏加载动画
+    isProcessingFiles.value = false
 
     // 默认任务名称为第一张图片的名称
     if (files.length > 0) {
@@ -343,20 +420,32 @@ const handleUpload = async (files: File[]) => {
       message.info('已选择多个视频，将只处理第一个视频')
     }
 
-    // 处理视频上传 - 清空图片
+    // 处理视频上传 - 清空图片（缩略图是 base64 不需要释放）
     imageFiles.value.forEach(img => {
-      URL.revokeObjectURL(img.previewUrl)
+      if (img.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(img.previewUrl)
+      }
     })
     imageFiles.value = []
+
+    // 开始处理文件，显示加载动画
+    isProcessingFiles.value = true
 
     try {
       const durationSec = await resolveVideoDuration(file)
       if (!Number.isFinite(durationSec) || durationSec <= 0) {
         message.error('无法识别视频时长，请更换文件重试')
+        isProcessingFiles.value = false
         return
       }
       if (durationSec > MAX_VIDEO_DURATION_SECONDS) {
         message.warning(`视频时长不能超过 ${MAX_VIDEO_DURATION_SECONDS / 60} 分钟`)
+        isProcessingFiles.value = false
+        return
+      }
+      if (durationSec < MIN_VIDEO_DURATION) {
+        message.warning(`视频时长不足，最少需要 ${MIN_VIDEO_DURATION} 秒`)
+        isProcessingFiles.value = false
         return
       }
 
@@ -379,7 +468,12 @@ const handleUpload = async (files: File[]) => {
       }
 
       advancedForm.value.taskName = getTaskNameFromFile(file.name)
+
+      // 处理完成，隐藏加载动画
+      isProcessingFiles.value = false
     } catch (error: any) {
+      // 发生错误时也要隐藏加载动画
+      isProcessingFiles.value = false
       message.error(error?.message || '读取视频信息失败')
     }
   }
@@ -392,9 +486,11 @@ const removeFile = () => {
   }
   revokePreviewUrl()
   uploadTask.value = null
-  // 同时清理图片
+  // 同时清理图片（缩略图是 base64 不需要释放）
   imageFiles.value.forEach(img => {
-    URL.revokeObjectURL(img.previewUrl)
+    if (img.previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(img.previewUrl)
+    }
   })
   imageFiles.value = []
   showAdvancedOptions.value = false
@@ -403,7 +499,11 @@ const removeFile = () => {
 const removeImage = (imageId: string) => {
   const index = imageFiles.value.findIndex(img => img.id === imageId)
   if (index !== -1) {
-    URL.revokeObjectURL(imageFiles.value[index].previewUrl)
+    // 缩略图是 base64 格式，不需要释放；原图 blob URL 需要释放
+    const previewUrl = imageFiles.value[index].previewUrl
+    if (previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl)
+    }
     imageFiles.value.splice(index, 1)
     // 如果删除了所有图片，清空任务名称
     if (imageFiles.value.length === 0) {
@@ -435,16 +535,19 @@ const triggerAddMoreImages = () => {
       return
     }
 
-    // 添加新图片到现有列表
-    const newImages = Array.from(files).map(f => ({
-      id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
-      name: f.name,
-      size: f.size,
-      file: f,
-      previewUrl: URL.createObjectURL(f),
+    // 添加新图片到现有列表（生成缩略图优化性能）
+    const newImageList = await Promise.all(Array.from(files).map(async (f) => {
+      const thumbnailUrl = await generateThumbnail(f, 300)
+      return {
+        id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+        name: f.name,
+        size: f.size,
+        file: f,
+        previewUrl: thumbnailUrl,  // 使用缩略图作为预览
+      }
     }))
 
-    imageFiles.value = [...imageFiles.value, ...newImages]
+    imageFiles.value = [...imageFiles.value, ...newImageList]
   }
   input.click()
 }
@@ -471,12 +574,16 @@ const cancelUpload = () => {
 }
 
 const submitProject = async () => {
-  if (!uploadTask.value) {
-    message.warning('请先选择视频文件')
+  // 检查是否有文件上传（图片或视频）
+  const hasImages = imageFiles.value.length > 0
+  const hasVideo = !!uploadTask.value
+
+  if (!hasImages && !hasVideo) {
+    message.warning('请先选择文件上传')
     return
   }
 
-  if (uploadTask.value.status === 'uploading') return
+  if (uploadTask.value?.status === 'uploading') return
 
   // 检查算力点是否充足
   if (currentPoints.value < consumedPoints.value) {
@@ -484,75 +591,167 @@ const submitProject = async () => {
     return
   }
 
-  const currentTask = uploadTask.value
-  currentTask.status = 'uploading'
-  currentTask.progress = 0
-  currentTask.abortController = new AbortController()
-
-  const formData = new FormData()
-  const normalizedTaskName = advancedForm.value.taskName.trim() || getTaskNameFromFile(currentTask.name)
-  const params = {
-    task_name: normalizedTaskName,
-    fps: 10,
-    bg_remove: !!advancedForm.value.bgRemove,
-    bg_remove_paras: DEFAULT_BG_REMOVE_PARAMS,
-    public: false,
-    user_object_description: advancedForm.value.userObjectDescription || '',
-  }
-
-
-  formData.append('params', JSON.stringify(params))
-  formData.append('videos', currentTask.file, currentTask.name)
-
-  try {
-    const token = localStorage.getItem('token') || undefined
-
-    await ApiServer.request({
-      url: API.UPLOAD_TASK,
-      method: 'post',
-      data: formData,
-      timeout: 10 * 60 * 1000, // 10分钟超时
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      signal: currentTask.abortController.signal,
-      onUploadProgress: (event) => {
-        if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
-        if (!event.total || event.total <= 0) return
-        const percent = Math.round((event.loaded / event.total) * 100)
-        uploadTask.value.progress = Math.max(0, Math.min(100, percent))
-      },
-    }, token)
-
-    if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
-    uploadTask.value.status = 'success'
-    uploadTask.value.progress = 100
-    uploadTask.value.abortController = null
-    message.success('上传成功，模型开始生成')
-    // 刷新算力点
-    pointsStore.getPoints()
-
-    window.setTimeout(() => {
-      if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
-      if (uploadTask.value.status !== 'success') return
-      revokePreviewUrl()
-      uploadTask.value = null
-      showAdvancedOptions.value = false
-    }, 1200)
-  } catch (error: any) {
-    if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
-    const isCanceled = error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError'
-    uploadTask.value.abortController = null
-
-    if (isCanceled) {
-      uploadTask.value.status = 'cancelled' 
-      uploadTask.value.progress = 0
-      message.info('已取消上传')
-      return
+  // 判断是上传图片还是视频
+  if (hasImages) {
+    uploadTask.value = {
+      id: Math.random().toString(36).slice(2),
+      name: imageFiles.value[0].name,
+      size: imageFiles.value.reduce((sum, img) => sum + img.size, 0),
+      file: imageFiles.value[0].file,
+      durationSec: 0,
+      previewUrl: imageFiles.value[0].previewUrl,
+      status: 'uploading',
+      progress: 0,
+      abortController: new AbortController(),
+      uploadType: 'image',
     }
 
-    uploadTask.value.status = 'failed'
-    message.error(error?.message || '上传失败，请重试')
+    const currentTask = uploadTask.value
+
+    const formData = new FormData()
+    const taskName = getTaskNameFromFile(imageFiles.value[0].name)
+    const normalizedTaskName = advancedForm.value.taskName.trim() || taskName
+    const params = {
+      task_name: normalizedTaskName,
+      fps: 10,
+      bg_remove: !!advancedForm.value.bgRemove,
+      bg_remove_paras: DEFAULT_BG_REMOVE_PARAMS,
+      public: false,
+      user_object_description: advancedForm.value.userObjectDescription || '',
+    }
+
+    formData.append('params', JSON.stringify(params))
+    imageFiles.value.forEach(img => {
+      formData.append('images', img.file, img.name)
+    })
+
+    try {
+      const token = localStorage.getItem('token') || undefined
+
+      await ApiServer.request({
+        url: API.UPLOAD_IMAGES,
+        method: 'post',
+        data: formData,
+        timeout: 10 * 60 * 1000,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        signal: currentTask.abortController!.signal,
+        onUploadProgress: (event) => {
+          if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+          if (!event.total || event.total <= 0) return
+          const percent = Math.round((event.loaded / event.total) * 100)
+          uploadTask.value.progress = Math.max(0, Math.min(100, percent))
+        },
+      }, token)
+
+      if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+      uploadTask.value.status = 'success'
+      uploadTask.value.progress = 100
+      message.success('上传成功，模型开始生成')
+      pointsStore.getPoints()
+
+      window.setTimeout(() => {
+        if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+        if (uploadTask.value.status !== 'success') return
+        // 缩略图是 base64 不需要释放
+        imageFiles.value.forEach(img => {
+          if (img.previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(img.previewUrl)
+          }
+        })
+        imageFiles.value = []
+        revokePreviewUrl()
+        uploadTask.value = null
+        showAdvancedOptions.value = false
+      }, 1200)
+    } catch (error: any) {
+      if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+      const isCanceled = error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError'
+      uploadTask.value.abortController = null
+
+      if (isCanceled) {
+        uploadTask.value.status = 'cancelled'
+        uploadTask.value.progress = 0
+        message.info('已取消上传')
+        return
+      }
+
+      uploadTask.value.status = 'failed'
+      message.error(error?.message || '上传失败，请重试')
+    }
+  } else if (hasVideo && uploadTask.value) {
+    // ========== 上传视频（原有逻辑）==========
+    const currentTask = uploadTask.value
+    currentTask.status = 'uploading'
+    currentTask.progress = 0
+    currentTask.abortController = new AbortController()
+
+    const formData = new FormData()
+    const taskName = getTaskNameFromFile(currentTask.name)
+    const normalizedTaskName = advancedForm.value.taskName.trim() || taskName
+    const params = {
+      task_name: normalizedTaskName,
+      fps: 10,
+      bg_remove: !!advancedForm.value.bgRemove,
+      bg_remove_paras: DEFAULT_BG_REMOVE_PARAMS,
+      public: false,
+      user_object_description: advancedForm.value.userObjectDescription || '',
+    }
+
+    formData.append('params', JSON.stringify(params))
+    formData.append('videos', currentTask.file, currentTask.name)
+
+    try {
+      const token = localStorage.getItem('token') || undefined
+
+      await ApiServer.request({
+        url: API.UPLOAD_TASK,
+        method: 'post',
+        data: formData,
+        timeout: 10 * 60 * 1000,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        signal: currentTask.abortController.signal,
+        onUploadProgress: (event) => {
+          if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+          if (!event.total || event.total <= 0) return
+          const percent = Math.round((event.loaded / event.total) * 100)
+          uploadTask.value.progress = Math.max(0, Math.min(100, percent))
+        },
+      }, token)
+
+      if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+      uploadTask.value.status = 'success'
+      uploadTask.value.progress = 100
+      uploadTask.value.abortController = null
+      message.success('上传成功，模型开始生成')
+      // 刷新算力点
+      pointsStore.getPoints()
+
+      window.setTimeout(() => {
+        if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+        if (uploadTask.value.status !== 'success') return
+        revokePreviewUrl()
+        uploadTask.value = null
+        showAdvancedOptions.value = false
+      }, 1200)
+    } catch (error: any) {
+      if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
+      const isCanceled = error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError'
+      uploadTask.value.abortController = null
+
+      if (isCanceled) {
+        uploadTask.value.status = 'cancelled'
+        uploadTask.value.progress = 0
+        message.info('已取消上传')
+        return
+      }
+
+      uploadTask.value.status = 'failed'
+      message.error(error?.message || '上传失败，请重试')
+    }
   }
 }
 
@@ -628,6 +827,35 @@ onBeforeUnmount(() => {
 .back-btn:hover {
   background: var(--glass-surface-hover);
   color: var(--text-primary);
+}
+
+.upload-area-wrapper {
+  position: relative;
+}
+
+.processing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.processing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.processing-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .upload-progress-wrapper {

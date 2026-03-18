@@ -1795,7 +1795,7 @@ export default {
         }
       }
       // 开始播放（会重新设置zoomRange为0）
-      this.isLoopPlaying = true;
+      this.isLoopPlaying = false;
     },
     previewEffect(effectId) {
       this.selectedVideoEffect = effectId;

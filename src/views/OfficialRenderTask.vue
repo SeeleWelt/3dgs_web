@@ -118,12 +118,12 @@
             <a-select-option v-if="customMotion" value="custom">自定义运镜</a-select-option>
           </a-select>
         </div>
-        <div class="setting-item">
+        <!-- <div class="setting-item">
           <a-button type="primary" block @click="openCustomMotion" :disabled="isRecordingVideo || isEncodingVideo" class="custom-motion-btn">
             <template #icon><VideoCameraOutlined /></template>
             自定义运镜
           </a-button>
-        </div>
+        </div> -->
 
         <div class="setting-divider"></div>
 
@@ -165,16 +165,16 @@
             @pure-color-change="updateBackgroundColor"
           />
         </div>
-        <div class="setting-item" style="display: flex; flex-direction: column; gap: 5px">
+        <!-- <div class="setting-item" style="display: flex; flex-direction: column; gap: 5px">
           <a-button type="default" block @click="setInitialCameraPosition" :disabled="!skullEntity || !cameraControls" class="custom-motion-btn">
             <template #icon><CameraOutlined /></template>
             设置初始化位置
           </a-button>
           <div class="setting-item-tip">设置当前相机位置为初始化位置</div>
-        </div>
+        </div> -->
       </div>
       <div class="panel-footer">
-        <a-button type="primary" size="small" @click.stop="saveSettings">保存设置</a-button>
+        <!-- <a-button type="primary" size="small" @click.stop="saveSettings">保存设置</a-button> -->
         <a-button size="small" @click.stop="resetAllSettings">重置参数</a-button>
       </div>
     </div>
@@ -1611,28 +1611,30 @@ export default {
       this.updateAnnotationVisibility();
     },
     closeSettingsPanel() {
-      if (this.hasSettingsChanged()) {
-        Modal.confirm({
-          title: '参数设置已修改',
-          content: '参数设置相比进入时发生了变化，是否保存更改？',
-          okText: '保存',
-          cancelText: '不保存',
-          onOk: () => {
-            this.saveSettings();
-            this.isSettingsMenuOpen = false;
-            this.updateAnnotationVisibility();
-          },
-          onCancel: () => {
-            this.restoreSettings();
-            this.isSettingsMenuOpen = false;
-            this.updateAnnotationVisibility();
-          },
-          zIndex: 1002,
-        });
-      } else {
-        this.isSettingsMenuOpen = false;
-        this.updateAnnotationVisibility();
-      }
+      this.isSettingsMenuOpen = false;
+      this.updateAnnotationVisibility();
+      // if (this.hasSettingsChanged()) {
+      //   Modal.confirm({
+      //     title: '参数设置已修改',
+      //     content: '参数设置相比进入时发生了变化，是否保存更改？',
+      //     okText: '保存',
+      //     cancelText: '不保存',
+      //     onOk: () => {
+      //       this.saveSettings();
+      //       this.isSettingsMenuOpen = false;
+      //       this.updateAnnotationVisibility();
+      //     },
+      //     onCancel: () => {
+      //       this.restoreSettings();
+      //       this.isSettingsMenuOpen = false;
+      //       this.updateAnnotationVisibility();
+      //     },
+      //     zIndex: 1002,
+      //   });
+      // } else {
+      //   this.isSettingsMenuOpen = false;
+      //   this.updateAnnotationVisibility();
+      // }
     },
     scheduleAutoLoopPlay(delayMs = 400) {
       this.clearAutoLoopPlayTimer();
@@ -1783,7 +1785,7 @@ export default {
         }
       }
       // 开始播放（会重新设置zoomRange为0）
-      this.isLoopPlaying = true;
+      this.isLoopPlaying = false;
     },
     previewEffect(effectId) {
       this.selectedVideoEffect = effectId;

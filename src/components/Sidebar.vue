@@ -146,9 +146,24 @@ const Explore4DIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', strok
 ])
 
 // API Icon
-const APIIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+const DevelopIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
   h('polyline', { points: '16 18 22 12 16 6' }),
   h('polyline', { points: '8 6 2 12 8 18' })
+])
+
+const APIIcon = () => h('svg', { 
+  viewBox: '0 0 1024 1024', 
+  fill: '#8a8a8a', 
+  'stroke-width': '1',  // 原SVG未指定stroke，这里设为1保持默认
+  version: '1.1',
+  xmlns: 'http://www.w3.org/2000/svg',
+  width: '18',
+  height: '18'
+}, [
+  h('path', { 
+    d: 'M917.7 148.8l-42.4-42.4c-1.6-1.6-3.6-2.3-5.7-2.3s-4.1 0.8-5.7 2.3l-76.1 76.1c-33.7-22.9-72.9-34.3-112.1-34.3-51.2 0-102.4 19.5-141.5 58.6L432.3 308.7c-3.1 3.1-3.1 8.2 0 11.3L704 591.7c1.6 1.6 3.6 2.3 5.7 2.3 2 0 4.1-0.8 5.7-2.3l101.9-101.9c68.9-69 77-175.7 24.3-253.5l76.1-76.1c3.1-3.2 3.1-8.3 0-11.4zM769.1 441.7l-59.4 59.4-186.8-186.8 59.4-59.4c24.9-24.9 58.1-38.7 93.4-38.7 35.3 0 68.4 13.7 93.4 38.7 24.9 24.9 38.7 58.1 38.7 93.4 0 35.3-13.8 68.4-38.7 93.4zM578.9 546.7c-3.1-3.1-8.2-3.1-11.3 0L501 613.3 410.7 523l66.7-66.7c3.1-3.1 3.1-8.2 0-11.3L441 408.6c-3.1-3.1-8.2-3.1-11.3 0L363 475.3l-43-43c-1.6-1.6-3.6-2.3-5.7-2.3-2 0-4.1 0.8-5.7 2.3L206.8 534.2c-68.9 69-77 175.7-24.3 253.5l-76.1 76.1c-3.1 3.1-3.1 8.2 0 11.3l42.4 42.4c1.6 1.6 3.6 2.3 5.7 2.3s4.1-0.8 5.7-2.3l76.1-76.1c33.7 22.9 72.9 34.3 112.1 34.3 51.2 0 102.4-19.5 141.5-58.6l101.9-101.9c3.1-3.1 3.1-8.2 0-11.3l-43-43 66.7-66.7c3.1-3.1 3.1-8.2 0-11.3l-36.6-36.2zM441.7 769.1c-24.9 24.9-58.1 38.7-93.4 38.7-35.3 0-68.4-13.7-93.4-38.7-24.9-24.9-38.7-58.1-38.7-93.4 0-35.3 13.7-68.4 38.7-93.4l59.4-59.4 186.8 186.8-59.4 59.4z',
+    fill: '#515151'
+  })
 ])
 
 // Blender Icon
@@ -170,7 +185,7 @@ const UnrealIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 
 const TutorialIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
   h('circle', { cx: '12', cy: '12', r: '10' }),
   h('path', { d: 'M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3' }),
-  h('line', { x1: '12', y1: '17', x2: '12.01', y2: '17' })
+  h('line', { x1: '12.5', y1: '16', x2: '12.5', y2: '18' })
 ])
 
 // Settings Icon
@@ -203,7 +218,7 @@ const mainMenu = computed(() => [
 const toolsMenu = computed(() => [
   { name: 'profile', label: '个人中心', path: '/tools/profile', icon: ProfileIcon },
   { name: 'invite', label: '邀请链接', path: '/tools/invite', icon: InviteIcon },
-  { name: 'developer', label: '开发者中心', path: '/tools/developer', icon: APIIcon },
+  { name: 'developer', label: '开发者中心', path: '/tools/developer', icon: DevelopIcon },
   { name: 'api', label: t('sidebar.api'), path: '/tools/api', icon: APIIcon },
   // { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },
   // { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },

@@ -209,7 +209,6 @@ async function submitFeedback() {
 .feedback-page {
   min-height: calc(100vh - 64px);
   padding: 24px;
-  background: var(--bg-primary);
 }
 
 /* 页面头部 */

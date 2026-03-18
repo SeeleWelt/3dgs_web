@@ -1,7 +1,7 @@
 <template>
   <div class="upload-progress">
     <div class="progress-header">
-      <h3 class="progress-title">{{ task ? '视频任务' : '图片任务' }}</h3>
+      <h3 class="progress-title">{{ uploadTypeText }}</h3>
       <div class="header-actions">
         <!-- 算力点不足警告 -->
         <div v-if="isPointsInsufficient" class="points-warning">
@@ -26,7 +26,7 @@
     </div>
 
     <!-- 视频上传展示 -->
-    <div v-if="task" class="file-list">
+    <div v-if="task && task.uploadType !== 'image'" class="file-list">
       <div class="file-item" :class="task.status">
         <div class="video-preview" v-if="task.previewUrl">
           <button
@@ -90,34 +90,116 @@
 
     <!-- 图片上传展示 -->
     <div v-if="imageFiles && imageFiles.length > 0" class="file-list image-list">
+      <!-- 图片数量统计 -->
+      <div class="image-count-info">
+        <span>已选择 <strong>{{ imageFiles.length }}</strong> 张图片</span>
+        <span v-if="imageFiles.length > MAX_DISPLAY_IMAGES && !showAllImages" class="expand-hint" @click="showAllImages = true">
+          <span>点击展开全部</span>
+          <DownOutlined />
+        </span>
+      </div>
+
       <div class="image-grid">
-        <div
-          v-for="image in imageFiles"
-          :key="image.id"
-          class="image-item"
-        >
-          <div class="image-preview">
-            <a-image
-              :src="image.previewUrl"
-              :alt="image.name"
-              class="preview-img"
-            />
-            <button
-              class="preview-remove"
-              title="移除图片"
-              @click.stop="$emit('remove-image', image.id)"
-            >
-              <CloseOutlined />
-            </button>
-            <div class="image-overlay">
-              <span class="image-name" :title="image.name">{{ image.name }}</span>
+        <!-- 展开模式：显示所有图片 -->
+        <template v-if="showAllImages">
+          <div
+            v-for="image in imageFiles"
+            :key="image.id"
+            class="image-item"
+          >
+            <div class="image-preview">
+              <a-image
+                :src="image.previewUrl"
+                :alt="image.name"
+                class="preview-img"
+              />
+              <button
+                class="preview-remove"
+                title="移除图片"
+                :disabled="imageUploadStatus?.status === 'uploading'"
+                @click.stop="$emit('remove-image', image.id)"
+              >
+                <CloseOutlined />
+              </button>
+              <div class="image-overlay">
+                <span class="image-name" :title="image.name">{{ image.name }}</span>
+              </div>
             </div>
           </div>
-        </div>
+          <!-- 收起按钮 -->
+          <div
+            v-if="imageFiles.length > MAX_DISPLAY_IMAGES"
+            class="image-item collapse-btn"
+            @click="showAllImages = false"
+          >
+            <div class="collapse-content">
+              <UpOutlined />
+              <span>收起</span>
+            </div>
+          </div>
+        </template>
+        <!-- 收起模式：只显示前几张 -->
+        <template v-else>
+          <div
+            v-for="image in displayedImages"
+            :key="image.id"
+            class="image-item"
+          >
+            <div class="image-preview">
+              <a-image
+                :src="image.previewUrl"
+                :alt="image.name"
+                class="preview-img"
+              />
+              <button
+                class="preview-remove"
+                title="移除图片"
+                :disabled="imageUploadStatus?.status === 'uploading'"
+                @click.stop="$emit('remove-image', image.id)"
+              >
+                <CloseOutlined />
+              </button>
+              <div class="image-overlay">
+                <span class="image-name" :title="image.name">{{ image.name }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- 更多图片按钮 -->
+          <div
+            v-if="imageFiles.length > MAX_DISPLAY_IMAGES"
+            class="image-item more-images"
+            @click="showAllImages = true"
+          >
+            <span class="more-count">+{{ imageFiles.length - MAX_DISPLAY_IMAGES }}</span>
+          </div>
+        </template>
         <!-- 添加更多图像按钮 -->
-        <div class="add-more-image" @click="$emit('add-image')">
+        <div
+          v-if="!imageUploadStatus || imageUploadStatus.status !== 'uploading'"
+          class="add-more-image"
+          @click="$emit('add-image')"
+        >
           <PlusOutlined />
           <span>添加更多图像</span>
+        </div>
+      </div>
+
+      <!-- 图片上传进度条 -->
+      <div v-if="imageUploadStatus" class="image-upload-status">
+        <div class="status-header">
+          <span class="status-badge" :class="`status-${imageUploadStatus.status}`">
+            {{ statusTextMap[imageUploadStatus.status] }}
+          </span>
+          <span v-if="imageUploadStatus.status === 'uploading'" class="upload-percent">
+            上传中... {{ Math.round(imageUploadStatus.progress) }}%
+          </span>
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            :style="{ width: `${imageUploadStatus.progress}%` }"
+            :class="{ completed: imageUploadStatus.status === 'success' }"
+          />
         </div>
       </div>
     </div>
@@ -134,10 +216,10 @@
           :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false)"
           @click="$emit('remove')"
         >
-          {{ task ? '移除视频' : '移除全部图片' }}
+          {{ isVideoMode ? '移除视频' : '移除全部图片' }}
         </button>
         <button
-          v-if="task?.status === 'uploading'"
+          v-if="isUploading"
           class="btn btn-danger"
           @click="$emit('cancel')"
         >
@@ -148,7 +230,7 @@
           class="btn btn-primary"
           :disabled="!canSubmit"
           @click="$emit('submit')"
-      >
+        >
           开始生成模型
         </button>
       </div>
@@ -159,7 +241,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons-vue'
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
 
@@ -171,6 +253,7 @@ interface UploadTaskView {
   previewUrl: string
   progress: number
   status: UploadTaskStatus
+  uploadType?: 'video' | 'image'
 }
 
 interface ImageFile {
@@ -229,13 +312,52 @@ defineExpose({
   refreshQueue: fetchQueueLength
 })
 
+// 图片展示相关
+const MAX_DISPLAY_IMAGES = 25
+const showAllImages = ref(false)
+const displayedImages = computed(() => {
+  if (showAllImages.value) return props.imageFiles
+  return props.imageFiles.slice(0, MAX_DISPLAY_IMAGES)
+})
+
 const hasFiles = computed(() => {
   return !!props.task || (props.imageFiles && props.imageFiles.length > 0)
+})
+
+// 判断当前上传类型
+const uploadTypeText = computed(() => {
+  if (props.task) return '视频任务'
+  if (props.imageFiles && props.imageFiles.length > 0) return '图片任务'
+  return '任务'
+})
+
+// 判断是否为视频模式
+const isVideoMode = computed(() => {
+  return !!props.task && props.task.uploadType !== 'image'
+})
+
+// 图片上传时的任务状态（从 imageFiles 推断）
+const imageUploadStatus = computed(() => {
+  if (props.task?.uploadType === 'image') {
+    return props.task
+  }
+  return null
+})
+
+// 判断是否有上传正在进行
+const isUploading = computed(() => {
+  if (props.task?.status === 'uploading') return true
+  if (imageUploadStatus.value?.status === 'uploading') return true
+  return false
 })
 
 const canSubmit = computed(() => {
   if (props.task) {
     return ['pending', 'failed', 'cancelled'].includes(props.task.status)
+  }
+  // 图片模式：没有上传任务或任务已完成/失败/取消时可以提交
+  if (imageUploadStatus.value) {
+    return ['pending', 'failed', 'cancelled', 'success'].includes(imageUploadStatus.value.status)
   }
   return props.imageFiles && props.imageFiles.length > 0
 })
@@ -578,6 +700,83 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   border-radius: 12px;
   padding: 16px;
   border: 1px solid var(--glass-border);
+}
+
+.image-count-info {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.image-count-info strong {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.expand-hint {
+  margin-left: 12px;
+  font-size: 12px;
+  color: var(--accent-blue);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.expand-hint:hover {
+  text-decoration: underline;
+}
+
+/* 更多图片按钮 */
+.more-images {
+  background: var(--glass-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 收起按钮 */
+.collapse-btn {
+  background: var(--glass-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapse-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.more-count {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* 图片上传状态 */
+.image-upload-status {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--glass-surface);
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.image-upload-status .status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.image-upload-status .upload-percent {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .image-grid {
