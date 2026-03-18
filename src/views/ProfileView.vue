@@ -285,7 +285,7 @@
                 type="tel"
                 class="form-input phone-input"
                 placeholder="请输入手机号"
-                maxlength="16"
+                :maxlength="16"
                 @keypress.enter="goBindPhoneNext"
               >
                 <template #prefix>
