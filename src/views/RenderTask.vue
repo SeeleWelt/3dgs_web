@@ -244,7 +244,7 @@
       <div class="panel-footer">
         <a-button size="small" @click.stop="resetEntity">重置</a-button>
         <a-button type="primary" size="small" @click.stop="saveCropSettings">保存</a-button>
-        <a-button type="primary" size="small" @click.stop="showCoverConfirmModal">保存并覆盖</a-button>
+        <!-- <a-button type="primary" size="small" @click.stop="showCoverConfirmModal">保存并覆盖</a-button> -->
       </div>
     </div>
 
@@ -1199,6 +1199,7 @@ export default {
       annotationMenuEntity: null,
       showSnapshotFlash: false,
       initialCameraPose:{},
+      firstIn: true,
     };
   },
   watch:{
@@ -1676,7 +1677,6 @@ export default {
         this.stopLoopPlayback(false);
         this.showControlsTimer();
         return;
-
       }
       
       const inited = this.initLoopPlaybackState();
@@ -1705,21 +1705,22 @@ export default {
             return;
           }
         }
-        if (!shouldDelayStart && !this.hasClickAnnotation) {
+        if (!shouldDelayStart && !this.hasClickAnnotation && !this.firstIn) {
           this.applyCustomMotionAtTime(this.orbitPlaybackAngle, true);
           this.isLoopPlaying = true;
           return;
         }
+        this.firstIn = false;
         // 应用当前位置
         this.applyCustomMotionAtTime(this.orbitPlaybackAngle, false);
+        // 禁用缩放（设置zoomRange最小值为0）- 在设置timer之前保存，以便在timer被清除时也能恢复
+        if (this.cameraControls) {
+          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        }
         this.loopPlayStartTimer = setTimeout(() => {
           this.loopPlayStartTimer = null;
           if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
-          // 禁用缩放
-          if (this.cameraControls) {
-            this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-            this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
-          }
           this.isLoopPlaying = true;
         }, this.loopPlayStartDelayMs);
         this.hasClickAnnotation = false;
@@ -1743,11 +1744,6 @@ export default {
       this.loopPlayStartTimer = setTimeout(() => {
         this.loopPlayStartTimer = null;
         if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
-        // 禁用缩放
-        if (this.cameraControls) {
-          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
-        }
         this.isLoopPlaying = true;
       }, this.loopPlayStartDelayMs);
       this.hasClickAnnotation = false;

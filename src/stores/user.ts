@@ -33,20 +33,35 @@ export const useUserStore = defineStore('user', () => {
     return value.length > 0 ? value : generateRandomNickname()
   }
 
-  const buildUserFromResponse = (data: any, account: string): UserInfoState => ({
-    headimg: data?.headimg ?? '/default.svg',
-    logoutTime: data?.logoutTime ?? null,
-    loginTime: new Date().toISOString(),
-    nickname: normalizeNickname(data?.nickname),
-    phone: data?.phone ?? null,
-    point: typeof data?.point === 'number' ? data.point : 0,
-    token: data?.token,
-    userStatus: typeof data?.userStatus === 'number' ? data.userStatus : (data?.status || 0),
-    username: data?.username ?? data?.name ?? account,
-    email: data?.email ?? account,
-    name: data?.name ?? data?.username ?? null,
-    isPro: data?.isPro === true || data?.isPro === 1
-  })
+  // 从username提取email，例如: user_1910230934@qq.com -> 1910230934@qq.com
+  const extractEmailFromUsername = (username: string | undefined): string | null => {
+    if (!username) return null
+    // 如果格式是 user_数字@域名，提取@后面的部分作为邮箱
+    const match = username.match(/^user_(\d+@.+)$/i)
+    if (match) {
+      return match[1]
+    }
+    return null
+  }
+
+  const buildUserFromResponse = (data: any, account: string): UserInfoState => {
+    // 尝试从username提取email
+    const extractedEmail = extractEmailFromUsername(data?.username ?? data?.name)
+    return {
+      headimg: data?.headimg ?? '/default.svg',
+      logoutTime: data?.logoutTime ?? null,
+      loginTime: new Date().toISOString(),
+      nickname: normalizeNickname(data?.nickname),
+      phone: data?.phone ?? null,
+      point: typeof data?.point === 'number' ? data.point : 0,
+      token: data?.token,
+      userStatus: typeof data?.userStatus === 'number' ? data.userStatus : (data?.status || 0),
+      username: data?.username ?? data?.name ?? account,
+      email: data?.email ?? extractedEmail ?? account,
+      name: data?.name ?? data?.username ?? null,
+      isPro: data?.isPro === true || data?.isPro === 1
+    }
+  }
 
   const saveLoginState = (user: any) => {
     const normalizedUser = {
@@ -504,6 +519,7 @@ export const useUserStore = defineStore('user', () => {
     sendEmailCode,
     bindPhone,
     buildUserFromResponse,
+    saveLoginState,
     // 登录
   }  
 })

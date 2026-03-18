@@ -1697,14 +1697,14 @@ export default {
         }
         // 应用当前位置，使用非immediate模式实现平滑过渡
         this.applyCustomMotionAtTime(this.orbitPlaybackAngle, false);
+        // 禁用缩放（设置zoomRange最小值为0）- 在设置timer之前保存，以便在timer被清除时也能恢复
+        if (this.cameraControls) {
+          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        }
         this.loopPlayStartTimer = setTimeout(() => {
           this.loopPlayStartTimer = null;
           if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
-          // 禁用缩放（设置zoomRange最小值为0）
-          if (this.cameraControls) {
-            this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-            this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
-          }
           this.isLoopPlaying = true;
         }, this.loopPlayStartDelayMs);
         this.hasClickAnnotation = false;
@@ -1733,11 +1733,6 @@ export default {
       this.loopPlayStartTimer = setTimeout(() => {
         this.loopPlayStartTimer = null;
         if (!this.skullEntity || !this.viewerControls.isOrbitMode || this.isRecordingVideo || this.isEncodingVideo) return;
-        // 禁用缩放
-        if (this.cameraControls) {
-          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
-        }
         this.isLoopPlaying = true;
       }, this.loopPlayStartDelayMs);
       this.hasClickAnnotation = false;

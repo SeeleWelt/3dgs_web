@@ -56,7 +56,7 @@
           :step="0.1"
           :disabled="!skullEntity || !viewerControls.isOrbitMode"
           @change="handleOrbitProgressChange"
-          @afterChange="isLoopPlaying = false"
+          @afterChange="handleOrbitProgressAfterChange"
           class="orbit-slider"
         />
         <span class="time-display">{{ formatTime(orbitCurrentTime) }} / {{ formatTime(orbitTotalTime) }}</span>
@@ -388,6 +388,7 @@ export default {
       orbitPlaybackFocus: null,
       orbitPlaybackVector: null,
       originalZoomRange: null, // 保存原始zoomRange
+      firstIn: true, // 首次进入标记
       _isDraggingSlider: false, // 是否正在拖动进度条
       orbitMotionType: 'dolly', // 运镜类型: orbit, ellipse, spiral, dolly, swing, figureEight, custom
       orbitMotionParams: {
@@ -745,20 +746,22 @@ export default {
         const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
         this.forceStartInteractionFlag = false;
         this.cameraControls?.resetUserInteractionFlag?.();
-        if (!shouldDelayStart && !this.hasClickAnnotation) {
+        if (!shouldDelayStart && !this.hasClickAnnotation && !this.firstIn) {
           this.applyCustomMotionAtTime(this.orbitPlaybackAngle, true);
           this.isLoopPlaying = true;
           return;
         }
+        this.firstIn = false;
         // 应用当前位置，使用非immediate模式实现平滑过渡
         this.applyCustomMotionAtTime(this.orbitPlaybackAngle, false);
+        // 禁用缩放（设置zoomRange最小值为0）- 在设置timer之前保存，以便在timer被清除时也能恢复
+        if (this.cameraControls) {
+          this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+          this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+        }
         this.loopPlayStartTimer = setTimeout(() => {
           this.loopPlayStartTimer = null;
           if (!this.skullEntity || !this.viewerControls.isOrbitMode) return;
-          if (this.cameraControls) {
-            this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
-            this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
-          }
           this.isLoopPlaying = true;
         }, this.loopPlayStartDelayMs);
         this.hasClickAnnotation = false;
@@ -772,6 +775,11 @@ export default {
       const shouldDelayStart = !!this.cameraControls?.hasUserInteracted || this.forceStartInteractionFlag;
       this.forceStartInteractionFlag = false;
       this.cameraControls?.resetUserInteractionFlag?.();
+      // 禁用缩放（设置zoomRange最小值为0）- 在设置timer之前保存，以便在timer被清除时也能恢复
+      if (this.cameraControls) {
+        this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+        this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+      }
       if (!shouldDelayStart && !this.hasClickAnnotation) {
         this.applyOrbitAngle(startAngle, true);
         this.isLoopPlaying = true;
@@ -818,6 +826,19 @@ export default {
       this.orbitPlaybackTravelled = 0;
       this.orbitPlaybackSessionStartAngle = clamped;
       this.applyOrbitAngle(clamped);
+    },
+    // 进度条拖动结束
+    handleOrbitProgressAfterChange() {
+      // 恢复缩放
+      if (this._isDraggingSlider) {
+        this._isDraggingSlider = false;
+        if (this.cameraControls && this.originalZoomRange) {
+          this.cameraControls.zoomRange = new pc.Vec2(this.originalZoomRange.x, this.originalZoomRange.y);
+          this.originalZoomRange = null;
+        }
+      }
+      // 开始播放（会重新设置zoomRange为0）
+      this.isLoopPlaying = false;
     },
     clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
