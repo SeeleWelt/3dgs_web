@@ -699,9 +699,9 @@ const backToEmailForm = () => {
   pendingRegister.value = { email: '', password: '' }
 }
 
-const persistGoogleUser = (payload: { token?: string; user?: Record<string, any> }) => {
+const persistGoogleUser = (payload: any) => {
   const token = payload?.token
-  const user = { ...(payload?.user || { headimg: payload.user?.headimg, nickname: payload.user?.nickname, point: payload.user?.point, username: payload.user?.username }), ...(token ? { token } : {}) }
+  const user = { ...(payload?.user || { headimg: payload.headimg, nickname: payload.nickname, point: payload.point, username: payload.username }), ...(token ? { token } : {}) }
 
   if (token) {
     localStorage.setItem('token', token)
