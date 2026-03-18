@@ -307,10 +307,10 @@ export const useUserStore = defineStore('user', () => {
       }else{
         switch(err?.statusCode){
           case 400:
-            message.error('请求错误，请检查输入')
+            message.error('参数有误')
             break
           case 401:
-            message.error('原密码错误')
+            message.error('未登录或登录状态已过期，请重新登录')
             logout()
             break
           case 403:
@@ -342,7 +342,7 @@ export const useUserStore = defineStore('user', () => {
       }else{
         switch(err?.statusCode){
           case 400:
-            message.error('请求错误，请检查输入')
+            message.error('参数有误')
             break
           case 401:
             message.error('未授权，请重新登录')
@@ -385,14 +385,10 @@ export const useUserStore = defineStore('user', () => {
             message.error('请求错误，请检查输入')
             break
           case 401:
-            message.error('未授权，请重新登录')
-            logout()
+            message.error('原密码错误')
             break
-          case 403:
-            message.error('没有权限执行此操作')
-            break
-          case 421:
-            message.error('密码必须至少8个字符，包含大写字母、小写字母和数字')
+          case 404:
+            message.error('对应用户不存在')
             break
           default:
             message.error('修改密码失败')
