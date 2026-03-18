@@ -56,11 +56,11 @@
       <!-- User Menu -->
       <div class="user-menu-wrapper" ref="userMenuRef">
         <div class="user-avatar" @click="toggleUserMenu">
-          <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="36" @loadError="handleAvatarError" />
-          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <a-avatar :src="userStore.userInfo?.headimg" :size="36" @loadError="handleAvatarError" />
+          <!-- <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
-          </svg>
+          </svg> -->
         </div>
 
         <!-- User Dropdown Menu -->
@@ -69,11 +69,11 @@
             <!-- User Info -->
             <div class="user-info" @click="navigateTo('/tools/profile')">
               <div class="user-avatar-large">
-                <a-avatar v-if="hasAvatar" :src="userStore.userInfo?.headimg" :size="48" :loadError="handleAvatarError" />
-                <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <a-avatar :src="userStore.userInfo?.headimg" :size="48" :loadError="handleAvatarError" />
+                <!-- <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
-                </svg>
+                </svg> -->
               </div>
               <div class="user-details">
                 <span class="user-email">{{ userStore.userInfo?.nickname }}</span>
