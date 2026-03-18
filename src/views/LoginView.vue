@@ -701,14 +701,11 @@ const backToEmailForm = () => {
 
 const persistGoogleUser = (payload: any) => {
   const token = payload?.token
-  const user = { ...(payload?.user || { headimg: payload.headimg, nickname: payload.nickname, point: payload.point, username: payload.username }), ...(token ? { token } : {}) }
-
+  const user = userStore.buildUserFromResponse(payload, "");
   if (token) {
     localStorage.setItem('token', token)
   }
-
-  localStorage.setItem('user', JSON.stringify(user))
-  userStore.init()
+    localStorage.setItem('user', JSON.stringify(user))
 }
 
 const handleGoogleCredential = async ({ credential }: { credential: string }) => {

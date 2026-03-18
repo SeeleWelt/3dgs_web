@@ -502,7 +502,8 @@ export const useUserStore = defineStore('user', () => {
     modifyPassword,
     sendPhoneCode,
     sendEmailCode,
-    bindPhone
+    bindPhone,
+    buildUserFromResponse,
     // 登录
   }  
 })

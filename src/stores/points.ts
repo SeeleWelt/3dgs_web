@@ -4,7 +4,6 @@ import API from '../utils/api'
 import { ApiServer } from '@/utils/taskService'
 import { message } from 'ant-design-vue'
 
-const token = localStorage.getItem('token') || undefined
 
 export const usePointsStore = defineStore('points', () => {
     const current_points = ref(0)
@@ -18,7 +17,7 @@ export const usePointsStore = defineStore('points', () => {
             {
                 method: 'POST',
                 url: API.BASE_URL + API.GET_POINTS_DAILY_LOG,
-            }, token
+            }
         )
         console.log(response.data)
         points_dayly_log.value = response.data.message
@@ -31,7 +30,7 @@ export const usePointsStore = defineStore('points', () => {
             {
                 method: 'GET',
                 url: API.BASE_URL + API.GET_POINTS_ALL_LOG,
-            }, token
+            }
         )
         console.log(response.data)
         points_logs.value = response.data.list
@@ -42,7 +41,7 @@ export const usePointsStore = defineStore('points', () => {
             {
                 method: 'POST',
                 url: API.BASE_URL + API.GET_POINTS_RULES,
-            }, token
+            }
         )
         console.log(response.data)
         points_rules.value = response.data.data
@@ -53,7 +52,7 @@ export const usePointsStore = defineStore('points', () => {
             {
                 method: 'GET',
                 url: API.BASE_URL + API.GET_POINTS,
-            }, token
+            }
         )
         console.log('获取积分:', response.data)
         current_points.value = response.data.compute_credits
