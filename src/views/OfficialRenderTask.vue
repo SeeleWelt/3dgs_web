@@ -2728,13 +2728,20 @@ export default {
           this.viewerControls.isOrbitMode = (mode === 'orbit');
         });
         this.updateCameraControls();
-        this.lightEntity = new pc.Entity('light');
-        this.lightEntity.addComponent('light', {
-          type: 'directional',
-          shadowBias: 0.2,
-          shadowResolution: 2048
-        });
-        this.app.root.addChild(this.lightEntity);
+        // 添加环境光，让模型更亮
+        this.app.scene.ambientLight = new pc.Color(1, 1, 1);
+
+        // 主光源 - 更亮的平行光
+        // this.lightEntity = new pc.Entity('light');
+        // this.lightEntity.addComponent('light', {
+        //   type: 'directional',
+        //   color: new pc.Color(1, 1, 1),
+        //   intensity: 3.0,
+        //   castShadows: true,
+        //   shadowBias: 0.2,
+        //   shadowResolution: 2048
+        // });
+        // this.app.root.addChild(this.lightEntity);
         const gridEntity = new pc.Entity('grid');
         gridEntity.addComponent('script');
         gridEntity.script.create(Grid, {
@@ -3058,6 +3065,7 @@ export default {
           this.initialCameraPose = cameraPose
           this.saveSettings(false);
         }
+
         // 保存cameraPose用于传递给CustomMotion
         this.customMotionCameraPose = cameraPose;
         this.initLoopPlaybackState(cameraPose);
@@ -3823,7 +3831,7 @@ export default {
     // await loadLocalModel();
 
     // 监听浏览器关闭/刷新事件
-    window.addEventListener('beforeunload', this.handleBeforeUnload);
+    // window.addEventListener('beforeunload', this.handleBeforeUnload);
   },
   beforeUnmount() {
     window.removeEventListener('beforeunload', this.handleBeforeUnload);

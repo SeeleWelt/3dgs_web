@@ -983,13 +983,14 @@ export default {
         });
         this.updateCameraControls();
 
-        this.lightEntity = new pc.Entity('light');
-        this.lightEntity.addComponent('light', {
-          type: 'directional',
-          shadowBias: 0.2,
-          shadowResolution: 2048
-        });
-        this.app.root.addChild(this.lightEntity);
+        // this.lightEntity = new pc.Entity('light');
+        // this.lightEntity.addComponent('light', {
+        //   type: 'directional',
+        //   shadowBias: 0.2,
+        //   shadowResolution: 2048
+        // });
+        // this.app.root.addChild(this.lightEntity);
+        this.app.scene.ambientLight = new pc.Color(1, 1, 1);
 
         // 创建网格
         this.gridEntity = new pc.Entity('grid');
