@@ -367,7 +367,7 @@
           设置
         </a-button>
       </a-tooltip>
-      <a-tooltip title="模型编辑" placement="left">
+      <a-tooltip title="模型编辑" placement="left" v-if="false">
         <a-button
           type="text"
           class="control-icon-btn"

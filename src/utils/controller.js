@@ -846,11 +846,12 @@ class CameraControls {
         // meshInstances.slice(1).forEach(mi => aabb.add(mi.aabb));
 
         const splat = this._getSplatInstance(entity);
-        
+
         if (!splat || !splat.splatData || splat.splatData.numSplats === 0) {
             console.warn('无法计算包围盒：无有效3DGS数据');
             return null;
         }
+
         const aabb = new BoundingBox();
         const gsplatData = splat.splatData;
         const x = gsplatData.getProp('x');
@@ -858,7 +859,7 @@ class CameraControls {
         const z = gsplatData.getProp('z');
         const numPoints = gsplatData.numSplats;
 
-        // 直接计算 min/max
+        // 数据已经是世界坐标了，直接用原始值计算 min/max
         let minX = x[0], maxX = x[0];
         let minY = y[0], maxY = y[0];
         let minZ = z[0], maxZ = z[0];
@@ -879,13 +880,12 @@ class CameraControls {
         );
 
         aabb.center.copy(center);
-        const halfExtents = new Vec3(
+        aabb.halfExtents.set(
             (maxX - minX) / 2,
             (maxY - minY) / 2,
             (maxZ - minZ) / 2
         );
 
-        aabb.halfExtents.copy(halfExtents);
         return aabb;
     }
 
@@ -1437,6 +1437,68 @@ class CameraControls {
         console.log(`裁剪完成：保留 ${validIndices.length}/${pointCount} 个高斯点`);
     }
 
+    // 将splat点的坐标从局部空间变换到世界空间
+    // 返回变换后的世界坐标数组
+    transformSplatToWorldSpace(entity) {
+        const splat = this._getSplatInstance(entity);
+        if (!splat || !splat.splatData || splat.splatData.numSplats === 0) {
+            console.warn('无有效3DGS数据');
+            return null;
+        }
+
+        const gsplatData = splat.splatData;
+        const x = gsplatData.getProp('x');
+        const y = gsplatData.getProp('y');
+        const z = gsplatData.getProp('z');
+        const numPoints = gsplatData.numSplats;
+
+        // 调试：检查变换前第一个点的值
+        const x0_before = x[0];
+        const y0_before = y[0];
+        const z0_before = z[0];
+        console.log('变换前第一个点:', x0_before, y0_before, z0_before);
+
+        // 获取实体的变换
+        const entityPosition = entity.getPosition();
+        const entityRotation = entity.getRotation();
+        const entityScale = entity.getScale();
+
+        console.log('实体变换 - Position:', entityPosition.toString());
+        console.log('实体变换 - Rotation:', entityRotation.toString());
+        console.log('实体变换 - Scale:', entityScale.toString());
+
+        const tempPoint = new Vec3();
+
+        for (let i = 0; i < numPoints; i++) {
+            tempPoint.set(x[i], y[i], z[i]);
+
+            // 应用缩放
+            tempPoint.x *= entityScale.x;
+            tempPoint.y *= entityScale.y;
+            tempPoint.z *= entityScale.z;
+
+            // 应用旋转
+            const rotatedPoint = entityRotation.transformVector(tempPoint);
+
+            // 应用平移
+            rotatedPoint.x += entityPosition.x;
+            rotatedPoint.y += entityPosition.y;
+            rotatedPoint.z += entityPosition.z;
+
+            // 直接写回原数组
+            x[i] = rotatedPoint.x;
+            y[i] = rotatedPoint.y;
+            z[i] = rotatedPoint.z;
+        }
+
+        const x0_after = x[0];
+        const y0_after = y[0];
+        const z0_after = z[0];
+        console.log('变换后第一个点:', x0_after, y0_after, z0_after);
+
+        return { x, y, z, numPoints };
+    }
+
     clipGsplatDataByAllFaces(entity) {
         // 1. 查找对应的包围盒父实体
         const bboxEntity = this._app.root.findByName(`bbox_${entity.name}`);
@@ -1633,16 +1695,10 @@ class CameraControls {
             return;
         }
         const faceEntity = bboxEntity.findByName(`bbox_face_${entity.name}_${faceName}`);
-        // 3. 获取faceEntity的世界坐标（关键：高斯点是世界空间，需统一坐标系）
-        const faceWorldPos = faceEntity.getLocalPosition();
-        // let clipValue = ; // 裁剪阈值（如y+面的世界y坐标）
-        const local_aabb = splat.assetRecource.aabb;
-        let clipValue;
-        if(config.axis === 'x')
-            clipValue = local_aabb.center[config.axis] + faceWorldPos[config.axis];
-        else
-            clipValue = local_aabb.center[config.axis] - faceWorldPos[config.axis];
-        // 4. 获取所有高斯点的位置数据（世界空间）
+        // 3. 获取faceEntity的世界坐标
+        const faceWorldPos = faceEntity.getPosition(); // 使用 getPosition() 获取世界坐标
+
+        // 4. 获取所有高斯点的位置数据
         const positions = {
             x: gsplatData.getProp('x'),
             y: gsplatData.getProp('y'),
@@ -1654,8 +1710,10 @@ class CameraControls {
             z: gsplatData.getProp('scale_2')
         };
         const pointCount = gsplatData.numSplats;
-        const deleteIndices = []; // 待删除的高斯点索引
+        const deleteIndices = [];
 
+        // 获取AABB用于计算自适应阈值
+        const local_aabb = splat.assetRecource.aabb;
         const aabbHalf = local_aabb?.halfExtents;
         const referenceExtent = Math.max(
             Number(aabbHalf?.x) || 0,
@@ -1668,7 +1726,7 @@ class CameraControls {
 
         // 5. 遍历筛选待删除的高斯点
         for (let i = 0; i < pointCount; i++) {
-            const pointValue = positions[config.axis][i]; // 当前点的裁剪轴坐标
+            const pointValue = positions[config.axis][i];
             const scaleValue = Number(scales[config.axis]?.[i]);
             const extent = Math.min(
                 Number.isFinite(scaleValue) ? Math.max(Math.exp(scaleValue), 0) : 0,
@@ -1677,8 +1735,8 @@ class CameraControls {
 
             // 判断是否在裁剪范围内（根据方向筛选）
             const isOutOfClip = config.direction === 1
-                ? (pointValue + extent) > (clipValue - adaptiveEpsilon)
-                : (pointValue - extent) < (clipValue + adaptiveEpsilon);
+                ? (pointValue + extent) > (faceWorldPos[config.axis] - adaptiveEpsilon)
+                : (pointValue - extent) < (faceWorldPos[config.axis] + adaptiveEpsilon);
 
             if (isOutOfClip) {
                 deleteIndices.push(i);
@@ -1687,13 +1745,13 @@ class CameraControls {
 
         // 6. 处理裁剪结果
         if (deleteIndices.length === 0) {
-            console.log(`没有需要裁剪的高斯点（${faceName}面，裁剪阈值：${clipValue}）`);
+            console.log(`没有需要裁剪的高斯点（${faceName}面）`);
             return;
         }
         console.log("deleteIndices", deleteIndices);
         // 7. 更新Gsplat状态：标记待删除的索引为deleted
         splat.updateSplatState(deleteIndices, State.deleted, true);
-        console.log(`Gsplat裁剪完成：${faceName}面裁剪阈值${clipValue}，删除${deleteIndices.length}/${pointCount}个高斯点`);
+        console.log(`Gsplat裁剪完成：${faceName}面，删除${deleteIndices.length}/${pointCount}个高斯点`);
     }
 
     resetEntity(entity)
