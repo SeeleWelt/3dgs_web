@@ -132,7 +132,7 @@ const props = defineProps<{
 
 // 定义 emit
 const emit = defineEmits<{
-  (e: 'require-agree'): void
+  (e: 'require-agree', payload: string): void
 }>()
 
 const { t } = useI18n()
@@ -146,7 +146,7 @@ const countdown = ref(0)
 const selectedAreaCode = ref('+86')
 // 验证码存储（独立于phoneForm，因为插件是独立输入）
 const verificationCode = ref('')
-let timer = ref<number>(0)
+let timer = ref<NodeJS.Timeout>()
 const conuntTime = 60
 const SHARE_CODE_COOKIE = 'shareCode'
 
@@ -258,7 +258,7 @@ const backToPhoneStep = () => {
 // 发送验证码（第一次或切换手机号时调用，包含验证）
 const sendVerificationCode = async () => {
   if (!props.agree) {
-    emit('require-agree')
+    emit('require-agree', 'sendCode')
     return
   }
   // 已发送且仍在倒计时，则不重复发送
@@ -304,7 +304,7 @@ const sendVerificationCode = async () => {
 // 重新发送验证码（无需再次验证手机号，只要有原号码）
 const resendVerificationCode = async () => {
   if (!props.agree) {
-    emit('require-agree')
+    emit('require-agree', 'resendCode')
     return
   }
   if (countdown.value > 0) return
@@ -338,7 +338,7 @@ const resendVerificationCode = async () => {
 const handlePhoneAuth = async () => {
   // 检查是否同意服务条款
   if (!props.agree) {
-    emit('require-agree');
+    emit('require-agree', 'login');
     return
   }
 
@@ -378,6 +378,8 @@ defineExpose({
   phoneForm,
   currentStep,
   backToPhoneStep,
+  sendVerificationCode,
+  resendVerificationCode,
   isLoading
 })
 </script>

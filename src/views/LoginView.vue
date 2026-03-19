@@ -350,7 +350,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useThemeStore } from '../stores/theme'
@@ -410,7 +410,6 @@ const showTermsModal = ref(false)
 
 // 检查是否同意服务条款
 const checkAndProceed = (action: (...args: any[]) => void, ...args: any[]) => {
-  console.log("是否同意",acceptedTerms.value);
   if (acceptedTerms.value) {
     action(...args)
   } else {
@@ -420,9 +419,11 @@ const checkAndProceed = (action: (...args: any[]) => void, ...args: any[]) => {
 }
 
 // 确认服务条款
-const confirmTerms = () => {
+const confirmTerms = async () => {
   acceptedTerms.value = true
   showTermsModal.value = false
+  // 等待 DOM 更新后执行待处理操作，确保 PhoneAuth 组件能获取到最新的 agree 值
+  await nextTick()
   if (pendingLoginAction.value) {
     pendingLoginAction.value()
     pendingLoginAction.value = null
@@ -729,6 +730,7 @@ const handleGoogleCredential = async ({ credential }: { credential: string }) =>
     clearCookie(SHARE_CODE_COOKIE)
     shareCode.value = ''
     router.push('/')
+    message.success('登录成功')
   } catch (error: any) {
     message.error(error?.message || t('login.loginFailed') || '登录失败')
   } finally {
@@ -739,7 +741,6 @@ const handleGoogleCredential = async ({ credential }: { credential: string }) =>
 const handleShowAgreeTerms = () => {
   console.log("用户未同意服务条款，显示同意弹窗");
   showTermsModal.value = true
-  
 }
 
 // Google登录包装器，用于服务条款检查
@@ -754,9 +755,34 @@ const handleGoogleError = ({ message: errorMessage }: { message: string }) => {
 }
 
 // 手机登录需要同意服务条款
-const checkAndProceedPhoneAuth = () => {
+const checkAndProceedPhoneAuth = (payload: string) => {
   if (!acceptedTerms.value) {
+    if(payload==='sendCode'){
+      pendingLoginAction.value = () => 
+      {
+        phoneAuthRef.value.sendVerificationCode()
+      }
+    }else if(payload==='resendCode'){
+      pendingLoginAction.value = () => 
+          phoneAuthRef.value.resendVerificationCode()
+      
+    }else if(payload==='login'){
+      pendingLoginAction.value = () => 
+          phoneAuthRef.value.handlePhoneAuth()
+      
+    }
     showTermsModal.value = true
+  }else{
+    if (phoneAuthRef.value) {
+      if(payload==='sendCode'){
+        console.log("用户同意服务条款，继续手机验证码登录流程");
+        phoneAuthRef.value.sendVerificationCode()
+      }else if(payload==='resendCode'){
+        phoneAuthRef.value.resendVerificationCode()
+      }else if(payload==='login'){
+        phoneAuthRef.value.handlePhoneAuth()
+      }
+    }
   }
 }
 
