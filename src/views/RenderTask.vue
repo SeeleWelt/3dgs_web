@@ -3082,7 +3082,7 @@ export default {
          // 保存cameraPose用于传递给CustomMotion
         this.customMotionCameraPose = cameraPose;
         this.initLoopPlaybackState(cameraPose);
-
+        this.cameraControls?.transformSplatToWorldSpace(this.skullEntity);
         const aabb = this.cameraControls?.calculateEntityAabb(this.skullEntity);
         const bottomPose = aabb.center.clone().sub(new pc.Vec3(0, aabb.halfExtents.y, 0));
         this.gridEntity.setPosition(bottomPose);

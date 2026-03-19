@@ -367,7 +367,7 @@
           设置
         </a-button>
       </a-tooltip>
-      <a-tooltip title="模型编辑" placement="left" v-if="false">
+      <a-tooltip title="模型编辑" placement="left">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -1851,7 +1851,7 @@ export default {
         this.savedCropAxisValues = null;
         removeAllEffects?.(this.skullEntity);
         this.currentRotateAngle = 0;
-        // this.skullEntity.setLocalEulerAngles(180, 0, 0);
+        this.skullEntity.setLocalEulerAngles(180, 0, 0);
         this.syncAllAxisValues();
       }
     },
@@ -3023,7 +3023,7 @@ export default {
       this.showContorlWidget = true;
       this.skullEntity = new pc.Entity('custom-splat');
       this.skullEntity.addComponent('gsplat', { asset: splatAsset});
-      // this.skullEntity.setLocalEulerAngles(180, 0, 0);
+      this.skullEntity.setLocalEulerAngles(180, 0, 0);
       // annotation.enabled = false; // 默认隐藏
       let annotationsData = [];
       try {
@@ -3061,6 +3061,7 @@ export default {
         // 保存cameraPose用于传递给CustomMotion
         this.customMotionCameraPose = cameraPose;
         this.initLoopPlaybackState(cameraPose);
+        this.cameraControls?.transformSplatToWorldSpace(this.skullEntity);
         const aabb = this.cameraControls?.calculateEntityAabb(this.skullEntity);
         const bottomPose = aabb.center.clone().sub(new pc.Vec3(0, aabb.halfExtents.y, 0));
         this.gridEntity.setPosition(bottomPose);
@@ -3518,9 +3519,9 @@ export default {
       this.videoFrameList = [];
       this.generatedVideoBlob = null;
       // 重置模型角度
-      // if (this.skullEntity) {
-      //   this.skullEntity.setLocalEulerAngles(180, 0, 0);
-      // }
+      if (this.skullEntity) {
+        this.skullEntity.setLocalEulerAngles(180, 0, 0);
+      }
       this.updateAnnotationVisibility();
     },
 

@@ -128,7 +128,9 @@
       title="操作说明"
       :footer="null"
       :mask-closable="true"
-      width="520px"
+      :width="520"
+      centered
+      :destroyOnClose="true"
       class="gesture-modal"
     >
       <div class="gesture-content">
@@ -1298,6 +1300,7 @@ export default {
 
       // 更新网格位置
       if (this.gridEntity && this.skullEntity && this.cameraControls) {
+        this.cameraControls?.transformSplatToWorldSpace(this.skullEntity);
         const aabb = this.cameraControls.calculateEntityAabb(this.skullEntity);
         if (aabb) {
           const bottomPose = aabb.center.clone().sub(new pc.Vec3(0, aabb.halfExtents.y, 0));
@@ -1955,6 +1958,105 @@ export default {
 /* 手势说明对话框样式 */
 .gesture-modal .ant-modal-content {
   border-radius: 12px;
+}
+
+/* 响应式对话框 - 按比例缩放 */
+.gesture-modal .ant-modal {
+  max-width: 90vw;
+  max-height: 90vh;
+  top: 5vh;
+}
+
+.gesture-modal .ant-modal-content {
+  max-width: 520px;
+  margin: 0 auto;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.gesture-modal .ant-modal-header {
+  flex-shrink: 0;
+}
+
+.gesture-modal .ant-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* 嵌入页面时自动缩放 */
+.gesture-modal .ant-modal-content {
+  transform-origin: center center;
+}
+
+/* 小容器时按比例缩放 */
+@media (max-width: 600px), (max-height: 500px) {
+  .gesture-modal .ant-modal {
+    max-width: 95vw;
+    max-height: 95vh;
+    top: 2.5vh;
+  }
+
+  .gesture-modal .ant-modal-content {
+    max-width: 100%;
+    transform: scale(0.85);
+  }
+}
+
+@media (max-width: 450px), (max-height: 400px) {
+  .gesture-modal .ant-modal-content {
+    transform: scale(0.7);
+  }
+}
+
+@media (max-width: 350px), (max-height: 300px) {
+  .gesture-modal .ant-modal-content {
+    transform: scale(0.55);
+  }
+}
+
+.gesture-modal .gesture-content {
+  box-sizing: border-box;
+}
+
+@media (max-width: 576px) {
+  .gesture-modal .gesture-content {
+    padding: 4px 0;
+  }
+
+  .gesture-section {
+    margin-bottom: 12px;
+  }
+
+  .gesture-section-title {
+    font-size: 13px;
+  }
+
+  .gesture-item {
+    padding: 6px 8px;
+  }
+
+  .gesture-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .gesture-key {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .gesture-action {
+    font-size: 13px;
+  }
+
+  .gesture-detail {
+    font-size: 11px;
+  }
 }
 
 .gesture-content {
