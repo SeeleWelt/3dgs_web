@@ -4,7 +4,7 @@
       ref="googleButtonRef"
       class="google-button"
       :class="{ disabled: props.disabled }"
-      @click.capture="handleGoogleLogin($event)"
+      @click="handleGoogleLogin()"
     />
     <p v-if="initError" class="social-error">{{ initError }}</p>
   </div>
@@ -120,13 +120,7 @@ const initGoogleLogin = async () => {
   }
 }
 
-const handleGoogleLogin = async (e: MouseEvent) => {
-  
-  if (!props.agree){
-    e.stopPropagation();
-    emit('show-agreeTerms');
-    return
-  }
+const handleGoogleLogin = async () => {
 
   if (props.disabled) return
   if (!isInitialized.value) {
