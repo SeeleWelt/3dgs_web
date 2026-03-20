@@ -380,7 +380,7 @@
           编辑
         </a-button>
       </a-tooltip>
-      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left" v-if="false">
+      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -500,7 +500,6 @@
       </div>
     </div>
     
-    
 
     <a-modal
       v-model:open="showConfirmModal"
@@ -509,6 +508,7 @@
       cancel-text="取消"
       @ok="confirmSaveChanges"
       @cancel="closeConfirmModal"
+      :zIndex="1002"
     >确认要覆盖原有的文件吗？<br/>此操作不可撤销。</a-modal>
     
     <a-modal
@@ -517,6 +517,7 @@
       ok-text="确定"
       :cancel-button-props="{ style: { display: 'none' } }"
       @ok="closeSuccessModal"
+      :zIndex="1002"
     >
       <div class="success-content">
         <p class="success-text">文件已覆盖</p>
@@ -556,6 +557,7 @@
     <a-modal
       v-model:open="showAnnotationExitConfirm"
       title="退出标注编辑"
+      :zIndex="1002"
     >
       <p>是否保存标注？</p>
       <template #footer>
@@ -594,6 +596,7 @@
       class="annotation-dialog"
       :footer="null"
       :mask-closable="false"
+      :zIndex="1002"
     >
       <div class="annotation-dialog-inner">
         <div class="annotation-dialog-header">
@@ -673,6 +676,7 @@
       :mask-closable="true"
       width="520px"
       class="gesture-modal"
+      :zIndex="1002"
     >
       <div class="gesture-content">
         <!-- 浏览器端操作说明 -->
@@ -912,6 +916,198 @@ const showToast = (input) => {
   }
 }
 
+const defaultAnnotationData=[
+  {
+    "x": -0.011760715395212173,
+    "y": 0.48784980177879333,
+    "z": -0.019955044612288475,
+    "label": "头部",
+    "description": "驾驶舱（Conn-Pod）可以跟机体分离，防止受到辐射污染",
+    "cameraPose": {
+      "position": {
+        "x": -0.7325506806373596,
+        "y": 1.0464791059494019,
+        "z": -0.5272486209869385
+      },
+      "focus": {
+        "x": -0.011760715395212173,
+        "y": 0.48784980177879333,
+        "z": -0.019955044612288475
+      }
+    }
+  },
+  {
+    "x": -0.04591544345021248,
+    "y": 0.3042123317718506,
+    "z": -0.06864970177412033,
+    "label": "胸部",
+    "description": "为12IX核涡轮引擎（12IX Nuclear Vortex Turbine），核动力驱动。此外可以喷射高温核废料，灼伤怪兽",
+    "cameraPose": {
+      "position": {
+        "x": -0.8265045881271362,
+        "y": 0.45302680134773254,
+        "z": -0.745017409324646
+      },
+      "focus": {
+        "x": -0.04591544345021248,
+        "y": 0.3042123317718506,
+        "z": -0.06864970177412033
+      }
+    }
+  },
+  {
+    "x": -0.1077481284737587,
+    "y": -0.27458518743515015,
+    "z": 0.01256509032100439,
+    "label": "膝关节",
+    "description": "装备98BD超扭矩驱动器（98BD/Hyper-Torque Drivers），每条肌肉装备40台发动机，提升机体的机动性",
+    "cameraPose": {
+      "position": {
+        "x": -1.0510722398757935,
+        "y": -0.13557156920433044,
+        "z": 0.4365540146827698
+      },
+      "focus": {
+        "x": -0.10774813064071798,
+        "y": -0.27458518129123255,
+        "z": 0.012565090023177294
+      }
+    }
+  },
+  {
+    "x": 0.04674668610095978,
+    "y": -0.28132614493370056,
+    "z": -0.13660718500614166,
+    "label": "膝关节",
+    "description": "装备98BD超扭矩驱动器（98BD/Hyper-Torque Drivers），每条肌肉装备40台发动机，提升机体的机动性",
+    "cameraPose": {
+      "position": {
+        "x": 0.40466731786727905,
+        "y": 0.060088660567998886,
+        "z": -1.0554606914520264
+      },
+      "focus": {
+        "x": 0.046746685687619305,
+        "y": -0.2813261444010646,
+        "z": -0.13660718044713782
+      }
+    }
+  },
+  {
+    "x": 0.02405703440308571,
+    "y": -0.35860031843185425,
+    "z": 0.1219378262758255,
+    "label": "腿部",
+    "description": "装备10TK陀螺稳定器（10TK/Gyro-Stabilizers），用于修正重心，确保机体的平衡",
+    "cameraPose": {
+      "position": {
+        "x": 0.7723938822746277,
+        "y": 0.07387519627809525,
+        "z": 0.7067310810089111
+      },
+      "focus": {
+        "x": 0.024057034781570952,
+        "y": -0.3586003057362027,
+        "z": 0.12193782756203086
+      }
+    }
+  },
+  {
+    "x": 0.16458237171173096,
+    "y": -0.3478298783302307,
+    "z": -0.007122705224901438,
+    "label": "腿部",
+    "description": "装备10TK陀螺稳定器（10TK/Gyro-Stabilizers），用于修正重心，确保机体的平衡",
+    "cameraPose": {
+      "position": {
+        "x": 0.9582472443580627,
+        "y": 0.03498080372810364,
+        "z": 0.5518985390663147
+      },
+      "focus": {
+        "x": 0.1645823789677322,
+        "y": -0.347829875207583,
+        "z": -0.0071227050431872385
+      }
+    }
+  },
+  {
+    "x": -0.08294141292572021,
+    "y": -0.5844871997833252,
+    "z": 0.08707591146230698,
+    "label": "脚踝",
+    "description": "装备08FS海水冷却排出口（08FS/Oceanic Cooling Vents），内置活性炭，可过滤海水，确保机体灾害中的稳定性。",
+    "cameraPose": {
+      "position": {
+        "x": -1.1062650680541992,
+        "y": -0.5183591246604919,
+        "z": 0.3608081042766571
+      },
+      "focus": {
+        "x": -0.08294141292572021,
+        "y": -0.5844871997833252,
+        "z": 0.08707591146230698
+      }
+    }
+  },
+  {
+    "x": 0.1408391296863556,
+    "y": -0.599087655544281,
+    "z": -0.09864003211259842,
+    "label": "脚踝",
+    "description": "装备08FS海水冷却排出口（08FS/Oceanic Cooling Vents），内置活性炭，可过滤海水，确保机体灾害中的稳定性。",
+    "cameraPose": {
+      "position": {
+        "x": 0.7584227323532104,
+        "y": -0.4924549460411072,
+        "z": -0.9330087304115295
+      },
+      "focus": {
+        "x": 0.1408391296863556,
+        "y": -0.599087655544281,
+        "z": -0.09864003211259842
+      }
+    }
+  },
+  {
+    "x": -0.17915073037147522,
+    "y": 0.13414525985717773,
+    "z": 0.29190656542778015,
+    "label": "肘部",
+    "description": "装备火箭推进装置（Elbow Rocket），可提升机体的出拳速度，增大对怪兽的伤害。",
+    "cameraPose": {
+      "position": {
+        "x": 0.05221611633896828,
+        "y": 0.04319509491324425,
+        "z": 1.3053981065750122
+      },
+      "focus": {
+        "x": -0.17915073037147522,
+        "y": 0.13414525985717773,
+        "z": 0.29190656542778015
+      }
+    }
+  },
+  {
+    "x": 0.2757357060909271,
+    "y": 0.14192146062850952,
+    "z": -0.19724684953689575,
+    "label": "肘部",
+    "description": "装备火箭推进装置（Elbow Rocket），可提升机体的出拳速度，增大对怪兽的伤害。",
+    "cameraPose": {
+      "position": {
+        "x": 1.278713345527649,
+        "y": 0.053112391382455826,
+        "z": -0.4712914526462555
+      },
+      "focus": {
+        "x": 0.2757357060909271,
+        "y": 0.14192146062850952,
+        "z": -0.19724684953689575
+      }
+    }
+  }
+]
 const resolveRequestErrorMessage = (error, defaultMessage) => {
   if (error?.message && String(error.message).length > 0) {
     return String(error.message)
@@ -1202,7 +1398,10 @@ export default {
       annotationMenuPosition: { x: 0, y: 0 },
       annotationMenuEntity: null,
       showSnapshotFlash: false,
-      initialCameraPose: {}, // 初始相机位姿
+      initialCameraPose: {
+        cameraPosition: {x: -0.7677744626998901, y: 0.5559769868850708, z: -0.6764547824859619},
+        focus: {x: -0.011053457856178284, y: 0.056566864252090454, z: 0.027768105268478394}
+      }, // 初始相机位姿
     };
   },
   watch:{
@@ -2220,6 +2419,7 @@ export default {
 
     async exportAnnotationsJson() {
       const annotationsData = [];
+      console.log("标注",this.annotataions)
       this.annotataions
         .map(item => {
           const script = item?.script?.annotation;
@@ -2385,6 +2585,7 @@ export default {
         this.app.root.addChild(annotation);
         this.annotataions.push(annotation);
         this.index = nextLabel; // Update index to nextLabel
+        
         this.closeAnnotationDialog();
         return;
       }
@@ -2443,6 +2644,11 @@ export default {
 
       if (this.isAnnotationEditMenuOpen) {
         // 编辑模式下，显示编辑/快照菜单
+        this.stopLoopPlayback(false);
+        this.hasClickAnnotation = true;
+        this.viewerControls.isOrbitMode = true;
+        this.applyAnnotationCameraPose(annotationScript);
+
         this.annotationMenuEntity = entity;
         const hotspotDom = this.manager._annotationResources.get(annotationScript).hotspotDom
         console.log(hotspotDom )
@@ -3042,9 +3248,10 @@ export default {
           }
         });
         // console.log("data", response.data);
-        annotationsData = response.data.data || [];
+        annotationsData =  response.data.data || defaultAnnotationData ;
       } catch (e) {
         //
+        annotationsData = defaultAnnotationData;
       }
       this.app.root.addChild(this.skullEntity);
       if(this.skullEntity) {
@@ -3089,7 +3296,7 @@ export default {
             size: 0.01,
           }
         });
-        
+        console.log(annotationsData)
         annotationsData.forEach((item,index) => {
           const annotationEntity = new pc.Entity(`annotation_${item.label}`);
           annotationEntity.setLocalPosition(parseFloat(item.x), parseFloat(item.y), parseFloat(item.z));
@@ -3189,7 +3396,7 @@ export default {
           z: focusPoint.z
         }
       };
-
+      console.log('设置新的初始化位置：', this.initialCameraPose);
       // 静默保存到服务器
       this.saveSettings(false);
       // 显示边框闪一下效果

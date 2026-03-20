@@ -775,7 +775,16 @@ export class AnnotationManager extends Script {
             if (this._annotationEditMode) {
                 return;
             }
-            this._showTooltip(annotation);
+            // 先立即隐藏当前 tooltip（如果有）
+            if (this._activeAnnotation) {
+                this._activeAnnotation = null;
+                this._tooltipDom.style.opacity = '0';
+                this._tooltipDom.style.visibility = 'hidden';
+            }
+            // 延迟显示 tooltip，等相机动画完成后再显示（动画时长0.5秒）
+            setTimeout(() => {
+                this._showTooltip(annotation);
+            }, 500);
         };
         hotspotDom.addEventListener('pointerdown', onPointerDown);
 

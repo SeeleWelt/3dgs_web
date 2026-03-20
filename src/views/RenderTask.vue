@@ -509,6 +509,7 @@
       cancel-text="取消"
       @ok="confirmSaveChanges"
       @cancel="closeConfirmModal"
+      :zIndex="1002"
     >确认要覆盖原有的文件吗？<br/>此操作不可撤销。</a-modal>
     
     <a-modal
@@ -517,6 +518,7 @@
       ok-text="确定"
       :cancel-button-props="{ style: { display: 'none' } }"
       @ok="closeSuccessModal"
+      :zIndex="1002"
     >
       <div class="success-content">
         <p class="success-text">文件已覆盖</p>
@@ -552,6 +554,7 @@
     <a-modal
       v-model:open="showAnnotationExitConfirm"
       title="退出标注编辑"
+      :zIndex="1002"
     >
       <p>是否保存标注？</p>
       <template #footer>
@@ -590,6 +593,7 @@
       class="annotation-dialog"
       :footer="null"
       :mask-closable="false"
+      :zIndex="1002"
     >
       <div class="annotation-dialog-inner">
         <div class="annotation-dialog-header">
@@ -669,6 +673,7 @@
       :mask-closable="true"
       width="520px"
       class="gesture-modal"
+      :zIndex="1002"
     >
       <div class="gesture-content">
         <!-- 浏览器端操作说明 -->
@@ -2453,7 +2458,12 @@ export default {
       }
 
       if (this.isAnnotationEditMenuOpen) {
-        // 编辑模式下，显示编辑/快照菜单
+        // 编辑模式下，应用相机位姿并显示编辑/快照菜单
+        this.stopLoopPlayback(false);
+        this.hasClickAnnotation = true;
+        this.viewerControls.isOrbitMode = true;
+        this.applyAnnotationCameraPose(annotationScript);
+
         this.annotationMenuEntity = entity;
         const hotspotDom = this.manager._annotationResources.get(annotationScript).hotspotDom
         console.log(hotspotDom )
