@@ -3879,6 +3879,12 @@ export default {
         console.log(e)
       }
 
+      // 放开zoomRange限制，允许用户缩放
+      if (this.cameraControls) {
+        this.originalZoomRange = this.cameraControls.zoomRange ? { ...this.cameraControls.zoomRange } : null;
+        this.cameraControls.zoomRange = new pc.Vec2(0, this.originalZoomRange ? this.originalZoomRange.y : 50);
+      }
+
       // 初始化播放状态
       if (this.orbitMotionType === 'custom' && this.customMotion) {
         // 自定义运镜模式：初始化时间相关的状态

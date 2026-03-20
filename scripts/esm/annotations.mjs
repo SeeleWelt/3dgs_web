@@ -263,12 +263,13 @@ export class AnnotationManager extends Script {
                 position: absolute;
                 background-color: rgba(0, 0, 0, 0.8);
                 color: white;
-                padding: 8px;
+                padding: 8px 12px;
                 border-radius: 4px;
                 font-size: 14px;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
                 pointer-events: none;
-                max-width: 120px;
+                max-width: 200px;
+                min-width: 80px;
                 word-wrap: break-word;
                 overflow-x: visible;
                 white-space: normal;
