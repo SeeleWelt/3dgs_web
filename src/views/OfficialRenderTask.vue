@@ -9,6 +9,7 @@
         ref="viewerContainer"
         class="viewer-container fullscreen"
         :style="{ backgroundColor: viewerControls.backgroundColor }"
+        :class="{ 'annotation-edit-cursor': isAnnotationEditMenuOpen }"
       >
         <canvas id="application-canvas" ref="canvasRef" @keydown="handleEscKey" tabindex="0"></canvas>
 
@@ -61,7 +62,7 @@
       </div>
     </div>
 
-    <div v-if="viewerControls.showInfo && showContorlWidget" class="feature-panel top-right-panel" :class="{ visible: showControls }" @click.stop>
+    <div v-if="viewerControls.showInfo && showContorlWidget" class="feature-panel effect-panel top-right-panel" :class="{ visible: showControls }" @click.stop>
       <div class="panel-header">
         <span>特效选项</span>
         <a-button type="text" size="small" @click.stop="closeInfoPanel">
@@ -99,6 +100,78 @@
         </a-button>
       </div>
       <div class="settings-content">
+        <template v-if="isMobile">
+          <div class="mobile-settings-layout">
+            <div class="mobile-segmented">
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileSettingsSection === 'motion' }" @click="mobileSettingsSection = 'motion'">运镜</button>
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileSettingsSection === 'speed' }" @click="mobileSettingsSection = 'speed'">速度</button>
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileSettingsSection === 'view' }" @click="mobileSettingsSection = 'view'">画面</button>
+            </div>
+            <div class="mobile-settings-body">
+              <div v-if="mobileSettingsSection === 'motion'" class="mobile-settings-section">
+                <div class="mobile-setting-card mobile-setting-card-wide">
+                  <label class="setting-label">运镜类型</label>
+                  <a-select
+                    v-model:value="orbitMotionType"
+                    :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
+                    size="small"
+                  >
+                    <a-select-option value="orbit">圆形轨道</a-select-option>
+                    <a-select-option value="ellipse">椭圆轨道</a-select-option>
+                    <a-select-option value="spiral">螺旋上升</a-select-option>
+                    <a-select-option value="dolly">推拉运镜</a-select-option>
+                    <a-select-option value="swing">摇摆运镜</a-select-option>
+                    <a-select-option value="figureEight">8字形</a-select-option>
+                    <a-select-option v-if="customMotion" value="custom">自定义运镜</a-select-option>
+                  </a-select>
+                </div>
+              </div>
+
+              <div v-else-if="mobileSettingsSection === 'speed'" class="mobile-settings-section mobile-settings-section-speed">
+                <div class="mobile-setting-card">
+                  <label class="setting-label">飞行速度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
+                  </div>
+                </div>
+                <div class="mobile-setting-card">
+                  <label class="setting-label">轨道速度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.orbitSpeed" :min="1" :max="30" :step="0.5" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
+                  </div>
+                </div>
+                <div class="mobile-setting-card">
+                  <label class="setting-label">旋转速度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
+                  </div>
+                </div>
+                <div class="mobile-setting-card">
+                  <label class="setting-label">缩放灵敏度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="mobile-settings-section">
+                <div class="mobile-setting-card mobile-setting-card-wide">
+                  <label class="setting-label">背景颜色</label>
+                  <ColorPicker
+                    v-model:pureColor="viewerControls.backgroundColor"
+                    format="hex"
+                    @pure-color-change="updateBackgroundColor"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
         <!-- 运镜设置 -->
         <div class="setting-section-title">运镜设置</div>
         <div class="setting-item">
@@ -172,6 +245,7 @@
           </a-button>
           <div class="setting-item-tip">设置当前相机位置为初始化位置</div>
         </div> -->
+        </template>
       </div>
       <div class="panel-footer">
         <!-- <a-button type="primary" size="small" @click.stop="saveSettings">保存设置</a-button> -->
@@ -380,7 +454,7 @@
           编辑
         </a-button>
       </a-tooltip>
-      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left">
+      <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left" v-if="false">
         <a-button
           type="text"
           class="control-icon-btn"
@@ -1391,6 +1465,7 @@ export default {
       effectOptions: EFFECT_OPTIONS,
       mouseDownPos: { x: 0, y: 0 },
       isMobile: false,
+      mobileSettingsSection: 'motion',
       showGrid: true,
       gridEntity: null,
       hasClickAnnotation:false,
@@ -1555,14 +1630,14 @@ export default {
         clearTimeout(this.controlsHideTimer);
       }
       // 当编辑面板打开时，不自动隐藏
-      const isPanelOpen = this.viewerControls.showInfo ||
-        this.isSettingsMenuOpen ||
-        this.isEditMenuOpen ||
-        this.showVideoEffectDialog;
-      if (isPanelOpen) {
-        return;
-      }
       this.controlsHideTimer = setTimeout(() => {
+        const isPanelOpen = this.viewerControls.showInfo ||
+          this.isSettingsMenuOpen ||
+          this.isEditMenuOpen ||
+          this.showVideoEffectDialog;
+        if (isPanelOpen) {
+          return;
+        }
         this.showControls = false;
       }, 3000);
     },
@@ -5865,26 +5940,312 @@ export default {
 
 /* 响应式 */
 @media (max-width: 768px) {
-  .feature-panel {
-    right: 8px;
-    left: 8px;
-    width: auto;
-  }
-
+  .feature-panel,
   .feature-panel.top-right-panel {
     left: 8px;
     right: 8px;
+    top: auto;
+    bottom: calc(8px + env(safe-area-inset-bottom));
     width: auto;
+    max-width: none;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 14px 34px rgba(5, 15, 30, 0.28);
+    transform: translateY(calc(100% + 24px));
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+    animation: none;
+    z-index: 1003;
+  }
+
+  .feature-panel.visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .feature-panel .panel-header {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 10px 12px 6px;
+  }
+
+  .feature-panel .panel-header .ant-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .feature-panel .panel-header span {
+    font-size: 13px;
+  }
+
+  .effect-scroll-container,
+  .settings-content,
+  .edit-modal-content,
+  .video-effect-selector {
+    flex: 0 1 auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .effect-scroll-container,
+  .settings-content,
+  .edit-modal-content {
+    padding: 10px 12px 12px;
+  }
+
+  .video-effect-selector {
+    padding: 10px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .effect-panel .effect-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .video-panel .video-effect-selector {
+    overflow: visible;
+  }
+
+  .effect-panel .effect-grid,
+  .video-panel .video-effect-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+    align-items: stretch;
+  }
+
+  .effect-panel .effect-card,
+  .video-panel .effect-option {
+    flex: 0 0 108px;
+    width: 108px;
+    max-width: 108px;
+    min-height: 92px;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+
+  .effect-panel .effect-card-thumb {
+    height: 56px;
+  }
+
+  .effect-panel .effect-card-title,
+  .video-effect-selector .effect-name {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .mobile-settings-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-segmented {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .mobile-segmented-btn {
+    min-height: 32px;
+    padding: 0 8px;
+    border-radius: 10px;
+    border: none;
+    background: #eef2f7;
+    color: #5b6575;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-segmented-btn.active {
+    background: linear-gradient(135deg, #edf4ff 0%, #f7fbff 100%);
+    color: #1677ff;
+    box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.18);
+  }
+
+  .mobile-settings-section {
+    display: grid;
+    gap: 6px;
+  }
+
+  .mobile-settings-body {
+    min-height: 0;
+  }
+
+  .mobile-settings-section-speed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobile-setting-card {
+    min-width: 0;
+    padding: 8px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  }
+
+  .mobile-setting-card-wide {
+    display: grid;
+    gap: 4px;
+    align-content: center;
+  }
+
+  .mobile-setting-card .setting-label {
+    min-height: 14px;
+  }
+
+  .settings-panel .setting-label {
+    display: block;
+    margin-bottom: 2px;
+    white-space: normal;
+    font-size: 11px;
+  }
+
+  .settings-panel .setting-slider-control {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    gap: 2px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-panel :deep(.ant-select) {
+    width: 100% !important;
+  }
+
+  .settings-panel :deep(.ant-select-selector) {
+    min-height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .settings-panel .custom-motion-btn {
+    min-height: 34px;
+    font-size: 11px;
+  }
+
+  .settings-panel .setting-value {
+    min-width: 0;
+    font-size: 10px;
+    text-align: right;
+  }
+
+  .settings-panel .setting-item-tip {
+    margin-top: 0;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .settings-panel .panel-footer {
+    padding-top: 6px;
+  }
+
+  .video-effect-selector .effect-icon {
+    width: 100%;
+    max-width: 100%;
+    height: 72px;
+    flex: 0 0 72px;
+    margin-bottom: 6px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e8edf5 0%, #d8e1ee 100%);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .video-panel .video-effect-grid {
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .video-effect-selector .effect-option {
+    min-height: 118px;
+    justify-content: flex-start;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    scroll-snap-align: start;
+  }
+
+  .video-panel .effect-option.active {
+    background: linear-gradient(180deg, #f4f8ff 0%, #eaf3ff 100%);
+    box-shadow: 0 10px 22px rgba(22, 119, 255, 0.16);
+  }
+
+  .video-panel .no-effect-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5b6575;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.08)),
+      repeating-linear-gradient(-45deg, #eef2f7 0 10px, #dde5ef 10px 20px);
+  }
+
+  .video-panel .effect-icon-img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .video-panel .effect-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: left;
+    padding: 0 2px;
+  }
+
+  .video-effect-selector .tips-text {
+    min-width: 0;
+    width: auto;
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: #526071;
+    background: rgba(232, 238, 247, 0.8);
+    border-radius: 10px;
+  }
+
+  .panel-footer {
+    gap: 6px;
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
+    border-radius: 0 0 20px 20px;
+  }
+
+  .panel-footer .ant-btn {
+    height: 34px;
+    font-size: 12px;
   }
 
   .mode-tip {
     top: 10px;
     padding: 6px 14px;
     font-size: 12px;
-  }
-
-  .feature-panel:not(.top-right-panel) {
-    top: 56px;
   }
 
   .bottom-controls {
@@ -5921,6 +6282,33 @@ export default {
   .control-icon-btn .anticon {
     font-size: 16px;
   }
+
+  /* 移动端隐藏按钮文字 */
+  .control-icon-btn :deep(span:not(.anticon)) {
+    display: none;
+  }
+}
+
+/* 更小屏幕适配 */
+@media (max-width: 480px) {
+  .control-icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 4px;
+  }
+
+  .control-icon-btn .anticon {
+    font-size: 14px;
+  }
+}
+
+/* 标注编辑模式鼠标光标 - 简洁加号 */
+.annotation-edit-cursor {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cline x1='9' y1='3' x2='9' y2='15' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='3' y1='9' x2='15' y2='9' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 9 9, crosshair !important;
+}
+
+.annotation-edit-cursor canvas {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cline x1='9' y1='3' x2='9' y2='15' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='3' y1='9' x2='15' y2='9' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 9 9, crosshair !important;
 }
 
 /* 手势说明对话框样式 */

@@ -172,6 +172,7 @@ export default {
       feedback: 'Feedback',
       language: 'Español',
       logout: 'Cerrar sesión',
+      logoutConfirm: '¿Está seguro de que desea cerrar sesión?',
       selectLanguage: 'Seleccionar idioma',
       regularAccount: 'Cuenta Estándar'
     },

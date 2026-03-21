@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div v-if="viewerControls.showInfo && showContorlWidget" class="feature-panel top-right-panel" :class="{ visible: showControls }" @click.stop>
+    <div v-if="viewerControls.showInfo && showContorlWidget" class="feature-panel effect-panel top-right-panel" :class="{ visible: showControls }" @click.stop>
       <div class="panel-header">
         <span>特效选项</span>
         <a-button type="text" size="small" @click.stop="closeInfoPanel">
@@ -99,79 +99,175 @@
         </a-button>
       </div>
       <div class="settings-content">
-        <!-- 运镜设置 -->
-        <div class="setting-section-title">运镜设置</div>
-        <div class="setting-item">
-          <label class="setting-label">运镜类型</label>
-          <a-select
-            v-model:value="orbitMotionType"
-            :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
-            style="width: 120px"
-            size="small"
-          >
-            <a-select-option value="orbit">圆形轨道</a-select-option>
-            <a-select-option value="ellipse">椭圆轨道</a-select-option>
-            <a-select-option value="spiral">螺旋上升</a-select-option>
-            <a-select-option value="dolly">推拉运镜</a-select-option>
-            <a-select-option value="swing">摇摆运镜</a-select-option>
-            <a-select-option value="figureEight">8字形</a-select-option>
-            <a-select-option v-if="customMotion" value="custom">自定义运镜</a-select-option>
-          </a-select>
-        </div>
-        <div class="setting-item">
-          <a-button type="primary" block @click="openCustomMotion" :disabled="isRecordingVideo || isEncodingVideo" class="custom-motion-btn">
-            <template #icon><VideoCameraOutlined /></template>
-            自定义运镜
-          </a-button>
-        </div>
+        <template v-if="isMobile">
+          <div class="mobile-settings-layout">
+            <div class="mobile-segmented">
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileSettingsSection === 'motion' }" @click="mobileSettingsSection = 'motion'">运镜</button>
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileSettingsSection === 'speed' }" @click="mobileSettingsSection = 'speed'">速度</button>
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileSettingsSection === 'view' }" @click="mobileSettingsSection = 'view'">画面</button>
+            </div>
+            <div class="mobile-settings-body">
+              <div v-if="mobileSettingsSection === 'motion'" class="mobile-settings-section">
+                <div class="mobile-setting-card mobile-setting-card-wide">
+                  <label class="setting-label">运镜类型</label>
+                  <a-select
+                    v-model:value="orbitMotionType"
+                    :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
+                    size="small"
+                  >
+                    <a-select-option value="orbit">圆形轨道</a-select-option>
+                    <a-select-option value="ellipse">椭圆轨道</a-select-option>
+                    <a-select-option value="spiral">螺旋上升</a-select-option>
+                    <a-select-option value="dolly">推拉运镜</a-select-option>
+                    <a-select-option value="swing">摇摆运镜</a-select-option>
+                    <a-select-option value="figureEight">8字形</a-select-option>
+                    <a-select-option v-if="customMotion" value="custom">自定义运镜</a-select-option>
+                  </a-select>
+                </div>
+                <div class="mobile-setting-card mobile-setting-card-wide">
+                  <a-button type="primary" block @click="openCustomMotion" :disabled="isRecordingVideo || isEncodingVideo" class="custom-motion-btn">
+                    <template #icon><VideoCameraOutlined /></template>
+                    自定义运镜
+                  </a-button>
+                </div>
+              </div>
 
-        <div class="setting-divider"></div>
+              <div v-else-if="mobileSettingsSection === 'speed'" class="mobile-settings-section mobile-settings-section-speed">
+                <div class="mobile-setting-card">
+                  <label class="setting-label">飞行速度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
+                  </div>
+                </div>
+                <div class="mobile-setting-card">
+                  <label class="setting-label">轨道速度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.orbitSpeed" :min="1" :max="30" :step="0.5" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
+                  </div>
+                </div>
+                <div class="mobile-setting-card">
+                  <label class="setting-label">旋转速度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
+                  </div>
+                </div>
+                <div class="mobile-setting-card">
+                  <label class="setting-label">缩放灵敏度</label>
+                  <div class="setting-slider-control">
+                    <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
+                    <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
+                  </div>
+                </div>
+              </div>
 
-        <!-- 视角设置 -->
-        <div class="setting-section-title">视角设置</div>
-        <div class="setting-item">
-          <label class="setting-label">飞行速度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
+              <div v-else class="mobile-settings-section mobile-settings-section-view">
+                <div class="mobile-setting-card">
+                  <label class="setting-label">背景颜色</label>
+                  <ColorPicker
+                    v-model:pureColor="viewerControls.backgroundColor"
+                    format="hex"
+                    @pure-color-change="updateBackgroundColor"
+                  />
+                </div>
+                <div class="mobile-setting-card mobile-setting-card-initial">
+                  <a-button type="default" block @click="setInitialCameraPosition" :disabled="!skullEntity || !cameraControls" class="custom-motion-btn">
+                    <template #icon><CameraOutlined /></template>
+                    设置初始化位置
+                  </a-button>
+                  <div class="setting-item-tip">设置当前相机位置为初始化位置</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+        <div class="settings-groups">
+          <div class="settings-group settings-group-motion">
+            <div class="setting-section-title">运镜设置</div>
+            <div class="setting-item">
+              <label class="setting-label">运镜类型</label>
+              <a-select
+                v-model:value="orbitMotionType"
+                :disabled="!skullEntity || !viewerControls.isOrbitMode || isRecordingVideo || isEncodingVideo"
+                style="width: 120px"
+                size="small"
+              >
+                <a-select-option value="orbit">圆形轨道</a-select-option>
+                <a-select-option value="ellipse">椭圆轨道</a-select-option>
+                <a-select-option value="spiral">螺旋上升</a-select-option>
+                <a-select-option value="dolly">推拉运镜</a-select-option>
+                <a-select-option value="swing">摇摆运镜</a-select-option>
+                <a-select-option value="figureEight">8字形</a-select-option>
+                <a-select-option v-if="customMotion" value="custom">自定义运镜</a-select-option>
+              </a-select>
+            </div>
+            <div class="setting-item">
+              <a-button type="primary" block @click="openCustomMotion" :disabled="isRecordingVideo || isEncodingVideo" class="custom-motion-btn">
+                <template #icon><VideoCameraOutlined /></template>
+                自定义运镜
+              </a-button>
+            </div>
+          </div>
+
+          <div class="settings-group settings-group-speed">
+            <div class="setting-section-title">速度设置</div>
+            <div class="settings-grid settings-grid-speed">
+              <div class="setting-item">
+                <label class="setting-label">飞行速度</label>
+                <div class="setting-slider-control">
+                  <a-slider v-model:value="viewerControls.moveSpeed" :min="0.1" :max="5" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('moveSpeed', viewerControls.moveSpeed)" class="param-slider" />
+                  <span class="setting-value">{{ viewerControls.moveSpeed.toFixed(1) }}</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">轨道速度</label>
+                <div class="setting-slider-control">
+                  <a-slider v-model:value="viewerControls.orbitSpeed" :min="1" :max="30" :step="0.5" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
+                  <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">旋转速度</label>
+                <div class="setting-slider-control">
+                  <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
+                  <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <label class="setting-label">缩放灵敏度</label>
+                <div class="setting-slider-control">
+                  <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
+                  <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group settings-group-view">
+            <div class="setting-section-title">画面设置</div>
+            <div class="settings-grid settings-grid-view">
+              <div class="setting-item">
+                <label class="setting-label">背景颜色</label>
+                <ColorPicker
+                  v-model:pureColor="viewerControls.backgroundColor"
+                  format="hex"
+                  @pure-color-change="updateBackgroundColor"
+                />
+              </div>
+              <div class="setting-item setting-item-initial">
+                <a-button type="default" block @click="setInitialCameraPosition" :disabled="!skullEntity || !cameraControls" class="custom-motion-btn">
+                  <template #icon><CameraOutlined /></template>
+                  设置初始化位置
+                </a-button>
+                <div class="setting-item-tip">设置当前相机位置为初始化位置</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="setting-item">
-          <label class="setting-label">轨道速度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.orbitSpeed" :min="1" :max="30" :step="0.5" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('orbitSpeed', viewerControls.orbitSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.orbitSpeed.toFixed(1) }}</span>
-          </div>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">旋转速度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.autoRotateSpeed" :min="5" :max="90" :step="1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('autoRotateSpeed', viewerControls.autoRotateSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.autoRotateSpeed.toFixed(0) }}</span>
-          </div>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">缩放灵敏度</label>
-          <div class="setting-slider-control">
-            <a-slider v-model:value="viewerControls.pinchSpeed" :min="0.1" :max="2" :step="0.1" :disabled="viewerControls.usingExternalCamera" @change="updateCameraControlValue('pinchSpeed', viewerControls.pinchSpeed)" class="param-slider" />
-            <span class="setting-value">{{ viewerControls.pinchSpeed.toFixed(1) }}</span>
-          </div>
-        </div>
-        <div class="setting-item">
-          <label class="setting-label">背景颜色</label>
-          <ColorPicker
-            v-model:pureColor="viewerControls.backgroundColor"
-            format="hex"
-            @pure-color-change="updateBackgroundColor"
-          />
-        </div>
-        <div class="setting-item" style="display: flex; flex-direction: column; gap: 5px">
-          <a-button type="default" block @click="setInitialCameraPosition" :disabled="!skullEntity || !cameraControls" class="custom-motion-btn">
-            <template #icon><CameraOutlined /></template>
-            设置初始化位置
-          </a-button>
-          <div class="setting-item-tip">设置当前相机位置为初始化位置</div>
-        </div>
+        </template>
       </div>
       <div class="panel-footer">
         <a-button type="primary" size="small" @click.stop="saveSettings">保存设置</a-button>
@@ -188,6 +284,56 @@
         </a-button>
       </div>
       <div class="edit-modal-content">
+        <template v-if="isMobile">
+          <div class="mobile-edit-layout">
+            <div class="mobile-segmented mobile-segmented-compact">
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileEditSection === 'x' }" @click="mobileEditSection = 'x'">X 轴</button>
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileEditSection === 'y' }" @click="mobileEditSection = 'y'">Y 轴</button>
+              <button type="button" class="mobile-segmented-btn" :class="{ active: mobileEditSection === 'z' }" @click="mobileEditSection = 'z'">Z 轴</button>
+            </div>
+            <div class="mobile-edit-body">
+              <div v-if="mobileEditSection === 'x'" class="mobile-axis-panel">
+                <div class="axis-slider-row">
+                  <a-button class="axis-side-btn" size="small" :type="currentAxis === 'x+' ? 'primary' : 'default'" @click.stop="selectAxis('x+')">X+</a-button>
+                  <a-slider :value="axisValues['x+']" :min="getAxisRange('x+').min" :max="getAxisRange('x+').max" :step="getAxisRange('x+').step" @change="handleAxisValueChange('x+', $event)" class="param-slider" />
+                  <span class="axis-row-value">{{ (axisValues['x+'] ?? 0).toFixed(2) }}</span>
+                </div>
+                <div class="axis-slider-row">
+                  <a-button class="axis-side-btn" size="small" :type="currentAxis === 'x-' ? 'primary' : 'default'" @click.stop="selectAxis('x-')">X-</a-button>
+                  <a-slider :value="axisValues['x-']" :min="getAxisRange('x-').min" :max="getAxisRange('x-').max" :step="getAxisRange('x-').step" @change="handleAxisValueChange('x-', $event)" class="param-slider" />
+                  <span class="axis-row-value">{{ (axisValues['x-'] ?? 0).toFixed(2) }}</span>
+                </div>
+              </div>
+
+              <div v-else-if="mobileEditSection === 'y'" class="mobile-axis-panel">
+                <div class="axis-slider-row">
+                  <a-button class="axis-side-btn" size="small" :type="currentAxis === 'y+' ? 'primary' : 'default'" @click.stop="selectAxis('y+')">Y+</a-button>
+                  <a-slider :value="axisValues['y+']" :min="getAxisRange('y+').min" :max="getAxisRange('y+').max" :step="getAxisRange('y+').step" @change="handleAxisValueChange('y+', $event)" class="param-slider" />
+                  <span class="axis-row-value">{{ (axisValues['y+'] ?? 0).toFixed(2) }}</span>
+                </div>
+                <div class="axis-slider-row">
+                  <a-button class="axis-side-btn" size="small" :type="currentAxis === 'y-' ? 'primary' : 'default'" @click.stop="selectAxis('y-')">Y-</a-button>
+                  <a-slider :value="axisValues['y-']" :min="getAxisRange('y-').min" :max="getAxisRange('y-').max" :step="getAxisRange('y-').step" @change="handleAxisValueChange('y-', $event)" class="param-slider" />
+                  <span class="axis-row-value">{{ (axisValues['y-'] ?? 0).toFixed(2) }}</span>
+                </div>
+              </div>
+
+              <div v-else class="mobile-axis-panel">
+                <div class="axis-slider-row">
+                  <a-button class="axis-side-btn" size="small" :type="currentAxis === 'z+' ? 'primary' : 'default'" @click.stop="selectAxis('z+')">Z+</a-button>
+                  <a-slider :value="axisValues['z+']" :min="getAxisRange('z+').min" :max="getAxisRange('z+').max" :step="getAxisRange('z+').step" @change="handleAxisValueChange('z+', $event)" class="param-slider" />
+                  <span class="axis-row-value">{{ (axisValues['z+'] ?? 0).toFixed(2) }}</span>
+                </div>
+                <div class="axis-slider-row">
+                  <a-button class="axis-side-btn" size="small" :type="currentAxis === 'z-' ? 'primary' : 'default'" @click.stop="selectAxis('z-')">Z-</a-button>
+                  <a-slider :value="axisValues['z-']" :min="getAxisRange('z-').min" :max="getAxisRange('z-').max" :step="getAxisRange('z-').step" @change="handleAxisValueChange('z-', $event)" class="param-slider" />
+                  <span class="axis-row-value">{{ (axisValues['z-'] ?? 0).toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
         <div class="axis-panels">
           <div class="axis-panel">
             <div class="axis-panel-header">
@@ -240,6 +386,7 @@
             </div>
           </div>
         </div>
+        </template>
       </div>
       <div class="panel-footer">
         <a-button size="small" @click.stop="resetEntity">重置</a-button>
@@ -336,9 +483,11 @@
           :class="{ active: viewerControls.showInfo }"
           @click.stop="toggleInfoPanel"
           :disabled="isRecordingVideo || isEncodingVideo"
+          :aria-label="'特效'"
+          :title="isMobile ? '特效' : undefined"
         >
           <template #icon><AppstoreOutlined /></template>
-          特效
+          <span v-if="!isMobile">特效</span>
         </a-button>
       </a-tooltip>
       <a-tooltip :title="viewerControls.isOrbitMode ? '切换轨道模式' : '切换飞行模式'" placement="left">
@@ -349,9 +498,11 @@
           :class="{ active: !viewerControls.isOrbitMode }"
           @click.stop="toggleMeshCursor"
           :disabled="isRecordingVideo || isEncodingVideo"
+          :aria-label="viewerControls.isOrbitMode ? '轨道' : '飞行'"
+          :title="isMobile ? (viewerControls.isOrbitMode ? '轨道' : '飞行') : undefined"
         >
           <template #icon><AimOutlined /></template>
-          {{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}
+          <span v-if="!isMobile">{{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}</span>
         </a-button>
       </a-tooltip>
       <a-tooltip title="参数设置" placement="left">
@@ -362,9 +513,11 @@
           :class="{ active: isSettingsMenuOpen }"
           @click.stop="toggleSettingsMenu"
           :disabled="isRecordingVideo || isEncodingVideo"
+          :aria-label="'设置'"
+          :title="isMobile ? '设置' : undefined"
         >
           <template #icon><SettingOutlined /></template>
-          设置
+          <span v-if="!isMobile">设置</span>
         </a-button>
       </a-tooltip>
       <a-tooltip title="模型编辑" placement="left">
@@ -375,9 +528,11 @@
           :class="{ active: isEditMenuOpen }"
           @click.stop="openModelEditMenu"
           :disabled="isRecordingVideo || isEncodingVideo"
+          :aria-label="'编辑'"
+          :title="isMobile ? '编辑' : undefined"
         >
           <template #icon><EditOutlined /></template>
-          编辑
+          <span v-if="!isMobile">编辑</span>
         </a-button>
       </a-tooltip>
       <a-tooltip :title="isAnnotationEditMenuOpen ? '退出标注' : '标注'" placement="left">
@@ -388,9 +543,11 @@
           :class="{ active: isAnnotationEditMenuOpen }"
           @click.stop="openAnnotationEditMenu"
           :disabled="isRecordingVideo || isEncodingVideo"
+          :aria-label="'标注'"
+          :title="isMobile ? '标注' : undefined"
         >
           <template #icon><MessageOutlined /></template>
-          标注
+          <span v-if="!isMobile">标注</span>
         </a-button>
       </a-tooltip>
       <a-tooltip title="生成视频" placement="left">
@@ -401,10 +558,12 @@
           :class="{ active: showVideoEffectDialog }"
           @click.stop="openVideoEffectDialog"
           :disabled="isRecordingVideo || isEncodingVideo"
+          :aria-label="'视频'"
+          :title="isMobile ? '视频' : undefined"
 
         >
           <template #icon><VideoCameraOutlined /></template>
-          视频
+          <span v-if="!isMobile">视频</span>
         </a-button>
       </a-tooltip>
     </div>
@@ -441,19 +600,19 @@
                 <PauseOutlined v-if="isLoopPlaying" />
                 <CaretRightOutlined v-else />
               </template>
-              {{ isLoopPlaying ? '暂停' : '播放' }}
+              <span v-if="!isMobile">{{ isLoopPlaying ? '暂停' : '播放' }}</span>
             </a-button>
           </a-tooltip>
           <a-tooltip title="重置视角">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="resetCamera" :disabled="!skullEntity || isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="resetCamera" :disabled="!skullEntity || isRecordingVideo || isEncodingVideo" :aria-label="'重置'" :title="isMobile ? '重置' : undefined">
               <template #icon><ReloadOutlined /></template>
-              重置
+              <span v-if="!isMobile">重置</span>
             </a-button>
           </a-tooltip>
           <a-tooltip title="操作说明">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="showGestureModal = true" :disabled="isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="showGestureModal = true" :disabled="isRecordingVideo || isEncodingVideo" :aria-label="'说明'" :title="isMobile ? '说明' : undefined">
               <template #icon><QuestionCircleOutlined /></template>
-              说明
+              <span v-if="!isMobile">说明</span>
             </a-button>
           </a-tooltip>
         </div>
@@ -461,39 +620,39 @@
         <!-- 右侧按钮组：分享、导出、嵌入、全屏 -->
         <div class="btn-group right">
           <a-tooltip title="分享">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleSharePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleSharePlaceholder" :disabled="isRecordingVideo || isEncodingVideo" :aria-label="'分享'" :title="isMobile ? '分享' : undefined">
               <template #icon><ShareAltOutlined /></template>
-              分享
+              <span v-if="!isMobile">分享</span>
             </a-button>
           </a-tooltip>
           <a-tooltip title="导出模型">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleExportPlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleExportPlaceholder" :disabled="isRecordingVideo || isEncodingVideo" :aria-label="'导出'" :title="isMobile ? '导出' : undefined">
               <template #icon><ExportOutlined /></template>
-              导出
+              <span v-if="!isMobile">导出</span>
             </a-button>
           </a-tooltip>
           <a-tooltip title="嵌入代码">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleEmbedCodePlaceholder" :disabled="isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="handleEmbedCodePlaceholder" :disabled="isRecordingVideo || isEncodingVideo" :aria-label="'嵌入'" :title="isMobile ? '嵌入' : undefined">
               <template #icon><CodeOutlined /></template>
-              嵌入
+              <span v-if="!isMobile">嵌入</span>
             </a-button>
           </a-tooltip>
           <a-tooltip :title="showGrid ? '隐藏网格' : '显示网格'">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleGrid" :disabled="isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleGrid" :disabled="isRecordingVideo || isEncodingVideo" :aria-label="'网格'" :title="isMobile ? '网格' : undefined">
               <template #icon>
                 <BorderOuterOutlined  v-if="showGrid" />
                 <BorderOutlined v-else />
               </template>
-              网格
+              <span v-if="!isMobile">网格</span>
             </a-button>
           </a-tooltip>
           <a-tooltip :title="isFullscreen ? '退出全屏' : '全屏'">
-            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleFullscreen" :disabled="isRecordingVideo || isEncodingVideo">
+            <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleFullscreen" :disabled="isRecordingVideo || isEncodingVideo" :aria-label="isFullscreen ? '退出全屏' : '全屏'" :title="isMobile ? (isFullscreen ? '退出全屏' : '全屏') : undefined">
               <template #icon>
                 <FullscreenExitOutlined v-if="isFullscreen" />
                 <FullscreenOutlined v-else />
               </template>
-              {{ isFullscreen ? '退出' : '全屏' }}
+              <span v-if="!isMobile">{{ isFullscreen ? '退出' : '全屏' }}</span>
             </a-button>
           </a-tooltip>
         </div>
@@ -1196,6 +1355,8 @@ export default {
       effectOptions: EFFECT_OPTIONS,
       mouseDownPos: { x: 0, y: 0 },
       isMobile: false,
+      mobileSettingsSection: 'motion',
+      mobileEditSection: 'x',
       showGrid: true,
       gridEntity: null,
       hasClickAnnotation:false,
@@ -1289,6 +1450,12 @@ export default {
     }
   },
   methods: {
+    toggleMobileSettingsSection(section) {
+      this.mobileSettingsSection = this.mobileSettingsSection === section ? null : section;
+    },
+    toggleMobileEditSection(section) {
+      this.mobileEditSection = this.mobileEditSection === section ? null : section;
+    },
     // 格式化时间显示为 mm:ss
     formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
@@ -1358,14 +1525,14 @@ export default {
         clearTimeout(this.controlsHideTimer);
       }
       // 当编辑面板打开时，不自动隐藏
-      const isPanelOpen = this.viewerControls.showInfo ||
-        this.isSettingsMenuOpen ||
-        this.isEditMenuOpen ||
-        this.showVideoEffectDialog;
-      if (isPanelOpen) {
-        return;
-      }
       this.controlsHideTimer = setTimeout(() => {
+        const isPanelOpen = this.viewerControls.showInfo ||
+          this.isSettingsMenuOpen ||
+          this.isEditMenuOpen ||
+          this.showVideoEffectDialog;
+        if (isPanelOpen) {
+          return;
+        }
         this.showControls = false;
       }, 3000);
     },
@@ -1960,6 +2127,9 @@ export default {
       this.isAnnotationEditMenuOpen = false;
       if (this.isEditMenuOpen) {
         this.stopLoopPlayback(false);
+        if (this.isMobile && !this.mobileEditSection) {
+          this.mobileEditSection = 'x';
+        }
       }
       
       if (this.isEditMenuOpen) {
@@ -3228,6 +3398,9 @@ export default {
       if(this.isRecordingVideo || this.isEncodingVideo) return;
       if (!this.isSettingsMenuOpen) {
         this.hideOtherFeatureBubbles('settings');
+        if (this.isMobile && !this.mobileSettingsSection) {
+          this.mobileSettingsSection = 'motion';
+        }
         this.snapshotSettings(); // 打开设置面板时保存快照
       }
       this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
@@ -5665,28 +5838,402 @@ export default {
   font-size: 16px;
 }
 
+
+
 /* 响应式 */
 @media (max-width: 768px) {
-  .feature-panel {
-    right: 8px;
-    left: 8px;
-    width: auto;
-  }
-
+  .feature-panel,
   .feature-panel.top-right-panel {
     left: 8px;
     right: 8px;
+    top: auto;
+    bottom: calc(8px + env(safe-area-inset-bottom));
     width: auto;
+    max-width: none;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 14px 34px rgba(5, 15, 30, 0.28);
+    transform: translateY(calc(100% + 24px));
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+    animation: none;
+    z-index: 1003;
+  }
+
+  .feature-panel.visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .feature-panel .panel-header {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 10px 12px 6px;
+  }
+
+  .feature-panel .panel-header .ant-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .feature-panel .panel-header span {
+    font-size: 13px;
+  }
+
+  .effect-scroll-container,
+  .settings-content,
+  .edit-modal-content,
+  .video-effect-selector {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .effect-scroll-container,
+  .settings-content,
+  .edit-modal-content {
+    padding: 10px 12px 12px;
+  }
+
+  .video-effect-selector {
+    padding: 10px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .panel-footer {
+    flex: 0 0 auto;
+    gap: 6px;
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 -8px 18px rgba(0, 0, 0, 0.04);
+  }
+
+  .panel-footer .ant-btn {
+    height: 34px;
+    font-size: 12px;
+    border-radius: 9px;
+  }
+
+  .effect-panel .effect-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .effect-panel .effect-grid,
+  .video-panel .video-effect-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+    align-items: stretch;
+  }
+
+  .effect-panel .effect-scroll-container {
+    overflow-x: auto;
+  }
+
+  .video-panel .video-effect-selector {
+    overflow: visible;
+  }
+
+  .effect-panel .effect-card,
+  .video-panel .effect-option {
+    flex: 0 0 108px;
+    width: 108px;
+    max-width: 108px;
+    min-height: 92px;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+
+  .effect-panel .effect-card-thumb {
+    height: 56px;
+  }
+
+  .effect-panel .effect-card-title,
+  .video-effect-selector .effect-name {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .settings-panel .settings-groups,
+  .edit-panel .axis-panels {
+    display: none;
+  }
+
+  .mobile-settings-layout,
+  .mobile-edit-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-segmented {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .mobile-segmented-compact {
+    margin-bottom: 8px;
+  }
+
+  .mobile-segmented-btn {
+    min-height: 32px;
+    padding: 0 8px;
+    border-radius: 10px;
+    border: none;
+    background: #eef2f7;
+    color: #5b6575;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-segmented-btn.active {
+    background: linear-gradient(135deg, #edf4ff 0%, #f7fbff 100%);
+    color: #1677ff;
+    box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.18);
+  }
+
+  .mobile-settings-section,
+  .mobile-axis-panel {
+    display: grid;
+    gap: 6px;
+  }
+
+  .mobile-settings-body,
+  .mobile-edit-body {
+    min-height: 0;
+  }
+
+  .mobile-settings-section-speed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobile-settings-section-view {
+    grid-template-columns: 116px minmax(0, 1fr);
+  }
+
+  .mobile-setting-card,
+  .mobile-axis-panel {
+    min-width: 0;
+    padding: 8px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  }
+
+  .mobile-setting-card-wide {
+    display: grid;
+    gap: 4px;
+    align-content: center;
+  }
+
+  .mobile-setting-card-initial {
+    display: grid;
+    align-content: center;
+    gap: 4px;
+  }
+
+  .mobile-setting-card .setting-label {
+    min-height: 14px;
+  }
+
+  .settings-panel .setting-label {
+    display: block;
+    margin-bottom: 2px;
+    white-space: normal;
+    font-size: 11px;
+  }
+
+  .settings-panel .setting-slider-control {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    gap: 2px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-panel :deep(.ant-select) {
+    width: 100% !important;
+  }
+
+  .settings-panel :deep(.ant-select-selector) {
+    min-height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .settings-panel .custom-motion-btn {
+    min-height: 34px;
+    font-size: 11px;
+  }
+
+  .settings-panel .setting-value {
+    min-width: 0;
+    font-size: 10px;
+    text-align: right;
+  }
+
+  .settings-panel .setting-item-tip {
+    margin-top: 0;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .edit-panel .mobile-axis-panel {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+  }
+
+  .edit-panel .axis-slider-row {
+    grid-template-columns: 48px minmax(0, 1fr) 40px;
+    display: grid;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .edit-panel .axis-side-btn {
+    min-width: 48px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 11px;
+    padding: 0;
+  }
+
+  .edit-panel .axis-row-value {
+    min-width: 40px;
+    font-size: 10px;
+  }
+
+  .edit-panel .axis-slider-row .param-slider {
+    min-width: 0;
+  }
+
+  .settings-panel .panel-footer,
+  .edit-panel .panel-footer {
+    padding-top: 6px;
+  }
+
+  .video-effect-selector .effect-option {
+    min-height: 118px;
+    justify-content: flex-start;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    scroll-snap-align: start;
+  }
+
+  .video-effect-selector .effect-icon {
+    width: 100%;
+    max-width: 100%;
+    height: 72px;
+    flex: 0 0 72px;
+    margin-bottom: 6px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e8edf5 0%, #d8e1ee 100%);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .video-panel .video-effect-grid {
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .video-panel .effect-option.active {
+    background: linear-gradient(180deg, #f4f8ff 0%, #eaf3ff 100%);
+    box-shadow: 0 10px 22px rgba(22, 119, 255, 0.16);
+  }
+
+  .video-panel .no-effect-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5b6575;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.08)),
+      repeating-linear-gradient(-45deg, #eef2f7 0 10px, #dde5ef 10px 20px);
+  }
+
+  .video-panel .effect-icon-img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .video-panel .effect-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: left;
+    padding: 0 2px;
+  }
+
+  .video-effect-selector .tips-text {
+    min-width: 0;
+    width: auto;
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 10px;
+    line-height: 1.3;
+    border-radius: 10px;
+    color: #526071;
+    background: rgba(232, 238, 247, 0.8);
+  }
+
+  .settings-panel .setting-section-title,
+  .edit-panel .axis-panel-title,
+  .edit-panel .axis-panel-icon {
+    font-size: 11px;
+  }
+
+  .effect-panel .effect-grid::-webkit-scrollbar,
+  .video-panel .video-effect-grid::-webkit-scrollbar,
+  .effect-scroll-container::-webkit-scrollbar,
+  .video-effect-selector::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+
+  .effect-panel .effect-grid::-webkit-scrollbar-thumb,
+  .video-panel .video-effect-grid::-webkit-scrollbar-thumb,
+  .effect-scroll-container::-webkit-scrollbar-thumb,
+  .video-effect-selector::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.16);
+    border-radius: 999px;
   }
 
   .mode-tip {
     top: 10px;
     padding: 6px 14px;
     font-size: 12px;
-  }
-
-  .feature-panel:not(.top-right-panel) {
-    top: 56px;
   }
 
   .bottom-controls {
@@ -5889,7 +6436,7 @@ export default {
   height: auto;
 } */
 </style>
-
+video-effect-grid
 <style>
 html{
   overflow: hidden;

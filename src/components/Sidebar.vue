@@ -1,4 +1,9 @@
 <template>
+  <!-- Mobile Overlay -->
+  <Transition name="fade">
+    <div v-if="isOpen" class="sidebar-overlay" @click="handleClose"></div>
+  </Transition>
+
   <aside class="sidebar" :class="{ open: isOpen }">
     <!-- Logo -->
     <div class="sidebar-header">
@@ -123,6 +128,11 @@ const emit = defineEmits<{
   'update:isOpen': [value: boolean]
 }>()
 
+// 关闭侧边栏
+const handleClose = () => {
+  emit('update:isOpen', false)
+}
+
 const router = useRouter()
 const { t } = useI18n()
 const activeRoute = computed(() => router.currentRoute.value.path)
@@ -223,7 +233,7 @@ const toolsMenu = computed(() => [
   // { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },
   // { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },
   // { name: 'unreal', label: t('sidebar.unreal'), path: '/tools/unreal', icon: UnrealIcon },
-  { name: 'tutorial', label: t('sidebar.tutorial'), path: '/tools/tutorial', icon: TutorialIcon },
+  // { name: 'tutorial', label: t('sidebar.tutorial'), path: '/tools/tutorial', icon: TutorialIcon },
   // { name: 'settings', label: t('sidebar.settings'), path: '/tools/settings', icon: SettingsIcon },
   { name: 'feedback', label: t('sidebar.feedback'), path: '/tools/feedback', icon: FeedbackIcon }
 ])
@@ -434,10 +444,43 @@ const handleNavClick = (path: string) => {
   color: var(--text-primary);
 }
 
+/* Mobile Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 99;
+  display: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Only show overlay on mobile */
+@media (max-width: 1023px) {
+  .sidebar-overlay {
+    display: block;
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 1023px) {
   .sidebar {
     transform: translateX(-100%);
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar.open {

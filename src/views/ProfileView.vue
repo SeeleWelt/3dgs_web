@@ -217,6 +217,7 @@
       :title="t('profile.changePassword')"
       :ok-text="t('common.confirm')"
       :cancel-text="t('common.cancel')"
+      :confirm-loading="isChangePwdLoading"
       @ok="handleChangePwd"
     >
       <a-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" layout="vertical" class="pwd-form" @keydown.enter.prevent="handleChangePwd">
@@ -258,6 +259,7 @@
         v-model:value="nameValue"
         :placeholder="t('profile.enterNickname')"
         @press.enter="saveName"
+        @keydown.enter.prevent="saveName"
       />
     </a-modal>
 
@@ -553,6 +555,7 @@ const cropperFileName = ref('avatar.jpg')
 
 // 修改密码
 const showChangePwdModal = ref(false)
+const isChangePwdLoading = ref(false)
 const pwdFormRef = ref<FormInstance>()
 const pwdForm = ref({
   oldPwd: '',
@@ -747,8 +750,10 @@ const handleChangePwd = async () => {
     return
   }
 
+  isChangePwdLoading.value = true
   const oldPwdValue = isPhoneLoginUser.value ? '' : pwdForm.value.oldPwd.trim()
   const ok = await userStore.modifyPassword(oldPwdValue, pwdForm.value.newPwd.trim())
+  isChangePwdLoading.value = false
   if (!ok) return
 
   showChangePwdModal.value = false
@@ -853,9 +858,10 @@ const openBindEmailModal = () => {
   if (hasBoundEmail.value) {
     return
   }
-  bindEmailStep.value = 'email'
-  bindEmailForm.value = { email: '', code: '' }
-  showBindEmailModal.value = true
+  message.info('目前处于测试阶段，绑定邮箱功能暂未开放')
+  // bindEmailStep.value = 'email'
+  // bindEmailForm.value = { email: '', code: '' }
+  // showBindEmailModal.value = true
 }
 
 const closeBindEmailModal = () => {
@@ -909,13 +915,14 @@ onBeforeUnmount(() => {
 .profile-page {
   min-height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  color: var(--text-primary, #111827);
 }
 
 .profile-container {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 32px 24px 48px;
 }
@@ -927,8 +934,8 @@ onBeforeUnmount(() => {
   border-radius: 20px;
   padding: 32px;
   margin-bottom: 24px;
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.12);
 }
 
 .header-main {
@@ -948,7 +955,7 @@ onBeforeUnmount(() => {
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid #fff;
+  border: 4px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   transition: transform 0.3s ease;
 }
@@ -976,7 +983,7 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--accent-blue, #0072ff), var(--accent-purple, #AF52DE));
   border: 3px solid #fff;
   display: flex;
   align-items: center;
@@ -1004,15 +1011,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .username {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
   margin: 0;
-  background: linear-gradient(135deg, #1a1a2e, #4a4a6a);
+  line-height: 1.15;
+  background: linear-gradient(135deg, var(--text-primary, #0f172a), rgba(15, 23, 42, 0.68));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1034,19 +1042,24 @@ onBeforeUnmount(() => {
 
 .user-meta {
   display: flex;
-  gap: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary, rgba(0, 0, 0, 0.6));
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
 }
 
 .meta-item :deep(.anticon) {
-  color: #999;
+  color: var(--text-tertiary, rgba(0, 0, 0, 0.4));
 }
 
 /* 算力点卡片 */
@@ -1054,18 +1067,18 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
-  border-radius: 12px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(0, 114, 255, 0.12), rgba(175, 82, 222, 0.08));
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 140px;
+  min-width: 168px;
 }
 
 .points-card:hover {
-  background: #f0f0f0;
-  border-color: #d9d9d9;
+  transform: translateY(-1px);
+  border-color: var(--glass-border-hover, rgba(0, 0, 0, 0.12));
 }
 
 .points-icon :deep(svg) {
@@ -1079,14 +1092,14 @@ onBeforeUnmount(() => {
 
 .points-value {
   font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
   line-height: 1.2;
 }
 
 .points-label {
   font-size: 12px;
-  color: #999;
+  color: var(--text-tertiary, rgba(0, 0, 0, 0.4));
 }
 
 .points-arrow {
@@ -1097,7 +1110,7 @@ onBeforeUnmount(() => {
 /* 主体布局 */
 .profile-body {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 340px 1fr;
   gap: 24px;
 }
 
@@ -1113,24 +1126,24 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
 .sidebar-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
   margin: 0 0 20px 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .sidebar-title :deep(.anticon) {
-  color: #667eea;
+  color: var(--accent-blue, #0072ff);
 }
 
 /* 账户概览 */
@@ -1172,26 +1185,27 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: #f8f9ff;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .security-item:hover {
-  background: #eef0ff;
+  background: rgba(255, 255, 255, 0.72);
   transform: translateX(4px);
 }
 
 .security-icon {
-  color: #667eea;
+  color: var(--accent-blue, #0072ff);
   font-size: 18px;
 }
 
 .security-text {
   flex: 1;
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary, #0f172a);
 }
 
 .security-arrow {
@@ -1220,8 +1234,8 @@ onBeforeUnmount(() => {
 }
 
 .action-btn:hover {
-  border-color: #667eea !important;
-  color: #667eea !important;
+  border-color: var(--accent-blue, #0072ff) !important;
+  color: var(--accent-blue, #0072ff) !important;
   background: #f8f9ff !important;
 }
 
@@ -1237,8 +1251,8 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
 .card-header {
@@ -1247,21 +1261,21 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .card-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
   margin: 0;
 }
 
 .card-title :deep(.anticon) {
-  color: #667eea;
+  color: var(--accent-blue, #0072ff);
 }
 
 .edit-btn {
@@ -1280,24 +1294,28 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .info-label {
   font-size: 13px;
-  color: #999;
+  color: var(--text-tertiary, rgba(0, 0, 0, 0.4));
 }
 
 .info-value {
   font-size: 15px;
-  color: #333;
-  font-weight: 500;
+  color: var(--text-primary, #0f172a);
+  font-weight: 600;
 }
 
 .bind-link-btn {
   display: inline-flex !important;
   align-items: center !important;
   gap: 4px !important;
-  color: #667eea !important;
+  color: var(--accent-blue, #0072ff) !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 2px 8px !important;
@@ -1307,18 +1325,18 @@ onBeforeUnmount(() => {
 }
 
 .bind-link-btn:hover {
-  background: rgba(102, 126, 234, 0.1) !important;
-  color: #5a6fd6 !important;
+  background: rgba(0, 114, 255, 0.1) !important;
+  color: var(--accent-blue, #0072ff) !important;
 }
 
 .nickname-edit-link {
   padding: 0 4px !important;
   height: auto !important;
-  color: #999 !important;
+  color: var(--text-tertiary, rgba(0, 0, 0, 0.4)) !important;
 }
 
 .nickname-edit-link:hover {
-  color: #667eea !important;
+  color: var(--accent-blue, #0072ff) !important;
 }
 
 /* 设置列表 */
@@ -1332,7 +1350,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .settings-item:last-child {
@@ -1346,7 +1364,7 @@ onBeforeUnmount(() => {
 }
 
 .settings-icon {
-  color: #667eea;
+  color: var(--accent-blue, #0072ff);
   font-size: 18px;
 }
 
@@ -1706,21 +1724,32 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 768px) {
-  .profile-container {
-    padding: 0 16px 32px;
+  .profile-page {
+    overflow: visible;
   }
+
+  .profile-container {
+    padding: 0 12px calc(24px + env(safe-area-inset-bottom));
+  }
+
   .profile-header-card {
-    padding: 24px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  }
+
+  .profile-header-card {
+    padding: 18px;
+    border-radius: 18px;
   }
 
   .header-main {
     flex-direction: column;
     text-align: center;
+    gap: 18px;
   }
 
   .avatar-wrapper {
-    width: 100px;
-    height: 100px;
+    width: 96px;
+    height: 96px;
   }
 
   .username {
@@ -1730,14 +1759,48 @@ onBeforeUnmount(() => {
   .user-meta {
     justify-content: center;
     flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
 
   .points-card {
     width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  .points-card svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .profile-body {
+    gap: 14px;
+  }
+
+  .sidebar-card,
+  .content-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .security-item:hover {
+    transform: none;
+  }
+
+  .action-btn:hover {
+    transform: none;
+  }
+
+  .card-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .info-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .overview-stats {

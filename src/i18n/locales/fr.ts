@@ -172,6 +172,7 @@ export default {
       feedback: 'Retour',
       language: 'Français',
       logout: 'Déconnexion',
+      logoutConfirm: 'Êtes-vous sûr de vouloir vous déconnecter ?',
       selectLanguage: 'Choisir la langue',
       regularAccount: 'Compte Standard'
     },

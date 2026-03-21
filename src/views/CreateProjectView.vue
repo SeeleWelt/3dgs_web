@@ -17,11 +17,49 @@
       <!-- Header -->
       <div class="create-header">
         <h1>{{ t('create.title') }}</h1>
-        <p class="subtitle">{{ t('create.subtitle') }}</p>
+        <p class="subtitle desktop-only">{{ t('create.subtitle') }}</p>
+        <button class="help-btn mobile-only" @click="showHelp = true">
+          <QuestionCircleOutlined />
+          说明
+        </button>
       </div>
 
-      <!-- Upload Area -->
+      <!-- 帮助说明弹窗 -->
+      <a-modal
+        v-model:open="showHelp"
+        title="使用说明"
+        :footer="null"
+        width="320px"
+      >
+        <div class="help-content">
+          <p><strong>支持格式：</strong></p>
+          <p>• 图片：至少30张，JPG/PNG</p>
+          <p>• 视频：30秒~3分钟，MP4/MOV</p>
+          <p class="help-tip">建议使用清晰度高、光线充足的素材，效果更佳</p>
+        </div>
+      </a-modal>
+
+      <!-- Upload Area Wrapper with Processing Overlay -->
       <div class="upload-area-wrapper">
+        <!-- Loading Animation when processing files - covers both upload and progress areas -->
+        <div v-if="isProcessingFiles" class="processing-overlay-full">
+          <div class="processing-content">
+            <a-spin size="large" />
+            <p class="processing-text">
+              <template v-if="processingStage === 'checking'">正在检查文件分辨率...</template>
+              <template v-else-if="processingStage === 'resizing'">正在降低图片分辨率...</template>
+              <template v-else>正在处理文件，请稍候...</template>
+            </p>
+            <div v-if="processingProgress > 0 && processingStage === 'resizing'" class="processing-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: `${processingProgress}%` }"></div>
+              </div>
+              <span class="progress-text">{{ processingProgress }}%</span>
+            </div>
+            <p class="processing-file" v-if="processingFileName">{{ processingFileName }}</p>
+          </div>
+        </div>
+
         <FileUpload
           @upload="handleUpload"
           :max-image-count="MAX_IMAGE_COUNT"
@@ -29,39 +67,34 @@
           :compact="hasUploadedFiles"
           :min-image-count="MIN_IMAGE_COUNT"
           :min-video-duration-seconds="MIN_VIDEO_DURATION"
+          :disabled="isUploading"
         />
 
-        <!-- Loading Animation when processing files -->
-        <div v-if="isProcessingFiles" class="processing-overlay">
-          <div class="processing-content">
-            <a-spin size="large" />
-            <p class="processing-text">正在处理文件，请稍候...</p>
-          </div>
+        <!-- Upload Progress Area -->
+        <div class="upload-progress-wrapper" v-if="hasUploadedFiles">
+          <!-- Upload Progress -->
+          <UploadProgress
+            :task="uploadTask"
+            :image-files="imageFiles"
+            :current-points="currentPoints"
+            :consumed-points="consumedPoints"
+            :is-processing="isProcessingAddingImages"
+            :disabled="isUploading"
+            @open-advanced="openAdvancedDrawer"
+            @remove="removeFile"
+            @cancel="cancelUpload"
+            @submit="submitProject"
+            @remove-image="removeImage"
+            @add-image="triggerAddMoreImages"
+          />
         </div>
-      </div>
-
-      <!-- Upload Progress Area -->
-      <div class="upload-progress-wrapper" v-if="hasUploadedFiles">
-        <!-- Upload Progress -->
-        <UploadProgress
-          :task="uploadTask"
-          :image-files="imageFiles"
-          :current-points="currentPoints"
-          :consumed-points="consumedPoints"
-          @open-advanced="openAdvancedDrawer"
-          @remove="removeFile"
-          @cancel="cancelUpload"
-          @submit="submitProject"
-          @remove-image="removeImage"
-          @add-image="triggerAddMoreImages"
-        />
       </div>
 
       <a-drawer
         :open="showAdvancedOptions"
         title="高级选项"
         placement="right"
-        :width="380"
+        width="min(520px, 100vw)"
         @close="closeAdvancedDrawer"
       >
         <div class="advanced-panel">
@@ -140,12 +173,13 @@
 import { onBeforeUnmount, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { message } from 'ant-design-vue'
+import { message, Spin as aSpin, Modal as aModal } from 'ant-design-vue'
 import {
   BgColorsOutlined,
   FileTextOutlined,
   InfoCircleOutlined,
   ProfileOutlined,
+  QuestionCircleOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons-vue'
 import { useThemeStore } from '../stores/theme'
@@ -189,14 +223,194 @@ interface ImageFile {
 
 const uploadTask = ref<UploadTask | null>(null)
 const imageFiles = ref<ImageFile[]>([])
+// 分辨率参数
+const RESOLUTION_1K = { width: 1920, height: 1080 }
+const RESOLUTION_2K = { width: 2560, height: 1440 }
+const RESOLUTION_4K = { width: 3840, height: 2160 }
+const RESOLUTION_8K = { width: 7680, height: 4320 }
+
+// 默认 8K 分辨率
+const DEFAULT_MAX_RESOLUTION = RESOLUTION_8K
+
+// 获取分辨率标签
+const getResolutionLabel = (width: number, height: number): string => {
+  if (width >= RESOLUTION_8K.width || height >= RESOLUTION_8K.height) return '8K'
+  if (width >= RESOLUTION_4K.width || height >= RESOLUTION_4K.height) return '4K'
+  if (width >= RESOLUTION_2K.width || height >= RESOLUTION_2K.height) return '2K'
+  if (width >= RESOLUTION_1K.width || height >= RESOLUTION_1K.height) return '1K'
+  return `${width}x${height}`
+}
+
+const getMaxResolution = () => DEFAULT_MAX_RESOLUTION
+
+// 处理状态类型
+type ProcessingStage = 'idle' | 'checking' | 'resizing' | 'complete'
+
+// 处理状态
+const processingStage = ref<ProcessingStage>('idle')
+const processingProgress = ref(0)
+const processingFileName = ref('')
+
+// 获取图片分辨率
+const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight })
+      URL.revokeObjectURL(img.src)
+    }
+    img.onerror = () => {
+      resolve({ width: 0, height: 0 })
+      URL.revokeObjectURL(img.src)
+    }
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+// 获取视频分辨率
+const getVideoDimensions = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    video.onloadedmetadata = () => {
+      if (video.videoWidth > video.videoHeight) {
+        resolve({ width: video.videoWidth, height: video.videoHeight })
+      } else {
+        resolve({ width: video.videoHeight, height: video.videoWidth })
+      }
+      URL.revokeObjectURL(video.src)
+    }
+    video.onerror = () => {
+      resolve({ width: 0, height: 0 })
+      URL.revokeObjectURL(video.src)
+    }
+    video.src = URL.createObjectURL(file)
+  })
+}
+
+// 降低图片分辨率
+const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<File> => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      let { width, height } = img
+
+      // 计算缩放后的尺寸
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height)
+        width = Math.round(width * ratio)
+        height = Math.round(height * ratio)
+      }
+
+      // 创建 canvas 进行缩放
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height)
+        // 导出为 JPEG 格式
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(img.src)
+          if (blob) {
+            const resizedFile = new File([blob], file.name, { type: 'image/jpeg' })
+            resolve(resizedFile)
+          } else {
+            resolve(file)
+          }
+        }, 'image/jpeg', 0.92)
+      } else {
+        URL.revokeObjectURL(img.src)
+        resolve(file)
+      }
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src)
+      resolve(file)
+    }
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+// 检查并处理文件分辨率
+const checkAndProcessResolution = async (
+  files: File[],
+  fileType: 'image' | 'video'
+): Promise<{ files: File[]; resized: boolean }> => {
+  const maxRes = getMaxResolution()
+  let hasResized = false
+
+  // 开始检查分辨率阶段
+  processingStage.value = 'checking'
+  processingProgress.value = 0
+
+  const processedFiles: File[] = []
+
+  for (let i = 0; i < files.length; i++) {
+    processingFileName.value = files[i].name
+
+    let dimensions: { width: number; height: number }
+
+    if (fileType === 'image') {
+      dimensions = await getImageDimensions(files[i])
+    } else {
+      dimensions = await getVideoDimensions(files[i])
+    }
+
+    if (dimensions.width === 0 || dimensions.height === 0) {
+      // 获取失败时默认通过
+      processedFiles.push(files[i])
+      continue
+    }
+
+    // 检查是否需要降低分辨率
+    if (dimensions.width > maxRes.width || dimensions.height > maxRes.height) {
+      if (fileType === 'image') {
+        // 检查阶段完成后增加小延迟，让用户能看到阶段切换
+        if (i === 0) {
+          await new Promise(resolve => setTimeout(resolve, 200))
+        }
+        // 开始降低分辨率阶段，每个文件单独显示进度
+        processingStage.value = 'resizing'
+        processingProgress.value = 0
+        // 使用 requestAnimationFrame 让 UI 先渲染 0%
+        await new Promise(resolve => requestAnimationFrame(resolve))
+        const resizedFile = await resizeImage(files[i], maxRes.width, maxRes.height)
+        processingProgress.value = 100
+        processedFiles.push(resizedFile)
+        hasResized = true
+      } else {
+        // 视频超出分辨率限制，给出警告但不处理
+        message.warning(
+          `文件 "${files[i].name}" 分辨率 (${dimensions.width}x${dimensions.height}) 超过限制 (${getResolutionLabel(maxRes.width, maxRes.height)})`
+        )
+        processedFiles.push(files[i])
+      }
+    } else {
+      processedFiles.push(files[i])
+    }
+  }
+
+  processingStage.value = 'complete'
+  processingProgress.value = 100
+
+  return { files: processedFiles, resized: hasResized }
+}
+
 const tutorialRef = ref<InstanceType<typeof UploadTutorial> | null>(null)
 const isProcessingFiles = ref(false)  // 是否正在处理文件（生成缩略图等）
+const isProcessingAddingImages = ref(false)  // 是否正在处理添加更多图片的操作
 
 const showAdvancedOptions = ref(false)
+const showHelp = ref(false)
 
 // 检查是否已上传文件
 const hasUploadedFiles = computed(() => {
   return !!(uploadTask.value || imageFiles.value.length > 0)
+})
+
+// 检查是否正在上传
+const isUploading = computed(() => {
+  return uploadTask.value?.status === 'uploading'
 })
 
 const DEFAULT_BG_REMOVE_PARAMS = {
@@ -214,7 +428,7 @@ const advancedForm = ref({
 })
 
 const MAX_VIDEO_DURATION_SECONDS = 3 * 60
-const MAX_IMAGE_COUNT = 500
+const MAX_IMAGE_COUNT = 200
 const MIN_IMAGE_COUNT = 30  // 最少30张图片
 const MIN_VIDEO_DURATION = 30  // 最少30秒视频
 
@@ -382,7 +596,7 @@ const handleUpload = async (files: File[]) => {
       return
     }
 
-    // 开始处理文件，显示加载动画
+    // 开始处理文件，显示加载动画（覆盖整个区域）
     isProcessingFiles.value = true
 
     // 处理图片上传 - 清空视频
@@ -391,9 +605,17 @@ const handleUpload = async (files: File[]) => {
     }
     revokePreviewUrl()
     uploadTask.value = null
+    imageFiles.value = []
+
+    // 先检查并处理分辨率（显示进度）
+    const { files: processedFiles, resized } = await checkAndProcessResolution(files, 'image')
+
+    if (resized) {
+      message.success('部分图片分辨率已自动降低')
+    }
 
     // 处理图片列表（生成缩略图优化性能）
-    const imageFileList = await Promise.all(files.map(async (f) => {
+    const imageFileList = await Promise.all(processedFiles.map(async (f) => {
       const thumbnailUrl = await generateThumbnail(f, 300)
       return {
         id: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
@@ -409,8 +631,8 @@ const handleUpload = async (files: File[]) => {
     isProcessingFiles.value = false
 
     // 默认任务名称为第一张图片的名称
-    if (files.length > 0) {
-      advancedForm.value.taskName = getTaskNameFromFile(files[0].name)
+    if (processedFiles.length > 0) {
+      advancedForm.value.taskName = getTaskNameFromFile(processedFiles[0].name)
     }
     return
   }else if (file.type.startsWith('video/')) {
@@ -426,13 +648,17 @@ const handleUpload = async (files: File[]) => {
         URL.revokeObjectURL(img.previewUrl)
       }
     })
-    imageFiles.value = []
 
-    // 开始处理文件，显示加载动画
+
+    // 开始处理文件，显示加载动画（覆盖整个区域）
     isProcessingFiles.value = true
 
     try {
-      const durationSec = await resolveVideoDuration(file)
+      // 先检查视频分辨率
+      const { files: processedVideoFiles } = await checkAndProcessResolution([file], 'video')
+      const processedFile = processedVideoFiles[0]
+
+      const durationSec = await resolveVideoDuration(processedFile)
       if (!Number.isFinite(durationSec) || durationSec <= 0) {
         message.error('无法识别视频时长，请更换文件重试')
         isProcessingFiles.value = false
@@ -453,21 +679,23 @@ const handleUpload = async (files: File[]) => {
         uploadTask.value.abortController.abort()
       }
       revokePreviewUrl()
+      imageFiles.value = []
+      uploadTask.value = null
 
       uploadTask.value = {
         id: Math.random().toString(36).slice(2),
-        name: file.name,
-        size: file.size,
-        file,
+        name: processedFile.name,
+        size: processedFile.size,
+        file: processedFile,
         durationSec,
-        previewUrl: URL.createObjectURL(file),
+        previewUrl: URL.createObjectURL(processedFile),
         status: 'pending',
         progress: 0,
         abortController: null,
         uploadType: 'video',
       }
 
-      advancedForm.value.taskName = getTaskNameFromFile(file.name)
+      advancedForm.value.taskName = getTaskNameFromFile(processedFile.name)
 
       // 处理完成，隐藏加载动画
       isProcessingFiles.value = false
@@ -535,6 +763,8 @@ const triggerAddMoreImages = () => {
       return
     }
 
+    isProcessingAddingImages.value = true
+
     // 添加新图片到现有列表（生成缩略图优化性能）
     const newImageList = await Promise.all(Array.from(files).map(async (f) => {
       const thumbnailUrl = await generateThumbnail(f, 300)
@@ -546,6 +776,7 @@ const triggerAddMoreImages = () => {
         previewUrl: thumbnailUrl,  // 使用缩略图作为预览
       }
     }))
+    isProcessingAddingImages.value = false
 
     imageFiles.value = [...imageFiles.value, ...newImageList]
   }
@@ -833,16 +1064,22 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-.processing-overlay {
+/* 全屏处理遮罩层 - 覆盖上传和进度两个区域 */
+.processing-overlay-full {
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
   border-radius: 20px;
-  z-index: 100;
+  min-height: 400px;
 }
 
 .processing-content {
@@ -856,6 +1093,45 @@ onBeforeUnmount(() => {
   color: white;
   font-size: 16px;
   font-weight: 500;
+}
+
+.processing-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 200px;
+}
+
+.processing-progress .progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.processing-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4aa, #00b4d8);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.processing-progress .progress-text {
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: right;
+}
+
+.processing-file {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  max-width: 300px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .upload-progress-wrapper {
@@ -1122,6 +1398,49 @@ onBeforeUnmount(() => {
   color: #ef4444;
 }
 
+/* 帮助按钮 */
+.help-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.help-btn:hover {
+  background: var(--glass-surface-hover);
+  color: var(--text-primary);
+}
+
+.desktop-only {
+  display: inline;
+}
+
+.mobile-only {
+  display: none;
+}
+
+.help-content {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.help-content p {
+  margin: 0 0 8px;
+}
+
+.help-tip {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 12px !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .create-project-container {
@@ -1130,6 +1449,14 @@ onBeforeUnmount(() => {
 
   .create-header h1 {
     font-size: 20px;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: inline-flex;
   }
 
   .back-btn {

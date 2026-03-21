@@ -116,6 +116,12 @@ export class ApiServer {
             case 500:
               wrappedError.message = '服务器错误'
               break
+            case 901:
+              wrappedError.message = '认证失败，请重新登录'
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              localStorage.removeItem('has_seen_tutorial')
+              break
             default:
               wrappedError.message = ""
               break

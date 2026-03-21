@@ -65,25 +65,6 @@
             </button>
           </div>
 
-          <div class="divider">
-            <span>{{ t('login.or') }}</span>
-          </div>
-
-          <SocialLogin
-            :disabled="isLoading"
-            :agree="acceptedTerms"
-            @show-agreeTerms="handleShowAgreeTerms"
-            @google-success="handleGoogleCredentialWrapper"
-            @google-error="handleGoogleError"
-          />
-
-          <div class="terms-checkbox">
-            <a-checkbox v-model:checked="acceptedTerms">
-              <span class="terms-text">
-                {{ t('login.terms') }} <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> {{ t('login.and') }} <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
-              </span>
-            </a-checkbox>
-          </div>
         </div>
 
         <!-- Register View -->
@@ -180,25 +161,6 @@
             {{ t('login.hasAccount') }}<a href="#" @click.prevent="currentView = 'login'">{{ t('login.login') }}</a>
           </p>
 
-          <div class="divider">
-            <span>{{ t('login.or') }}</span>
-          </div>
-
-          <SocialLogin
-            :disabled="isLoading"
-            :agree="acceptedTerms"
-            @show-agreeTerms="handleShowAgreeTerms"
-            @google-success="handleGoogleCredentialWrapper"
-            @google-error="handleGoogleError"
-          />
-
-          <div v-if="!isEmailCodeStep" class="terms-checkbox">
-            <a-checkbox v-model:checked="acceptedTerms">
-              <span class="terms-text">
-                我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
-              </span>
-            </a-checkbox>
-          </div>
         </div>
 
         <!-- Login View -->
@@ -262,25 +224,6 @@
             {{ t('login.noAccount') }}<a href="#" @click.prevent="currentView = 'register'">{{ t('login.register') }}</a>
           </p>
 
-          <div class="divider">
-            <span>{{ t('login.or') }}</span>
-          </div>
-
-          <SocialLogin
-            :disabled="isLoading"
-            :agree="acceptedTerms"
-            @show-agreeTerms="handleShowAgreeTerms"
-            @google-success="handleGoogleCredentialWrapper"
-            @google-error="handleGoogleError"
-          />
-          
-          <div class="terms-checkbox">
-            <a-checkbox v-model:checked="acceptedTerms">
-              <span class="terms-text">
-                我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
-              </span>
-            </a-checkbox>
-          </div>
         </div>
 
         <!-- Phone Auth View -->
@@ -294,26 +237,34 @@
             @require-agree="checkAndProceedPhoneAuth"
           />
 
+        </div>  
+
+        <div class="social-login-block">
           <div class="divider">
             <span>{{ t('login.or') }}</span>
           </div>
 
           <SocialLogin
-            :disabled="isLoading || phoneAuthLoading"
+            :disabled="socialLoginDisabled"
             :agree="acceptedTerms"
             @show-agreeTerms="handleShowAgreeTerms"
             @google-success="handleGoogleCredentialWrapper"
             @google-error="handleGoogleError"
           />
-          
-          <div class="terms-checkbox">
+
+          <div v-if="showTermsCheckbox" class="terms-checkbox">
             <a-checkbox v-model:checked="acceptedTerms">
               <span class="terms-text">
-                我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+                <template v-if="currentView === 'welcome'">
+                  {{ t('login.terms') }} <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> {{ t('login.and') }} <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+                </template>
+                <template v-else>
+                  我已阅读并同意 <a href="#" @click.prevent>{{ t('login.termsLink') }}</a> 和 <a href="#" @click.prevent>{{ t('login.privacyLink') }}</a>
+                </template>
               </span>
             </a-checkbox>
           </div>
-        </div>  
+        </div>
       </div>
 
       <div class="auth-qr" v-else-if = "currentMode === 'qr'">
@@ -442,6 +393,12 @@ const loginFormRef = ref()
 const phoneAuthRef = ref()
 
 const phoneAuthLoading = computed(() => phoneAuthRef.value?.isLoading || false)
+const socialLoginDisabled = computed(() =>
+  currentView.value === 'phoneAuth' ? (isLoading.value || phoneAuthLoading.value) : isLoading.value
+)
+const showTermsCheckbox = computed(() =>
+  currentView.value !== 'register' || !isEmailCodeStep.value
+)
 
 // 注册表单数据
 const registerForm = ref({
@@ -962,6 +919,7 @@ onUnmounted(() => {
   position: absolute;
   top: 40px;
   left: 40px;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1344,16 +1302,92 @@ onUnmounted(() => {
     width: 100%;
     min-height: 100vh;
   }
+
+  .auth-mode-switch-content{
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 28px 20px 32px;
+    justify-content: flex-start;
+  }
+
+  .auth-wrapper {
+    padding-top: 12px;
+  }
+
+  .login-logo {
+    margin-bottom: 28px;
+  }
+
+  .login-logo-image {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+  }
+
+  .form-title {
+    font-size: 20px;
+  }
+
+  .form-subtitle {
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+
+  .divider {
+    margin: 20px 0;
+  }
+
+  .switch-text {
+    margin-top: 16px;
+  }
 }
 
 @media (max-width: 480px) {
   .auth-container {
-    padding: 20px;
+    padding: 20px 16px 28px;
   }
 
   .back-btn {
-    top: 20px;
-    left: 20px;
+    top: 16px;
+    left: 16px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .auth-mode-switch-content{
+    min-height: 0;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+  }
+
+  .terms-text {
+    font-size: 11px;
+  }
+
+  .terms-checkbox :deep(.ant-checkbox-wrapper) {
+    font-size: 11px;
+  }
+
+  .info-icon {
+    top: -24px;
+    left: 0;
+  }
+
+  .forgot-link {
+    top: -22px;
   }
 }
 </style>

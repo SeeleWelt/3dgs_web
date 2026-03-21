@@ -34,7 +34,7 @@
         :open="showAdvancedOptions"
         title="高级选项"
         placement="right"
-        :width="420"
+        :width="drawerWidth"
         @close="closeAdvancedDrawer"
       >
         <div class="advanced-panel">
@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
@@ -164,6 +164,7 @@ interface UploadTask {
 const uploadTask = ref<UploadTask | null>(null)
 
 const showAdvancedOptions = ref(false)
+const drawerWidth = ref<string | number>('520px')
 
 const DEFAULT_BG_REMOVE_PARAMS = {
   object_name: 'object',
@@ -231,6 +232,7 @@ const handleUpload = async (file: File) => {
       uploadTask.value.abortController.abort()
     }
     revokePreviewUrl()
+  window.removeEventListener('resize', updateDrawerWidth)
 
     uploadTask.value = {
       id: Math.random().toString(36).slice(2),
@@ -257,6 +259,7 @@ const removeFile = () => {
     return
   }
   revokePreviewUrl()
+  window.removeEventListener('resize', updateDrawerWidth)
   uploadTask.value = null
   showAdvancedOptions.value = false
 }
@@ -266,6 +269,14 @@ const openAdvancedDrawer = () => {
   showAdvancedOptions.value = true
 }
 
+const updateDrawerWidth = () => {
+  drawerWidth.value = window.innerWidth <= 768 ? '100%' : '520px'
+}
+
+onMounted(() => {
+  updateDrawerWidth()
+  window.addEventListener('resize', updateDrawerWidth)
+})
 const closeAdvancedDrawer = () => {
   if (uploadTask.value && !advancedForm.value.taskName.trim()) {
     advancedForm.value.taskName = getTaskNameFromFile(uploadTask.value.name)
@@ -336,6 +347,7 @@ const submitProject = async () => {
       if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
       if (uploadTask.value.status !== 'success') return
       revokePreviewUrl()
+  window.removeEventListener('resize', updateDrawerWidth)
       uploadTask.value = null
       showAdvancedOptions.value = false
     }, 1200)
@@ -361,6 +373,7 @@ onBeforeUnmount(() => {
     uploadTask.value.abortController?.abort()
   }
   revokePreviewUrl()
+  window.removeEventListener('resize', updateDrawerWidth)
 })
 </script>
 

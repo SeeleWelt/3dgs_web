@@ -632,4 +632,23 @@ defineExpose({
   color: #ff4d4f;
   margin-top: 4px;
 }
+
+@media (max-width: 640px) {
+  .phone-input {
+    width: 100%;
+  }
+
+  .phone-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  :deep(.verification-input input) {
+    width: 34px !important;
+    height: 36px !important;
+    margin: 0 3px !important;
+    font-size: 16px !important;
+  }
+}
 </style>

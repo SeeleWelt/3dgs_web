@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import API from '../utils/api'
 import { ApiServer } from '@/utils/taskService'
 import { message } from 'ant-design-vue'
+import router from '@/router'
 
 type UserInfoState = {
   headimg: string | null
@@ -89,6 +90,8 @@ export const useUserStore = defineStore('user', () => {
           return '邮件格式错误'
         case 401:
           return '错误的邮箱或密码'
+        case 429:
+          return '请求过于频繁，请稍后再试'
         case 430:
           return '账号已被封禁'
         case 432:
@@ -106,6 +109,8 @@ export const useUserStore = defineStore('user', () => {
           return '验证码错误或已过期'
         case 402:
           return '邮箱已注册'
+        case 429:
+          return '请求过于频繁，请稍后再试'
         case 421:
           return '密码必须至少8个字符，包含大写字母、小写字母和数字'
         default:
@@ -115,7 +120,7 @@ export const useUserStore = defineStore('user', () => {
 
     switch (statusCode) {
       case 400:
-        return '请求错误，请检查输入'
+        return '验证码错误或已过期'
       case 401:
         return '未授权，请重新登录'
       case 402:
@@ -247,16 +252,13 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // 登出
-  const logout = () => {
-    // 清除本地存储
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    
-    // 重置状态
-    isLoggedIn.value = false
-    userInfo.value = null
-    
-    console.log('用户已登出')
+  const logout = async () => {
+    const {success} = await signOut();
+    if(success){
+      message.success('登出成功')
+    }else{
+      message.error('登出失败')
+    }
   }
 
   // 初始化
@@ -288,6 +290,29 @@ export const useUserStore = defineStore('user', () => {
       console.warn('Failed to persist user to localStorage', e)
     }
   }
+
+  const signOut = async () => {
+    try {
+      await ApiServer.request({
+        method: 'POST',
+        url: API.USER_SIGNOUT
+      })
+      // 清除本地存储
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('has_seen_tutorial')
+      
+      // 重置状态
+      isLoggedIn.value = false
+      userInfo.value = null
+        // 跳转到登录页
+      router.push('/login')
+      return { success: true }
+    } catch (err: any) {
+      return { success: false }
+    }
+  }
+
 
   const modifyNickname = async (newNickname: string) => {
     try {

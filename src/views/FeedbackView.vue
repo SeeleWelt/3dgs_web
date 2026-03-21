@@ -430,6 +430,10 @@ async function submitFeedback() {
 
 /* 响应式 */
 @media (max-width: 768px) {
+  .feedback-page {
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+
   .page-header {
     padding: 28px 20px;
   }
@@ -462,7 +466,13 @@ async function submitFeedback() {
   }
 
   .feedback-container {
-    padding: 0 16px;
+    padding: 0;
+  }
+
+  .submit-btn {
+    height: 48px;
+    border-radius: 14px;
+    font-size: 15px;
   }
 }
 

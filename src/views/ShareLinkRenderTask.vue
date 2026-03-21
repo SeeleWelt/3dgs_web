@@ -80,7 +80,7 @@
               重置
             </a-button>
           </a-tooltip>
-          <a-tooltip title="操作说明">
+          <a-tooltip title="操作说明" v-if="false">
             <a-button type="text" class="control-icon-btn" @click.stop="showGestureModal = true">
               <template #icon><QuestionCircleOutlined /></template>
               说明
@@ -555,6 +555,10 @@ export default {
         clearTimeout(this.controlsHideTimer);
       }
       this.controlsHideTimer = setTimeout(() => {
+        const isDialogOpen = this.showGestureModal || this.showEmbedCodeDialog;
+        if (isDialogOpen) {
+          return;
+        }
         this.showControls = false;
       }, 3000);
     },
@@ -1953,6 +1957,10 @@ export default {
 
   .control-icon-btn .anticon {
     font-size: 16px;
+  }
+
+  .control-icon-btn :deep(span:not(.anticon)) {
+    display: none;
   }
 }
 

@@ -289,4 +289,28 @@ onMounted(async () => {
 .copy-btn {
   flex-shrink: 0;
 }
+
+@media (max-width: 640px) {
+  :deep(.ant-modal) {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .social-icons {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .social-item {
+    width: 72px;
+  }
+
+  .link-input-wrapper {
+    flex-direction: column;
+  }
+
+  .copy-btn {
+    width: 100%;
+  }
+}
 </style>

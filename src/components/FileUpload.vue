@@ -1,39 +1,20 @@
 <template>
   <div
-    :class="[props.compact ? 'file-upload-compact' : 'file-upload', { 'is-processing': isProcessingFiles }]"
+    :class="[props.compact ? 'file-upload-compact' : 'file-upload', props.disabled ? 'file-upload-disabled' : '']"
     @dragenter.prevent="handleDragEnter"
     @dragleave.prevent="handleDragLeave"
     @dragover.prevent
     @drop.prevent="handleDrop"
   >
-    <!-- Processing Overlay -->
-    <div v-if="isProcessingFiles" class="processing-overlay" :class="{ 'compact-mode': props.compact }">
-      <!-- Normal Mode: Full content with text -->
-      <div v-if="!props.compact" class="processing-content">
-        <a-spin size="large" />
-        <p class="processing-text">正在读取文件...</p>
-        <div v-if="processingProgress > 0" class="processing-progress">
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: `${processingProgress}%` }"></div>
-          </div>
-          <span class="progress-text">{{ processingProgress }}%</span>
-        </div>
-        <p class="processing-file" v-if="processingFileName">{{ processingFileName }}</p>
-      </div>
-      <!-- Compact Mode: Small spinner only -->
-      <div v-else class="processing-compact">
-        <a-spin size="small" />
-      </div>
-    </div>
-
     <!-- Compact Mode (Re-upload) -->
-    <div v-if="props.compact" class="compact-zone">
+    <div v-if="props.compact" class="compact-zone" :class="{ 'disabled': props.disabled }">
       <UploadOutlined />
-      <span class="compact-text">点击或拖拽重新上传文件</span>
+      <span class="desktop-only">点击或拖拽重新上传文件</span>
+      <span class="mobile-only">点击重新上传</span>
       <input
         ref="fileInput"
         type="file"
-        :accept="videoAcceptTypes"
+        :accept="videoAcceptTypes+','+imageAcceptTypes"
         multiple
         class="file-input"
         @change="handleFileSelect"
@@ -46,8 +27,8 @@
       <div class="upload-zone">
         <!-- Floating Format Icons -->
         <div class="floating-icons">
-          <!-- <span class="icon icon-jpg">JPG</span>
-          <span class="icon icon-png">PNG</span> -->
+          <span class="icon icon-jpg">JPG</span>
+          <span class="icon icon-png">PNG</span>
           <span class="icon icon-mov">MOV</span>
           <span class="icon icon-mp4">MP4</span>
         </div>
@@ -62,21 +43,16 @@
         </div>
 
         <!-- Upload Text -->
-        <!-- <div class="upload-text">
+        <div class="upload-text">
           <p class="main-text">点击上传或将视频/图片拖入此区域</p>
           <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）或图片（jpg, png,jpeg）</p>
-        </div> -->
-
-         <div class="upload-text">
-          <p class="main-text">点击上传或将视频拖入此区域</p>
-          <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）</p>
         </div>
 
         <!-- Hidden Input -->
         <input
           ref="fileInput"
           type="file"
-          :accept="videoAcceptTypes"
+          :accept="videoAcceptTypes+','+imageAcceptTypes"
           multiple
           class="file-input"
           @change="handleFileSelect"
@@ -84,24 +60,29 @@
       </div>
 
       <!-- Upload Info -->
-      <div class="upload-info">
+      <div class="upload-info desktop-only">
         <div class="info-row">
           <span class="info-label">视频上传：</span>
           <span class="info-content">
             · 支持的格式：mp4, mov, avi, mvk, webm
             · 最少 {{ props.minVideoDurationSeconds || 30 }} 秒，最多 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
             · 一次仅支持 1 个视频
-            · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下
+            · 分辨率限制：8K（7680x4320）及以下
           </span>
         </div>
-        <!-- <div class="info-row">
+        <div class="info-row">
           <span class="info-label">图片上传：</span>
           <span class="info-content">
             · 支持的格式：jpg, png, jpeg
             · 最少 {{ props.minImageCount || 30 }} 张，最多 {{ props.maxImageCount || 150 }} 张
-            · 分辨率限制：{{ getResolutionLabel(getMaxResolution().width, getMaxResolution().height) }}（2K: 2560x1440，4K: 3840x2160，8K: 7680x4320）及以下
+            · 分辨率限制：8K（7680x4320）及以下
           </span>
-        </div> -->
+        </div>
+      </div>
+
+      <!-- Mobile simplified info -->
+      <div class="upload-info mobile-only">
+        <span class="mobile-info-text">视频：{{ props.minVideoDurationSeconds || 30 }}秒~{{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }}分钟 | 图片：{{ props.minImageCount || 30 }}~{{ props.maxImageCount || 150 }}张</span>
       </div>
     </template>
   </div>
@@ -109,7 +90,6 @@
 
 <script setup lang="ts">
 import { message } from 'ant-design-vue'
-import { Spin as aSpin } from 'ant-design-vue'
 import { UploadOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
 
@@ -127,101 +107,11 @@ const props = defineProps<{
   minImageCount?: number
   minVideoDurationSeconds?: number
   compact?: boolean
+  disabled?: boolean
 }>()
-
-// 分辨率参数
-const RESOLUTION_1K = { width: 1920, height: 1080 }
-const RESOLUTION_2K = { width: 2560, height: 1440 }
-const RESOLUTION_4K = { width: 3840, height: 2160 }
-const RESOLUTION_8K = { width: 7680, height: 4320 }
-
-// 默认 2K 分辨率
-const DEFAULT_MAX_RESOLUTION = RESOLUTION_8K
-
-// 获取分辨率标签
-const getResolutionLabel = (width: number, height: number): string => {
-  if (width >= RESOLUTION_8K.width || height >= RESOLUTION_8K.height) return '8K'
-  if (width >= RESOLUTION_4K.width || height >= RESOLUTION_4K.height) return '4K'
-  if (width >= RESOLUTION_2K.width || height >= RESOLUTION_2K.height) return '2K'
-  if (width >= RESOLUTION_1K.width || height >= RESOLUTION_1K.height) return '1K'
-  return `${width}x${height}`
-}
-
-const getMaxResolution = () => props.maxResolution || DEFAULT_MAX_RESOLUTION
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
-
-// 文件读取进度相关
-const isProcessingFiles = ref(false)
-const processingProgress = ref(0)
-const processingFileName = ref('')
-
-// 获取图片分辨率
-const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.onload = () => {
-      resolve({ width: img.naturalWidth, height: img.naturalHeight })
-      URL.revokeObjectURL(img.src)
-    }
-    img.onerror = () => {
-      resolve({ width: 0, height: 0 })
-      URL.revokeObjectURL(img.src)
-    }
-    img.src = URL.createObjectURL(file)
-  })
-}
-
-// 获取视频分辨率
-const getVideoDimensions = (file: File): Promise<{ width: number; height: number }> => {
-  return new Promise((resolve) => {
-    const video = document.createElement('video')
-    video.onloadedmetadata = () => {
-      if(video.videoWidth > video.videoHeight)
-      {
-        resolve({ width: video.videoWidth, height: video.videoHeight })
-      }else {
-        resolve({ width: video.videoHeight, height: video.videoWidth })
-      }
-      URL.revokeObjectURL(video.src)
-    }
-    video.onerror = () => {
-      resolve({ width: 0, height: 0 })
-      URL.revokeObjectURL(video.src)
-    }
-    video.src = URL.createObjectURL(file)
-  })
-}
-
-// 检查文件分辨率
-const checkFileResolution = async (file: File): Promise<boolean> => {
-  const maxRes = getMaxResolution()
-  let dimensions: { width: number; height: number }
-
-  if (file.type.startsWith('image/')) {
-    dimensions = await getImageDimensions(file)
-  } else if (file.type.startsWith('video/')) {
-    dimensions = await getVideoDimensions(file)
-      console.log(dimensions)
-  } else {
-    return true // 未知类型默认通过
-  }
-
-  if (dimensions.width === 0 || dimensions.height === 0) {
-    return true // 获取失败时默认通过
-  }
-
-  if (dimensions.width > maxRes.width || dimensions.height > maxRes.height) {
-    const maxResLabel = maxRes.width >= 3840 ? '4K' : `${maxRes.width}x${maxRes.height}`
-    message.warning(
-      `文件 "${file.name}" 分辨率 (${dimensions.width}x${dimensions.height}) 超过限制 (${maxResLabel})，请上传不超过 ${maxResLabel} 分辨率的文件`
-    )
-    return false
-  }
-
-  return true
-}
 
 const handleDragEnter = () => {
   isDragging.value = true
@@ -231,35 +121,16 @@ const handleDragLeave = () => {
   isDragging.value = false
 }
 
-const handleDrop = async (e: DragEvent) => {
+const handleDrop = (e: DragEvent) => {
   isDragging.value = false
   const files = e.dataTransfer?.files
   if (files && files.length > 0) {
     const fileArray = Array.from(files)
-
-    // 开始处理文件，显示加载动画
-    isProcessingFiles.value = true
-    processingProgress.value = 0
-    processingFileName.value = fileArray.length === 1 ? fileArray[0].name : `${fileArray.length} 个文件`
-
-    try {
-      // 检查所有文件的分辨率，并显示进度
-      for (let i = 0; i < fileArray.length; i++) {
-        processingProgress.value = Math.round(((i + 1) / fileArray.length) * 100)
-        const isValid = await checkFileResolution(fileArray[i])
-        if (!isValid) {
-          isProcessingFiles.value = false
-          return
-        }
-      }
-      emit('upload', fileArray)
-    } finally {
-      isProcessingFiles.value = false
-    }
+    emit('upload', fileArray)
   }
 }
 
-const handleFileSelect = async (e: Event) => {
+const handleFileSelect = (e: Event) => {
   const target = e.target as HTMLInputElement
   const files = Array.from(target.files || [])
   const type = files?.[0]?.type || ''
@@ -272,26 +143,7 @@ const handleFileSelect = async (e: Event) => {
     return
   }
   if (files && files.length > 0) {
-    // 开始处理文件，显示加载动画
-    isProcessingFiles.value = true
-    processingProgress.value = 0
-    processingFileName.value = files.length === 1 ? files[0].name : `${files.length} 个文件`
-
-    try {
-      // 检查所有文件的分辨率，并显示进度
-      for (let i = 0; i < files.length; i++) {
-        processingProgress.value = Math.round(((i + 1) / files.length) * 100)
-        const isValid = await checkFileResolution(files[i])
-        if (!isValid) {
-          isProcessingFiles.value = false
-          target.value = ''
-          return
-        }
-      }
-      emit('upload', files)
-    } finally {
-      isProcessingFiles.value = false
-    }
+    emit('upload', files)
   }
   target.value = ''
 }
@@ -313,6 +165,11 @@ const handleFileSelect = async (e: Event) => {
 .file-upload.dragging {
   border-color: var(--accent-blue);
   background: rgba(10, 132, 255, 0.05);
+}
+
+.file-upload-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .file-upload-compact {
@@ -357,6 +214,11 @@ const handleFileSelect = async (e: Event) => {
 
 .compact-zone:hover {
   color: var(--accent-blue);
+}
+
+.compact-zone.disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
 }
 
 .compact-zone .file-input {
@@ -475,24 +337,70 @@ const handleFileSelect = async (e: Event) => {
   line-height: 1.6;
 }
 
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+.mobile-info-text {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+  display: block;
+  padding: 12px;
+  background: var(--glass-surface);
+  border-radius: 8px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .file-upload {
-    padding: 40px 20px;
+    padding: 30px 16px;
   }
 
   .upload-zone {
-    min-height: 200px;
+    min-height: 180px;
   }
 
   .upload-icon {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+
+  .floating-icons {
+    display: none;
+  }
+
+  .upload-text .main-text {
+    font-size: 14px;
+  }
+
+  .upload-text .sub-text {
+    font-size: 12px;
+    max-width: 280px;
   }
 
   .icon {
     font-size: 10px;
     padding: 6px 8px;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
+  .upload-info {
+    margin-top: 20px;
+    padding-top: 16px;
   }
 
   .info-row {
@@ -503,101 +411,5 @@ const handleFileSelect = async (e: Event) => {
   .info-content {
     padding-left: 96px;
   }
-}
-
-/* Processing Overlay */
-.file-upload.is-processing,
-.file-upload-compact.is-processing {
-  pointer-events: none;
-}
-
-.processing-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-/* Compact Mode - smaller background */
-.processing-overlay.compact-mode {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.processing-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px;
-}
-
-.processing-text {
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.processing-file {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-  max-width: 300px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.processing-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 200px;
-}
-
-.processing-progress .progress-bar {
-  flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.processing-progress .progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00d4aa, #00b4d8);
-  border-radius: 3px;
-  transition: width 0.2s ease;
-}
-
-.processing-progress .progress-text {
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  min-width: 40px;
-  text-align: right;
-}
-
-/* Compact Mode Processing */
-.processing-overlay.compact-mode {
-  border-radius: 12px;
-}
-
-.processing-compact {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.processing-compact :deep(.ant-spin) {
-  color: white;
-}
-
-.processing-compact :deep(.ant-spin-dot-item) {
-  background-color: white;
 }
 </style>

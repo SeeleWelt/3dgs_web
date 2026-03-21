@@ -210,4 +210,20 @@ const updateCodeValue = (val: string) => {
   background-color: #f5f7fa;
   cursor: not-allowed;
 }
+
+@media (max-width: 640px) {
+  .sms-code-input {
+    --item-width: 38px;
+    --item-height: 42px;
+    --item-gap: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sms-code-input {
+    --item-width: 34px;
+    --item-height: 40px;
+    --item-gap: 5px;
+  }
+}
 </style>

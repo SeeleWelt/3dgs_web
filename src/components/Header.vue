@@ -14,6 +14,14 @@
         {{ t('header.upgrade') }}
       </button> -->
 
+      <!-- Contact Us Button -->
+      <button class="contact-us-btn" @click="openContactUs">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+        </svg>
+        <span v-if="!isMobile">联系我们获取算力点</span>
+      </button>
+
       <div class="language-menu-wrapper" ref="languageMenuRef">
         <button class="header-language-btn" @click="toggleLanguageSelector">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -21,7 +29,7 @@
             <line x1="2" y1="12" x2="22" y2="12"/>
             <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
           </svg>
-          <span>{{ currentLanguageName }}</span>
+          <span v-if="!isMobile">{{ currentLanguageName }}</span>
         </button>
 
         <transition name="language-popup">
@@ -97,24 +105,40 @@
                 </svg>
                 <span>{{ t('header.upgradePro') }}</span>
               </button> -->
+              <button class="menu-item" @click="navigateTo('/tools/invite')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 10-7.07-7.07L10 5"/>
+                  <path d="M14 11a5 5 0 01-7.07 0L4.1 8.17a5 5 0 017.07-7.07L14 3"/>
+                </svg>
+                <span>{{ t('header.invite') }}</span>
+              </button>
+              <button class="menu-item" @click="navigateTo('/tools/developer')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                <span>开发者中心</span>
+              </button>
               <button class="menu-item" @click="navigateTo('/tools/api')">
                 <svg t="1773800741068" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="13356" width="18" height="18"><path d="M917.7 148.8l-42.4-42.4c-1.6-1.6-3.6-2.3-5.7-2.3s-4.1 0.8-5.7 2.3l-76.1 76.1c-33.7-22.9-72.9-34.3-112.1-34.3-51.2 0-102.4 19.5-141.5 58.6L432.3 308.7c-3.1 3.1-3.1 8.2 0 11.3L704 591.7c1.6 1.6 3.6 2.3 5.7 2.3 2 0 4.1-0.8 5.7-2.3l101.9-101.9c68.9-69 77-175.7 24.3-253.5l76.1-76.1c3.1-3.2 3.1-8.3 0-11.4zM769.1 441.7l-59.4 59.4-186.8-186.8 59.4-59.4c24.9-24.9 58.1-38.7 93.4-38.7 35.3 0 68.4 13.7 93.4 38.7 24.9 24.9 38.7 58.1 38.7 93.4 0 35.3-13.8 68.4-38.7 93.4zM578.9 546.7c-3.1-3.1-8.2-3.1-11.3 0L501 613.3 410.7 523l66.7-66.7c3.1-3.1 3.1-8.2 0-11.3L441 408.6c-3.1-3.1-8.2-3.1-11.3 0L363 475.3l-43-43c-1.6-1.6-3.6-2.3-5.7-2.3-2 0-4.1 0.8-5.7 2.3L206.8 534.2c-68.9 69-77 175.7-24.3 253.5l-76.1 76.1c-3.1 3.1-3.1 8.2 0 11.3l42.4 42.4c1.6 1.6 3.6 2.3 5.7 2.3s4.1-0.8 5.7-2.3l76.1-76.1c33.7 22.9 72.9 34.3 112.1 34.3 51.2 0 102.4-19.5 141.5-58.6l101.9-101.9c3.1-3.1 3.1-8.2 0-11.3l-43-43 66.7-66.7c3.1-3.1 3.1-8.2 0-11.3l-36.6-36.2zM441.7 769.1c-24.9 24.9-58.1 38.7-93.4 38.7-35.3 0-68.4-13.7-93.4-38.7-24.9-24.9-38.7-58.1-38.7-93.4 0-35.3 13.7-68.4 38.7-93.4l59.4-59.4 186.8 186.8-59.4 59.4z" p-id="13357" fill="#515151"></path></svg>
                 <span>{{ t('header.api') }}</span>
               </button>
+
+              
               <button class="menu-item" @click="navigateTo('/tools/blender')" v-if="false">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
                 </svg>
                 <span>{{ t('header.blender') }}</span>
               </button>
-              <button class="menu-item" @click="navigateTo('/tools/tutorial')">
+              <!-- <button class="menu-item" @click="navigateTo('/tools/tutorial')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
                   <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
                   <line x1="12.5" y1="16" x2="12.5" y2="18"/>
                 </svg>
                 <span>{{ t('header.tutorial') }}</span>
-              </button>
+              </button> -->
               <!-- <button class="menu-item" @click="navigateTo('/tools/settings')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="3"/>
@@ -127,12 +151,6 @@
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                 </svg>
                 <span>{{ t('header.feedback') }}</span>
-              </button>
-              <button class="menu-item" @click="openContactUs">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-                </svg>
-                <span>联系我们</span>
               </button>
             </div>
             
@@ -161,6 +179,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Modal } from 'ant-design-vue'
 import { useUserStore } from '../stores/user'
 import { languages } from '../i18n'
 import "/node_modules/flag-icons/css/flag-icons.min.css";
@@ -184,6 +203,19 @@ const avatarError = ref(false)
 const languageMenuRef = ref<HTMLElement | null>(null)
 const currentLocale = ref(locale.value)
 const currentPoints = computed(() => userPointsStore.current_points)
+const isMobile = ref(window.innerWidth <= 640)
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 640
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 const pageTitle = computed(() => {
   if (route.path.startsWith('/create')) {
@@ -193,6 +225,7 @@ const pageTitle = computed(() => {
     '/': t('header.home'),
     '/tools/profile': t('header.profile'),
     '/tools/settings': t('header.settings'),
+    '/tools/invite': t('header.invite'),
     '/tools/api': t('header.api'),
     '/tools/tutorial': t('header.tutorial'),
     '/tools/feedback': t('header.feedback'),
@@ -251,19 +284,17 @@ const openContactUs = () => {
   contactUsRef.value?.open()
 }
 
-const handleLogout = async () => {
+const handleLogout = () => {
   closeUserMenu()
-  
-  // 调用 store 的登出方法
-  userStore.logout()
-  
-  // 清除本地存储
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  localStorage.removeItem('has_seen_tutorial')
-  
-  // 跳转到登录页
-  router.push('/login')
+  Modal.confirm({
+    title: t('header.logout'),
+    content: t('header.logoutConfirm'),
+    okText: t('common.confirm'),
+    cancelText: t('common.cancel'),
+    onOk: async () => {
+      await userStore.logout()
+    }
+  })
 }
 
 const showLanguageSelector = () => {
@@ -345,6 +376,26 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.contact-us-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contact-us-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
 }
 
 .upgrade-btn {
@@ -685,6 +736,9 @@ onUnmounted(() => {
 @media (max-width: 1023px) {
   .header {
     padding: 12px 16px;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   .mobile-menu-btn {
@@ -702,6 +756,46 @@ onUnmounted(() => {
   .user-dropdown {
     width: 260px;
     right: -8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 10px 12px;
+  }
+
+  .header-left {
+    gap: 10px;
+  }
+
+  .page-title {
+    font-size: 16px;
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .contact-us-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .header-language-btn {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 6px;
   }
 }
 </style>

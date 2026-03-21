@@ -32,7 +32,7 @@
           <button
             class="preview-remove"
             title="移除视频"
-            :disabled="task.status === 'uploading'"
+            :disabled="task.status === 'uploading' || props.disabled"
             @click.stop="$emit('remove')"
           >
             <CloseOutlined />
@@ -93,7 +93,7 @@
       <!-- 图片数量统计 -->
       <div class="image-count-info">
         <span>已选择 <strong>{{ imageFiles.length }}</strong> 张图片</span>
-        <span v-if="imageFiles.length > MAX_DISPLAY_IMAGES && !showAllImages" class="expand-hint" @click="showAllImages = true">
+        <span v-if="imageFiles.length > getMaxDisplayImages() && !showAllImages" class="expand-hint" @click="showAllImages = true">
           <span>点击展开全部</span>
           <DownOutlined />
         </span>
@@ -116,7 +116,7 @@
               <button
                 class="preview-remove"
                 title="移除图片"
-                :disabled="imageUploadStatus?.status === 'uploading'"
+                :disabled="imageUploadStatus?.status === 'uploading' || props.disabled"
                 @click.stop="$emit('remove-image', image.id)"
               >
                 <CloseOutlined />
@@ -128,7 +128,7 @@
           </div>
           <!-- 收起按钮 -->
           <div
-            v-if="imageFiles.length > MAX_DISPLAY_IMAGES"
+            v-if="imageFiles.length > getMaxDisplayImages()"
             class="image-item collapse-btn"
             @click="showAllImages = false"
           >
@@ -154,7 +154,7 @@
               <button
                 class="preview-remove"
                 title="移除图片"
-                :disabled="imageUploadStatus?.status === 'uploading'"
+                :disabled="imageUploadStatus?.status === 'uploading' || props.disabled"
                 @click.stop="$emit('remove-image', image.id)"
               >
                 <CloseOutlined />
@@ -166,21 +166,27 @@
           </div>
           <!-- 更多图片按钮 -->
           <div
-            v-if="imageFiles.length > MAX_DISPLAY_IMAGES"
+            v-if="imageFiles.length > getMaxDisplayImages()"
             class="image-item more-images"
             @click="showAllImages = true"
           >
-            <span class="more-count">+{{ imageFiles.length - MAX_DISPLAY_IMAGES }}</span>
+            <span class="more-count">+{{ imageFiles.length - getMaxDisplayImages() }}</span>
           </div>
         </template>
         <!-- 添加更多图像按钮 -->
         <div
-          v-if="!imageUploadStatus || imageUploadStatus.status !== 'uploading'"
+          v-if="(!imageUploadStatus || imageUploadStatus.status !== 'uploading') && !props.disabled"
           class="add-more-image"
           @click="$emit('add-image')"
         >
           <PlusOutlined />
-          <span>添加更多图像</span>
+          <span class="add-more-text">添加更多图像</span>
+        </div>
+
+        <!-- 处理中的动画遮罩 -->
+        <div v-if="props.isProcessing" class="image-processing-overlay">
+          <a-spin size="large" />
+          <span>处理中...</span>
         </div>
       </div>
 
@@ -213,7 +219,7 @@
       <div class="btn-group">
         <button
           class="btn btn-secondary"
-          :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false)"
+          :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false) || props.disabled"
           @click="$emit('remove')"
         >
           {{ isVideoMode ? '移除视频' : '移除全部图片' }}
@@ -239,8 +245,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
+import { Spin as aSpin } from 'ant-design-vue'
 import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons-vue'
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
@@ -268,6 +275,8 @@ const props = defineProps<{
   imageFiles: ImageFile[]
   currentPoints: number
   consumedPoints: number
+  isProcessing?: boolean
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -302,7 +311,6 @@ const fetchQueueLength = async () => {
 }
 
 // 组件挂载时获取队列
-import { onMounted } from 'vue'
 onMounted(() => {
   fetchQueueLength()
 })
@@ -313,11 +321,13 @@ defineExpose({
 })
 
 // 图片展示相关
-const MAX_DISPLAY_IMAGES = 25
+const getMaxDisplayImages = () => {
+  return window.innerWidth <= 768 ? 15 : 30
+}
 const showAllImages = ref(false)
 const displayedImages = computed(() => {
   if (showAllImages.value) return props.imageFiles
-  return props.imageFiles.slice(0, MAX_DISPLAY_IMAGES)
+  return props.imageFiles.slice(0, getMaxDisplayImages())
 })
 
 const hasFiles = computed(() => {
@@ -520,12 +530,15 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .progress-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: nowrap;
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -534,6 +547,8 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .points-help-icon {
@@ -609,11 +624,12 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 }
 
 .file-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
   padding: 16px;
-  background: var(--bg-secondary);
+  background: #ffffff;
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -621,33 +637,35 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 }
 
 .file-item.pending {
-  background: rgba(24, 144, 255, 0.06);
+  background: #ffffff;
 }
 
 .file-item.uploading {
-  background: rgba(59, 130, 246, 0.08);
+  background: #ffffff;
 }
 
 .file-item.success {
-  background: rgba(82, 196, 26, 0.1);
+  background: #ffffff;
 }
 
 .file-item.cancelled {
-  background: rgba(250, 173, 20, 0.1);
+  background: #ffffff;
 }
 
 .file-item.failed {
-  background: rgba(245, 34, 45, 0.08);
+  background: #ffffff;
+  border-color: #ff4d4f;
 }
 
 .video-preview {
-  width: 220px;
+  width: 100%;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  background: #000;
+  background: #ffffff;
   flex-shrink: 0;
   position: relative;
+  aspect-ratio: 16 / 9;
 }
 
 .video-warning {
@@ -689,7 +707,7 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 
 .video-preview video {
   width: 100%;
-  height: 124px;
+  height: 100%;
   display: block;
   object-fit: cover;
 }
@@ -706,6 +724,10 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   margin-bottom: 12px;
   font-size: 13px;
   color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
 .image-count-info strong {
@@ -781,8 +803,9 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(8, 1fr);
   gap: 8px;
+  position: relative;
 }
 
 .image-item {
@@ -824,9 +847,40 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   font-size: 24px;
 }
 
-.add-more-image span {
+.add-more-image .add-more-text {
   font-size: 11px;
   text-align: center;
+}
+
+.add-more-image.is-processing {
+  cursor: wait;
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* 图片处理中的动画遮罩 */
+.image-processing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.image-processing-overlay :deep(.anticon) {
+  font-size: 24px;
+  color: white;
+}
+
+.image-processing-overlay span {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .image-preview {
@@ -1034,6 +1088,7 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
+  min-height: 44px;
 }
 
 .btn-primary {
@@ -1073,14 +1128,40 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 }
 
 /* Responsive */
+@media (max-width: 1279px) {
+  .image-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .image-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .upload-progress {
     padding: 16px;
   }
 
   .progress-header {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .header-actions {
+    flex: 1;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .header-actions::-webkit-scrollbar {
+    display: none;
   }
 
   .file-item {
@@ -1093,7 +1174,7 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   }
 
   .file-item {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .file-header {
@@ -1107,15 +1188,118 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
   }
 
   .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .add-more-image .add-more-text {
+    display: none;
+  }
+
+  .add-more-image {
+    background: #ffffff;
+    border-color: var(--accent-blue);
+    color: #1677ff;
+  }
+
+  .add-more-image :deep(.anticon) {
+    color: currentColor;
+  }
+
+  .add-more-image :deep(svg) {
+    fill: currentColor;
   }
 
   .action-buttons {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .queue-bar-left {
+    width: 100%;
+    justify-content: center;
   }
 
   .btn {
     width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .btn-secondary {
+    order: 1;
+  }
+
+  .btn-primary,
+  .btn-danger {
+    order: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .progress-title {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .points-warning {
+    font-size: 11px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .advanced-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .file-item {
+    gap: 10px;
+  }
+
+  .video-preview {
+    border-radius: 12px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .image-item,
+  .add-more-image {
+    border-radius: 10px;
+  }
+
+  .image-preview .preview-remove {
+    opacity: 1;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .image-overlay {
+    opacity: 1;
+  }
+
+  .image-name {
+    font-size: 11px;
+  }
+
+  .add-more-image .add-more-text {
+    font-size: 12px;
   }
 }
 </style>

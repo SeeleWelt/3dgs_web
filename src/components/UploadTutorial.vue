@@ -12,21 +12,12 @@
 
         <!-- Content -->
         <div class="tutorial-content">
+          
           <!-- Video Area -->
           <div class="video-container">
-            <video
-              ref="videoRef"
-              class="tutorial-video"
-              :src="videoSrc"
-              controls
-              preload="metadata"
-              @ended="handleVideoEnd"
-            ></video>
-            <div v-if="!hasPlayed" class="video-overlay" @click="playVideo">
-              <div class="play-button">
-                <PlayCircleOutlined />
-              </div>
-              <span class="play-text">点击播放教程</span>
+            <div class="video-placeholder">
+              <VideoCameraOutlined class="video-icon" />
+              <p class="video-text">演示视频正在制作中...</p>
             </div>
           </div>
 
@@ -80,7 +71,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { CloseOutlined, PlayCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
+import { CloseOutlined, PlayCircleOutlined, QuestionCircleOutlined, VideoCameraOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue';
 
 const props = defineProps<{
@@ -251,8 +242,32 @@ defineExpose({ openTutorial })
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  background: #000;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   margin-bottom: 24px;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.video-icon {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 16px;
+}
+
+.video-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  margin: 0;
 }
 
 .tutorial-video {
@@ -398,6 +413,51 @@ defineExpose({ openTutorial })
   to {
     opacity: 0;
     transform: scale(0.3);
+  }
+}
+
+@media (max-width: 640px) {
+  .tutorial-overlay {
+    padding: 8px;
+  }
+
+  .tutorial-modal {
+    max-height: 100vh;
+    border-radius: 12px;
+  }
+
+  .tutorial-header {
+    padding: 16px;
+  }
+
+  .tutorial-content {
+    padding: 16px;
+  }
+
+  .video-container {
+    min-height: 160px;
+  }
+
+  .tutorial-footer {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .footer-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-actions :deep(.ant-btn) {
+    width: 100%;
+  }
+
+  .floating-help-btn {
+    right: 16px;
+    bottom: 84px;
   }
 }
 </style>

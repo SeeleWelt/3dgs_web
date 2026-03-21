@@ -281,4 +281,24 @@ export default {
 .refresh-btn:hover {
   background-color: #06b058;
 }
+
+@media (max-width: 640px) {
+  .login-title {
+    font-size: 16px;
+  }
+
+  .qrcode-img {
+    width: 160px;
+    height: 160px;
+  }
+
+  .loading {
+    height: 160px;
+    line-height: 160px;
+  }
+
+  .status-text {
+    font-size: 12px;
+  }
+}
 </style>

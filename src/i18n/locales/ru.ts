@@ -172,6 +172,7 @@ export default {
       feedback: 'Обратная связь',
       language: 'Русский',
       logout: 'Выйти',
+      logoutConfirm: 'Вы уверены, что хотите выйти?',
       selectLanguage: 'Выбрать язык',
       regularAccount: 'Обычный аккаунт'
     },

@@ -12,6 +12,33 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#app {
+  height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 :root {
   /* Light Theme (Default) */
   --bg-primary: #f5f5f7;
@@ -79,6 +106,7 @@ body {
   flex: 1;
   margin-left: 240px;
   transition: margin-left 0.3s ease;
+  min-width: 0;
 }
 
 .content {
@@ -122,14 +150,14 @@ body {
   }
 
   .content {
-    padding: 20px;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
   }
 }
 
 /* Mobile (<= 640px) */
 @media (max-width: 640px) {
   .content {
-    padding: 16px;
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
   }
 }
 

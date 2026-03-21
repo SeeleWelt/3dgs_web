@@ -254,8 +254,10 @@ export default {
       profile: 'Profile',
       language: 'English',
       logout: 'Logout',
+      logoutConfirm: 'Are you sure you want to log out?',
       selectLanguage: 'Select Language',
-      regularAccount: 'Regular Account'
+      regularAccount: 'Regular Account',
+      invite: 'Invite Link'
     },
     sidebar: {
       webVersion: 'Web',

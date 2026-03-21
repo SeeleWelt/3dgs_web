@@ -1,28 +1,33 @@
-<template>
+﻿<template>
   <div class="explore-view animate-fade-in">
-    <!-- Mesh Models Section -->
-    <section class="explore-section animate-fade-in-up" >
+    <section class="explore-section animate-fade-in-up">
       <div class="section-header">
         <h2 class="section-title">{{ t('explore.ai3dModels') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
+
       <div class="models-carousel" v-if="!meshLoading">
         <button
-          v-show="meshCanScrollLeft"
+          v-show="showDesktopScrollButtons && meshCarousel.canScrollLeft.value"
           class="scroll-btn scroll-left"
-          @click="scrollMesh('left')"
+          @click="meshCarousel.scroll('left')"
         >
           <LeftOutlined />
         </button>
+
         <div
           ref="meshScrollRef"
           class="models-grid"
-          :class="{ 'is-dragging': isDragging }"
-          @scroll="handleMeshScroll"
-          @mousedown="onMouseDown"
-          @mousemove="onMouseMove"
-          @mouseup="onMouseUp"
-          @mouseleave="onMouseLeave"
+          :class="{ 'is-dragging': meshCarousel.isDragging.value }"
+          @scroll="meshCarousel.handleScroll"
+          @mousedown="meshCarousel.handleMouseDown"
+          @mousemove="meshCarousel.handleMouseMove"
+          @mouseup="meshCarousel.handleMouseUp"
+          @mouseleave="meshCarousel.handleMouseLeave"
+          @touchstart="meshCarousel.handleTouchStart"
+          @touchmove="meshCarousel.handleTouchMove"
+          @touchend="meshCarousel.handleTouchEnd"
+          @touchcancel="meshCarousel.handleTouchEnd"
         >
           <OfficialModelCard
             v-for="model in MeshModel"
@@ -34,14 +39,16 @@
             @task-deleted="handleResumeSuccess"
           />
         </div>
+
         <button
-          v-show="meshCanScrollRight"
+          v-show="showDesktopScrollButtons && meshCarousel.canScrollRight.value"
           class="scroll-btn scroll-right"
-          @click="scrollMesh('right')"
+          @click="meshCarousel.scroll('right')"
         >
           <RightOutlined />
         </button>
       </div>
+
       <div v-else class="loading-grid">
         <div v-for="i in meshSkeletonCount" :key="i" class="skeleton-card">
           <div class="skeleton-image"></div>
@@ -51,29 +58,38 @@
       </div>
     </section>
 
-    <!-- 3DGS Models Section -->
-    <section class="explore-section gaussian-section animate-fade-in-up" style="animation-delay: 0.1s" ref="gaussianSectionRef">
+    <section
+      ref="gaussianSectionRef"
+      class="explore-section gaussian-section animate-fade-in-up"
+      style="animation-delay: 0.1s"
+    >
       <div class="section-header">
         <h2 class="section-title">{{ t('explore.gs3dTitle') }}</h2>
         <p class="section-subtitle">{{ t('explore.weeklyUpdate') }}</p>
       </div>
+
       <div class="models-carousel" v-if="!gaussianLoading">
         <button
-          v-show="gaussianCanScrollLeft"
+          v-show="showDesktopScrollButtons && gaussianCarousel.canScrollLeft.value"
           class="scroll-btn scroll-left"
-          @click="scrollGaussian('left')"
+          @click="gaussianCarousel.scroll('left')"
         >
           <LeftOutlined />
         </button>
+
         <div
           ref="gaussianScrollRef"
           class="models-grid"
-          :class="{ 'is-dragging': isDragging }"
-          @scroll="handleGaussianScroll"
-          @mousedown="onGaussianMouseDown"
-          @mousemove="onGaussianMouseMove"
-          @mouseup="onGaussianMouseUp"
-          @mouseleave="onGaussianMouseLeave"
+          :class="{ 'is-dragging': gaussianCarousel.isDragging.value }"
+          @scroll="gaussianCarousel.handleScroll"
+          @mousedown="gaussianCarousel.handleMouseDown"
+          @mousemove="gaussianCarousel.handleMouseMove"
+          @mouseup="gaussianCarousel.handleMouseUp"
+          @mouseleave="gaussianCarousel.handleMouseLeave"
+          @touchstart="gaussianCarousel.handleTouchStart"
+          @touchmove="gaussianCarousel.handleTouchMove"
+          @touchend="gaussianCarousel.handleTouchEnd"
+          @touchcancel="gaussianCarousel.handleTouchEnd"
         >
           <OfficialModelCard
             v-for="model in _3DModel"
@@ -85,14 +101,16 @@
             @task-deleted="handleResumeSuccess"
           />
         </div>
+
         <button
-          v-show="gaussianCanScrollRight"
+          v-show="showDesktopScrollButtons && gaussianCarousel.canScrollRight.value"
           class="scroll-btn scroll-right"
-          @click="scrollGaussian('right')"
+          @click="gaussianCarousel.scroll('right')"
         >
           <RightOutlined />
         </button>
       </div>
+
       <div v-else class="loading-grid">
         <div v-for="i in gaussianSkeletonCount" :key="i" class="skeleton-card">
           <div class="skeleton-image"></div>
@@ -100,6 +118,7 @@
           <div class="skeleton-desc"></div>
         </div>
       </div>
+
       <div class="pagination-wrap" v-if="!gaussianLoading && gaussianTotal > (tasksParams.pageSize || 12)">
         <a-pagination
           :current="tasksParams.page"
@@ -111,68 +130,26 @@
         />
       </div>
     </section>
-
-    <!-- Community Cards -->
-    <!-- <section class="community-section animate-fade-in-up" style="animation-delay: 0.2s">
-      <div class="community-cards">
-        <div class="community-card youtube-card">
-          <div class="card-header">
-            <div class="platform-icon youtube-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-              </svg>
-            </div>
-            <div class="card-title">
-              <h3>{{ t('explore.youtubeTitle') }}</h3>
-              <p>{{ t('explore.youtubeDesc') }}</p>
-            </div>
-          </div>
-          <div class="video-preview">
-            <div class="video-thumb">
-              <span class="play-icon">▶</span>
-              <span class="video-title">That's why MetaST Engine Basic plan Offers Unlimited...</span>
-            </div>
-            <div class="video-actions">
-              <button class="action-btn">{{ t('explore.watchLater') }}</button>
-              <button class="action-btn">{{ t('explore.share') }}</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="community-card discord-card">
-          <div class="card-header">
-            <div class="platform-icon discord-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-              </svg>
-            </div>
-            <div class="card-title">
-              <h3>{{ t('explore.discordTitle') }}</h3>
-              <p>{{ t('explore.discordDesc') }}</p>
-            </div>
-          </div>
-          <div class="discord-preview">
-            <div class="discord-banner">
-              <span class="discord-logo">Discord</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, computed } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons-vue'
 import OfficialModelCard from '@/components/OfficialModelCard.vue'
-import { TaskModel, ApiServer, GetTaskListParams } from '@/utils/taskService'
+import { ApiServer, type GetTaskListParams, type TaskModel } from '@/utils/taskService'
 import API from '@/utils/api'
+
 const router = useRouter()
 const { t } = useI18n()
+
+const MOBILE_BREAKPOINT = 1023
+const MIN_CAROUSEL_ITEMS = 12
+const meshSkeletonCount = 12
+const gaussianSkeletonCount = 12
 
 interface Model extends TaskModel {
   id?: string
@@ -182,7 +159,301 @@ interface Model extends TaskModel {
   type: 'mesh' | 'gaussian'
 }
 
-const MeshModel = ref<Model[]>([
+const defaultExampleSeeds = [
+  {
+    taskName: 'Garden Courtyard',
+    objectDescription: 'Outdoor stone and plants reconstruction',
+    ownerUsername: 'demo_lab',
+    nickname: 'demo_lab',
+    preview: 'https://picsum.photos/400/400?random=1101',
+    viewCount: 286,
+    likeCount: 63,
+    downloadCount: 20,
+    shareCount: 9
+  },
+  {
+    taskName: 'Robot Figure',
+    objectDescription: 'High-detail hard-surface character model',
+    ownerUsername: 'studio_x',
+    nickname: 'studio_x',
+    preview: 'https://picsum.photos/400/400?random=1102',
+    viewCount: 752,
+    likeCount: 141,
+    downloadCount: 47,
+    shareCount: 18
+  },
+  {
+    taskName: 'Vintage Camera',
+    objectDescription: 'Desk object scan with metal texture details',
+    ownerUsername: 'scan_room',
+    nickname: 'scan_room',
+    preview: 'https://picsum.photos/400/400?random=1103',
+    viewCount: 498,
+    likeCount: 97,
+    downloadCount: 31,
+    shareCount: 11
+  },
+  {
+    taskName: 'Street Corner',
+    objectDescription: 'Urban scene with signs and storefronts',
+    ownerUsername: 'city_capture',
+    nickname: 'city_capture',
+    preview: 'https://picsum.photos/400/400?random=1104',
+    viewCount: 1033,
+    likeCount: 209,
+    downloadCount: 88,
+    shareCount: 42
+  },
+  {
+    taskName: 'Sports Car',
+    objectDescription: 'Exterior and interior appearance showcase',
+    ownerUsername: 'auto_lab',
+    nickname: 'auto_lab',
+    preview: 'https://picsum.photos/400/400?random=1105',
+    viewCount: 1842,
+    likeCount: 388,
+    downloadCount: 133,
+    shareCount: 56
+  },
+  {
+    taskName: 'Ancient Vase',
+    objectDescription: 'Museum artifact with carved pattern details',
+    ownerUsername: 'history_3d',
+    nickname: 'history_3d',
+    preview: 'https://picsum.photos/400/400?random=1106',
+    viewCount: 621,
+    likeCount: 144,
+    downloadCount: 52,
+    shareCount: 23
+  }
+]
+
+const buildDefaultExamples = (type: 'mesh' | 'gaussian'): Model[] => {
+  const now = Date.now()
+  return defaultExampleSeeds.map((seed, index) => ({
+    taskId: `demo-${type}-${index + 1}`,
+    taskName: seed.taskName,
+    status: 'completed',
+    isPublic: true,
+    nsfwBlocked: false,
+    viewCount: seed.viewCount,
+    likeCount: seed.likeCount,
+    isLiked: false,
+    downloadCount: seed.downloadCount,
+    shareCount: seed.shareCount,
+    createdAt: new Date(now - (index + 1) * 3 * 60 * 60 * 1000).toISOString(),
+    endAt: undefined,
+    error: undefined,
+    lightning: true,
+    fps: 30,
+    videoCount: 1,
+    objectDescription: seed.objectDescription,
+    ownerUsername: seed.ownerUsername,
+    authorAvatar: '',
+    preview: seed.preview,
+    headimg: 'assets/logo.png',
+    nickname: seed.nickname,
+    isNew: false,
+    type
+  }))
+}
+
+const mapToModels = (tasks: any[], type: 'mesh' | 'gaussian'): Model[] =>
+  tasks.map((task) => {
+    const views = Number(task.viewCount ?? task.views_count ?? 0)
+    return {
+      taskId: String(task.taskId ?? task.task_id ?? task.id ?? ''),
+      taskName: String(task.taskName ?? task.task_name ?? 'Untitled Model'),
+      status: String(task.status ?? 'completed'),
+      isPublic: Boolean(task.isPublic ?? task.is_public ?? true),
+      nsfwBlocked: Boolean(task.nsfwBlocked ?? task.nsfw_blocked ?? false),
+      viewCount: views,
+      likeCount: Number(task.likeCount ?? task.likes_count ?? 0),
+      isLiked: Boolean(task.isLiked ?? task.isLike ?? false),
+      downloadCount: Number(task.downloadCount ?? task.downloads_count ?? 0),
+      shareCount: Number(task.shareCount ?? task.shares_count ?? 0),
+      createdAt: task.createdAt ?? task.created_at,
+      endAt: task.endAt ?? task.end_at,
+      error: task.error,
+      lightning: Boolean(task.lightning ?? false),
+      fps: task.fps ? Number(task.fps) : undefined,
+      videoCount: task.videoCount ?? task.video_count,
+      objectDescription: String(task.objectDescription ?? task.object_description ?? task.user_object_description ?? '暂无描述'),
+      ownerUsername: String(task.ownerUsername ?? task.owner_username ?? '未知'),
+      authorAvatar: String(task.authorAvatar ?? task.author_avatar ?? ''),
+      preview: String(task.preview ?? task.preview_image ?? ''),
+      headimg: String(task.headimg ?? 'assets/logo.png'),
+      nickname: String(task.nickname ?? task.owner_username ?? '未知'),
+      id: task.id ? String(task.id) : undefined,
+      preview_image: task.preview_image ? String(task.preview_image) : undefined,
+      task_name: task.task_name ? String(task.task_name) : undefined,
+      isNew: views === 0,
+      type
+    }
+  })
+
+const pushUniqueModel = (target: Model[], model: Model, usedIds: Set<string>) => {
+  const baseId = model.taskId && model.taskId.trim().length > 0 ? model.taskId : `model-${target.length + 1}`
+  let taskId = baseId
+  let index = 1
+
+  while (usedIds.has(taskId)) {
+    index += 1
+    taskId = `${baseId}-${index}`
+  }
+
+  usedIds.add(taskId)
+  target.push({ ...model, taskId })
+}
+
+const ensureMinimumItems = (serverModels: Model[], defaultModels: Model[], minimum: number): Model[] => {
+  const merged: Model[] = []
+  const usedIds = new Set<string>()
+
+  serverModels.forEach((model) => {
+    pushUniqueModel(merged, model, usedIds)
+  })
+
+  defaultModels.forEach((model) => {
+    if (merged.length < minimum) {
+      pushUniqueModel(merged, model, usedIds)
+    }
+  })
+
+  let extraIndex = 0
+  while (merged.length < minimum && defaultModels.length > 0) {
+    const template = defaultModels[extraIndex % defaultModels.length]
+    extraIndex += 1
+    pushUniqueModel(merged, { ...template, taskId: `${template.taskId}-extra-${extraIndex}` }, usedIds)
+  }
+
+  return merged
+}
+
+const meshDefaultModels: Model[] = []
+const gaussianDefaultModels: Model[] = []
+
+const MeshModel = ref<Model[]>([...meshDefaultModels])
+const _3DModel = ref<Model[]>([...gaussianDefaultModels])
+const gaussianTotal = ref(_3DModel.value.length)
+
+const meshLoading = ref(false)
+const gaussianLoading = ref(false)
+const tasksParams = ref<GetTaskListParams>({
+  page: 1,
+  pageSize: 12
+})
+
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth <= MOBILE_BREAKPOINT : false)
+const showDesktopScrollButtons = computed(() => !isMobile.value)
+
+const updateIsMobile = () => {
+  if (typeof window === 'undefined') return
+  isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT
+}
+
+const createCarouselControls = (scrollRef: Ref<HTMLElement | null>) => {
+  const scrollOffset = ref(0)
+  const isDragging = ref(false)
+  const dragStartX = ref(0)
+  const dragStartScrollLeft = ref(0)
+  const hasDragged = ref(false)
+
+  const canScrollLeft = computed(() => scrollOffset.value > 0)
+  const canScrollRight = computed(() => {
+    if (!scrollRef.value) return false
+    const { scrollWidth, clientWidth } = scrollRef.value
+    return scrollOffset.value < scrollWidth - clientWidth - 10
+  })
+
+  const handleScroll = () => {
+    if (scrollRef.value) {
+      scrollOffset.value = scrollRef.value.scrollLeft
+    }
+  }
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (!scrollRef.value) return
+    const scrollAmount = scrollRef.value.clientWidth * 0.8
+    scrollRef.value.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    })
+  }
+
+  const startDrag = (pageX: number) => {
+    if (!scrollRef.value) return
+    isDragging.value = true
+    hasDragged.value = false
+    dragStartX.value = pageX
+    dragStartScrollLeft.value = scrollRef.value.scrollLeft
+  }
+
+  const moveDrag = (pageX: number) => {
+    if (!isDragging.value || !scrollRef.value) return false
+    const walk = dragStartX.value - pageX
+    if (Math.abs(walk) > 5) {
+      hasDragged.value = true
+    }
+    scrollRef.value.scrollLeft = dragStartScrollLeft.value + walk
+    scrollOffset.value = scrollRef.value.scrollLeft
+    return true
+  }
+
+  const endDrag = () => {
+    isDragging.value = false
+  }
+
+  const handleMouseDown = (event: MouseEvent) => {
+    startDrag(event.pageX)
+  }
+
+  const handleMouseMove = (event: MouseEvent) => {
+    if (!moveDrag(event.pageX)) return
+    event.preventDefault()
+  }
+
+  const handleMouseUp = () => {
+    endDrag()
+  }
+
+  const handleMouseLeave = () => {
+    endDrag()
+  }
+
+  const handleTouchStart = (event: TouchEvent) => {
+    if (event.touches.length === 0) return
+    startDrag(event.touches[0].pageX)
+  }
+
+  const handleTouchMove = (event: TouchEvent) => {
+    if (event.touches.length === 0) return
+    if (!moveDrag(event.touches[0].pageX)) return
+    event.preventDefault()
+  }
+
+  const handleTouchEnd = () => {
+    endDrag()
+  }
+
+  return {
+    isDragging,
+    hasDragged,
+    canScrollLeft,
+    canScrollRight,
+    handleScroll,
+    scroll,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleMouseLeave,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd
+  }
+}
+
+const meshServerModels = ref<Model[]>([
   {
     taskId: 'task_001',
     taskName: '流浪者号',
@@ -210,245 +481,126 @@ const MeshModel = ref<Model[]>([
     type: 'mesh'
   }
 ])
-
-// Mesh 滚动相关逻辑
 const meshScrollRef = ref<HTMLElement | null>(null)
-const meshScrollLeft = ref(0)
-
-// 鼠标拖动相关
-const isDragging = ref(false)
-const startX = ref(0)
-const scrollLeft = ref(0)
-const hasDragged = ref(false) // 是否真正拖动过
-
-const meshCanScrollLeft = computed(() => meshScrollLeft.value > 0)
-const meshCanScrollRight = computed(() => {
-  if (!meshScrollRef.value) return false
-  const { scrollWidth, clientWidth } = meshScrollRef.value
-  return meshScrollLeft.value < scrollWidth - clientWidth - 10
-})
-
-const handleMeshScroll = () => {
-  if (meshScrollRef.value) {
-    meshScrollLeft.value = meshScrollRef.value.scrollLeft
-  }
-}
-
-const scrollMesh = (direction: 'left' | 'right') => {
-  if (!meshScrollRef.value) return
-  const scrollAmount = meshScrollRef.value.clientWidth * 0.8
-  meshScrollRef.value.scrollBy({
-    left: direction === 'left' ? -scrollAmount : scrollAmount,
-    behavior: 'smooth'
-  })
-}
-
-// 鼠标拖动滚动
-const onMouseDown = (e: MouseEvent) => {
-  isDragging.value = true
-  hasDragged.value = false
-  startX.value = e.pageX
-  if (meshScrollRef.value) {
-    scrollLeft.value = meshScrollRef.value.scrollLeft
-  }
-}
-
-const onMouseMove = (e: MouseEvent) => {
-  if (!isDragging.value || !meshScrollRef.value) return
-  e.preventDefault()
-  const x = e.pageX
-  const walk = (startX.value - x) // 拖动速度系数
-  if (Math.abs(walk) > 5) {
-    hasDragged.value = true
-  }
-  meshScrollRef.value.scrollLeft = scrollLeft.value + walk
-}
-
-const onMouseUp = () => {
-  isDragging.value = false
-}
-
-const onMouseLeave = () => {
-  isDragging.value = false
-}
-
-// Gaussian 滚动相关逻辑
 const gaussianScrollRef = ref<HTMLElement | null>(null)
-const gaussianScrollLeft = ref(0)
-
-// Gaussian 鼠标拖动相关
-const gaussianIsDragging = ref(false)
-const gaussianStartX = ref(0)
-const gaussianScrollLeftVal = ref(0)
-const gaussianHasDragged = ref(false)
-
-const gaussianCanScrollLeft = computed(() => gaussianScrollLeft.value > 0)
-const gaussianCanScrollRight = computed(() => {
-  if (!gaussianScrollRef.value) return false
-  const { scrollWidth, clientWidth } = gaussianScrollRef.value
-  return gaussianScrollLeft.value < scrollWidth - clientWidth - 10
-})
-
-const handleGaussianScroll = () => {
-  if (gaussianScrollRef.value) {
-    gaussianScrollLeft.value = gaussianScrollRef.value.scrollLeft
-  }
-}
-
-const scrollGaussian = (direction: 'left' | 'right') => {
-  if (!gaussianScrollRef.value) return
-  const scrollAmount = gaussianScrollRef.value.clientWidth * 0.8
-  gaussianScrollRef.value.scrollBy({
-    left: direction === 'left' ? -scrollAmount : scrollAmount,
-    behavior: 'smooth'
-  })
-}
-
-const onGaussianMouseDown = (e: MouseEvent) => {
-  gaussianIsDragging.value = true
-  gaussianHasDragged.value = false
-  gaussianStartX.value = e.pageX
-  if (gaussianScrollRef.value) {
-    gaussianScrollLeftVal.value = gaussianScrollRef.value.scrollLeft
-  }
-}
-
-const onGaussianMouseMove = (e: MouseEvent) => {
-  if (!gaussianIsDragging.value || !gaussianScrollRef.value) return
-  e.preventDefault()
-  const x = e.pageX
-  const walk = (gaussianStartX.value - x)
-  if (Math.abs(walk) > 5) {
-    gaussianHasDragged.value = true
-  }
-  gaussianScrollRef.value.scrollLeft = gaussianScrollLeftVal.value + walk
-}
-
-const onGaussianMouseUp = () => {
-  gaussianIsDragging.value = false
-}
-
-const onGaussianMouseLeave = () => {
-  gaussianIsDragging.value = false
-}
-
-const handleGaussianCardClick = (model: Model) => {
-  if (!gaussianHasDragged.value) {
-    console.log(model);
-    openModelDetail(model)
-  }
-}
-
-// 加载状态
-const meshLoading = ref(false)
-const gaussianLoading = ref(false)
-
-// 骨架屏数量
-const meshSkeletonCount = 12
-const gaussianSkeletonCount = 12
-
-const _3DModel = ref<Model[]>([])
-const gaussianTotal = ref(0)
 const gaussianSectionRef = ref<HTMLElement | null>(null)
 
-const tasksParams = ref<GetTaskListParams>({
-  page: 1,
-  pageSize: 12,
-})  
+const meshCarousel = createCarouselControls(meshScrollRef)
+const gaussianCarousel = createCarouselControls(gaussianScrollRef)
 
-const mapToModels = (tasks: Model[], type: 'mesh' | 'gaussian'): Model[] => tasks.map(task => ({
-  taskId: task.taskId || task.id || 'unknown_id',
-  taskName: task.taskName || task.task_name || '未命名任务',
-  status: task.status || '"completed"',
-  objectDescription: task.objectDescription || '暂无描述',
-  ownerUsername: task.ownerUsername || '未知用户',
-  authorAvatar: task.authorAvatar || '',
-  preview: task.preview || task.preview_image || '',
-  nickname: task.nickname || '未知',
-  isPublic: task.isPublic ?? true,
-  viewCount: task.viewCount ?? 0,
-  likeCount: task.likeCount ?? 0,
-  isLiked: task.isLiked ?? false,
-  downloadCount: task.downloadCount ?? 0,
-  shareCount: task.shareCount ?? 0,
-  isNew: task.viewCount === 0,
-  type
-}))
+// MeshModel 使用默认模型
+const fetchMeshModels = () => {
+  meshLoading.value = true
+  MeshModel.value = ensureMinimumItems(meshServerModels.value, meshDefaultModels, MIN_CAROUSEL_ITEMS)
+  meshLoading.value = false
+}
 
+// _3DModel 从服务器获取
 const fetchGaussianModels = async () => {
   gaussianLoading.value = true
+
   try {
     const response = await ApiServer.request({
       url: API.GET_OFFICIAL_MODEL,
-      method: "get",
+      method: 'get'
     })
-    const tasks = response?.data?.data || []
-    _3DModel.value = mapToModels(tasks, 'gaussian')
+
+    const tasks = Array.isArray(response?.data?.data) ? response.data.data : []
+    const gaussianFromServer = mapToModels(tasks, 'gaussian')
+
+    _3DModel.value = ensureMinimumItems(gaussianFromServer, gaussianDefaultModels, MIN_CAROUSEL_ITEMS)
     gaussianTotal.value = _3DModel.value.length
+  } catch (error) {
+    _3DModel.value = ensureMinimumItems([], gaussianDefaultModels, MIN_CAROUSEL_ITEMS)
+    gaussianTotal.value = _3DModel.value.length
+    throw error
   } finally {
     gaussianLoading.value = false
+
+    await nextTick()
+    gaussianCarousel.handleScroll()
+  }
+}
+
+// 兼容旧的 fetchModels
+const fetchModels = async () => {
+  fetchMeshModels()
+  await fetchGaussianModels()
+}
+
+const openModelDetail = (model: Model) => {
+  const routeData = router.resolve(`/officialModel/${model.taskId}`)
+  window.open(routeData.href, '_blank')
+}
+
+const openAiModelDetail = (model: Model) => {
+  const routeData = router.resolve(`/AiModel/${model.taskId}`)
+  window.open(routeData.href, '_blank')
+}
+
+const handleCardClick = (model: Model) => {
+  if (!meshCarousel.hasDragged.value) {
+    openAiModelDetail(model)
+  }
+}
+
+const handleGaussianCardClick = (model: Model) => {
+  if (!gaussianCarousel.hasDragged.value) {
+    openModelDetail(model)
   }
 }
 
 const handleGaussianPageChange = async (page: number) => {
   tasksParams.value.page = page
-  await fetchGaussianModels()
+  await fetchModels()
   await nextTick()
   gaussianSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const openModelDetail = (model: Model)  => {
-  const routeData = router.resolve(`/officialModel/${model.taskId}`)
-   window.open(routeData.href, '_blank')
-}
-
-const openAiModelDetail = (model: Model)  => {
-  const routeData = router.resolve(`/AiModel/${model.taskId}`)
-   window.open(routeData.href, '_blank')
-}
-
-// 处理卡片点击，只有在非拖动情况下才触发
-const handleCardClick = (model: Model) => {
-  if (!hasDragged.value) {
-    openAiModelDetail(model)
-  }
-}
-
 const handleResumeSuccess = async () => {
-  await fetchGaussianModels()
+  await fetchModels()
 }
 
 onMounted(async () => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+
   try {
-    await fetchGaussianModels()
+    await fetchModels()
   } catch (error) {
     console.error('error:', error)
     const err = error as {
       message?: string
       statusCode?: number
     }
-    console.error('err:', err)
-    if (err?.message?.length && err.message.length > 0) {
+
+    if (err?.message?.length) {
       message.error(err.message)
       return
     }
 
     const statusCode = err?.statusCode
     if (statusCode === 401) {
-      message.error('未授权访问（401）')
+      message.error('Unauthorized access (401)')
     } else if (statusCode === 403) {
-      message.error('访问被禁止（403）')
+      message.error('Access denied (403)')
     }
   }
 })
 
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateIsMobile)
+})
 </script>
 
 <style scoped>
-/* Entry animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -472,6 +624,8 @@ onMounted(async () => {
 }
 
 .explore-view {
+  width: 100%;
+  max-width: 100%;
   padding-bottom: 40px;
 }
 
@@ -488,33 +642,40 @@ onMounted(async () => {
 }
 
 .section-title {
+  margin-bottom: 4px;
+  color: var(--text-primary);
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
 }
 
 .section-subtitle {
-  font-size: 13px;
   color: var(--text-secondary);
+  font-size: 13px;
 }
 
-/* 滚动轮播容器 */
 .models-carousel {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+  overflow: visible;
 }
 
 .models-carousel .models-grid {
   display: flex;
   gap: 16px;
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  padding: 4px 2px;
   scroll-behavior: smooth;
-  padding: 4px 0;
-  -ms-overflow-style: none;
   scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+
+.models-carousel .models-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .models-carousel .models-grid.is-dragging {
@@ -522,34 +683,29 @@ onMounted(async () => {
   scroll-behavior: auto;
 }
 
-.models-carousel .models-grid::-webkit-scrollbar {
-  display: none;
-}
-
 .models-carousel .models-grid > * {
-  flex-shrink: 0;
-  width: 200px;
+  flex: 0 0 200px;
+  max-width: 200px;
 }
 
-/* 滚动按钮 */
 .scroll-btn {
   position: absolute;
   z-index: 10;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
   border: 1px solid var(--glass-border);
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: var(--text-primary);
-  font-size: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .scroll-btn:hover {
@@ -566,222 +722,126 @@ onMounted(async () => {
   right: -20px;
 }
 
-.models-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+.loading-grid {
+  display: flex;
   gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Loading skeleton */
-.loading-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+.loading-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .skeleton-card {
-  background: var(--glass-surface);
+  flex: 0 0 200px;
+  max-width: 200px;
+  padding: 12px;
   border: 1px solid var(--glass-border);
   border-radius: 12px;
-  padding: 12px;
+  background: var(--glass-surface);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .skeleton-image {
   width: 100%;
-  aspect-ratio: 4/5;
-  background: var(--glass-border);
-  border-radius: 8px;
   margin-bottom: 10px;
+  border-radius: 8px;
+  background: var(--glass-border);
+  aspect-ratio: 1;
 }
 
 .skeleton-title {
   height: 14px;
   width: 70%;
-  background: var(--glass-border);
-  border-radius: 4px;
   margin-bottom: 8px;
+  border-radius: 4px;
+  background: var(--glass-border);
 }
 
 .skeleton-desc {
   height: 12px;
   width: 50%;
-  background: var(--glass-border);
   border-radius: 4px;
+  background: var(--glass-border);
 }
 
 .pagination-wrap {
+  display: flex;
+  justify-content: center;
   margin-top: 20px;
-  display: flex;
-  justify-content: center;
 }
 
-/* Community Section */
-.community-section {
-  margin-top: 40px;
-}
-
-.community-cards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.community-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.community-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.platform-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.youtube-icon {
-  background: #ff0000;
-  color: white;
-}
-
-.discord-icon {
-  background: #5865f2;
-  color: white;
-}
-
-.card-title h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.card-title p {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-/* Video Preview */
-.video-preview {
-  background: var(--glass-surface);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.video-thumb {
-  aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  text-align: center;
-  position: relative;
-}
-
-.play-icon {
-  width: 50px;
-  height: 50px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #ff0000;
-  margin-bottom: 12px;
-}
-
-.video-title {
-  font-size: 13px;
-  color: white;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.video-actions {
-  display: flex;
-  padding: 10px;
-  gap: 8px;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 8px;
-  background: transparent;
-  border: 1px solid var(--glass-border);
-  border-radius: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  background: var(--glass-surface);
-  color: var(--text-primary);
-}
-
-/* Discord Preview */
-.discord-preview {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.discord-banner {
-  aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #5865f2, #7289da);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.discord-logo {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
-}
-
-/* Responsive */
 @media (max-width: 1023px) {
-  .models-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  .scroll-btn {
+    display: none !important;
   }
 
-  .community-cards {
-    grid-template-columns: 1fr;
+  .models-carousel .models-grid {
+    gap: 12px;
+  }
+
+  .models-carousel .models-grid > * {
+    flex-basis: 180px;
+    max-width: 180px;
+  }
+
+  .loading-grid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .loading-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .skeleton-card {
+    flex: 0 0 180px;
+    max-width: 180px;
   }
 }
 
 @media (max-width: 640px) {
-  .models-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .explore-view {
+    width: calc(100vw - 24px);
+    margin: 0 auto;
+  }
+
+  .section-header {
+    margin-bottom: 14px;
+  }
+
+  .models-carousel .models-grid > * {
+    flex-basis: 180px;
+    max-width: 180px;
+  }
+
+  .loading-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+
+  .skeleton-card {
+    flex: 0 0 180px;
+    max-width: 180px;
   }
 }
 </style>

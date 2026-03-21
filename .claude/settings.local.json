@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm install qrcode)",
       "WebFetch(domain:videotoframes.com)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebSearch"
     ]
   }
 }

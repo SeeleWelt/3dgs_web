@@ -48,6 +48,7 @@
         :pagination="{ pageSize: pageSize, showSizeChanger: false }"
         size="middle"
         :locale="{ emptyText: t('inviteLang.historyEmpty') }"
+        class="centered-table"
       />
     </div>
   </div>
@@ -131,14 +132,17 @@ getInviteRecords()
 
 <style scoped>
 .invite-view {
-  padding: 30px;
+  padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
   color: var(--text-primary);
-  --border-color: var(--glass-border, #e5e7eb);
-  --bg-card: var(--bg-secondary, #fafafa);
-  --text-main: var(--text-primary, #111827);
-  --text-muted: var(--text-secondary, #6b7280);
+  --border-color: #e8e8e8;
+  --bg-card: #ffffff;
+  --text-main: #1a1a1a;
+  --text-muted: #666666;
+  --accent-color: #8B5CF6;
+  --accent-purple: #A78BFA;
+  --accent-blue: #3b82f6;
   animation: fadeInUp 0.4s ease-out;
 }
 
@@ -157,25 +161,25 @@ getInviteRecords()
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .section-header h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   margin: 0;
-  color: var(--text-main);
+  color: #1a1a1a;
 }
 
 .section-header h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0;
-  color: var(--text-main);
+  color: #1a1a1a;
 }
 
 .mt-8 {
-  margin-top: 40px;
+  margin-top: 36px;
 }
 
 .cards-grid {
@@ -185,22 +189,23 @@ getInviteRecords()
 }
 
 .custom-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 18px 20px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .card-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 16px;
-  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 18px;
+  color: #1a1a1a;
 }
 
 .info-lines p {
-  margin: 8px 0;
-  color: var(--text-muted);
+  margin: 10px 0;
+  color: #666666;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -209,20 +214,31 @@ getInviteRecords()
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  padding: 2px 10px;
+  min-width: 36px;
+  padding: 4px 12px;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: #2563eb;
-  font-weight: 600;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #7c3aed;
+  font-weight: 700;
+  font-size: 14px;
   margin: 0 6px;
 }
 
 .earned-row {
-  margin-top: 24px;
-  font-size: 18px;
+  margin-top: 28px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--text-main);
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.earned-row .pill {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  color: #9333ea;
+  font-size: 18px;
+  padding: 6px 16px;
 }
 
 .link-card .card-header {
@@ -236,14 +252,21 @@ getInviteRecords()
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-muted);
+  color: #666666;
+  font-size: 14px;
   margin-bottom: 12px;
 }
 
+.meta-line .pill {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  color: #7c3aed;
+}
+
 .card-desc {
-  color: var(--text-muted);
+  color: #666666;
   font-size: 14px;
   margin-bottom: 16px;
+  line-height: 1.5;
 }
 
 .link-row {
@@ -253,26 +276,86 @@ getInviteRecords()
 }
 
 .copy-btn {
-  min-width: 96px;
+  min-width: 100px;
+  height: 40px;
+  font-weight: 600;
 }
 
 .table-container {
   overflow-x: auto;
   border-radius: 12px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-container.no-padding {
   padding: 0;
 }
 
+.centered-table :deep(.ant-table-thead > tr > th) {
+  text-align: center;
+}
+
+.centered-table :deep(.ant-table-tbody > tr > td) {
+  text-align: center;
+}
+
 @media (max-width: 960px) {
+  .invite-view {
+    padding: 16px;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
   .cards-grid {
     grid-template-columns: 1fr;
+  }
+
+  .custom-card {
+    padding: 20px;
   }
 
   .link-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .link-row .ant-input {
+    width: 100% !important;
+  }
+
+  .copy-btn {
+    width: 100%;
+  }
+
+  .table-container {
+    margin: 0 -20px;
+    padding: 0 20px;
+    width: calc(100% + 40px);
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header h2 {
+    font-size: 18px;
+  }
+
+  .section-header h3 {
+    font-size: 15px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  .pill {
+    font-size: 13px;
+    padding: 3px 10px;
+  }
+
+  .earned-row .pill {
+    font-size: 16px;
+    padding: 5px 12px;
   }
 }
 </style>

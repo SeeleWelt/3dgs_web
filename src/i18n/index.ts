@@ -29,7 +29,7 @@ export default i18n
 
 // 语言列表
 export const languages = [
-  { code: 'zh', name: '中文', flagClass: 'cn' }, // 中国
+  { code: 'zh', name: '中文', flagClass: 'cn' }, // 中国  
   { code: 'en', name: 'English', flagClass: 'gb' }, // 英国（英语）
   { code: 'de', name: 'Deutsch', flagClass: 'de' }, // 德国
   { code: 'fr', name: 'Français', flagClass: 'fr' }, // 法国

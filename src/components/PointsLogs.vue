@@ -1,112 +1,178 @@
-<template>
+﻿<template>
   <a-modal
     v-model:open="visible"
     title="算力点记录"
     :footer="null"
-    :width="520"
+    :width="680"
     class="points-logs-modal"
+    wrapClassName="points-logs-wrap"
   >
     <div class="points-logs-container">
-      <!-- 加载状态 -->
-      <div v-if="isLoading" class="loading-state">
-        <a-spin size="large" />
-        <span class="loading-text">加载中...</span>
+      <div class="ledger-frame">
+        <!-- 加载状态 -->
+        <div v-if="isLoading" class="loading-state">
+          <a-spin size="large" />
+          <span class="loading-text">加载中...</span>
+        </div>
+
+        <!-- 错误状态 -->
+        <div v-else-if="fetchError" class="error-state">
+          <div class="error-icon">
+            <CloseCircleFilled />
+          </div>
+          <p class="error-text">{{ fetchError }}</p>
+          <button class="retry-btn" @click="handleRetry">重新加载</button>
+        </div>
+
+        <!-- 内容区域 -->
+        <template v-else>
+          <template v-if="isMobile">
+            <div class="m-ledger">
+              <div class="m-balance-card">
+                <div class="m-balance-top">
+                  <div class="m-balance-title">算力点余额</div>
+                  <div class="m-balance-value">{{ currentPoints }}</div>
+                </div>
+                <div class="m-balance-sub">
+                  <div class="m-pill total">
+                    <GiftOutlined />
+                    <span>累计 +{{ totalPoints }}</span>
+                  </div>
+                  <div class="m-pill count">
+                    <UnorderedListOutlined />
+                    <span>{{ logs.length }} 条记录</span>
+                  </div>
+                  <div class="m-pill scope">
+                    <ClockCircleOutlined />
+                    <span>最近 {{ Math.min(displayCount, logs.length) }} 条</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="m-toolbar">
+                <div class="m-toolbar-top">
+                  <div class="m-toolbar-title">变动记录</div>
+                  <div class="m-toolbar-meta">最近 {{ Math.min(displayCount, logs.length) }} 条</div>
+                </div>
+              </div>
+
+              <div class="m-list" v-if="displayedLogs.length > 0">
+                <div
+                  v-for="(log, index) in displayedLogs"
+                  :key="index"
+                  class="m-row"
+                  :class="{ positive: isPositiveAmount(log.rewards_amount), negative: isNegativeAmount(log.rewards_amount) }"
+                >
+                  <div class="m-row-main">
+                    <div class="m-row-title">{{ log.rewards_type }}</div>
+                    <div class="m-row-meta">{{ formatDate(log.created_at) }}</div>
+                  </div>
+                  <div class="m-row-side">
+                    <div
+                      class="m-row-amount"
+                      :class="{ positive: isPositiveAmount(log.rewards_amount), negative: isNegativeAmount(log.rewards_amount) }"
+                    >
+                      {{ log.rewards_amount }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <a-empty v-else description="暂无算力点记录" class="empty-state" />
+            </div>
+          </template>
+
+          <template v-else>
+            <header class="ledger-hero">
+              <div class="hero-top">
+                <div class="hero-text">
+                  <span class="hero-kicker">META·ST / LEDGER</span>
+                  <h3>算力点流水</h3>
+                  <p>清晰查看每一笔变动，支持快速筛选</p>
+                </div>
+                <div class="hero-balance">
+                  <span class="balance-label">当前余额</span>
+                  <span class="balance-value">{{ currentPoints }}</span>
+                </div>
+              </div>
+
+              <section class="ledger-stats">
+                <div class="stat-tile total">
+                  <div class="tile-icon">
+                    <GiftOutlined />
+                  </div>
+                  <div class="tile-text">
+                    <span>累计获得</span>
+                    <strong>+{{ totalPoints }}</strong>
+                  </div>
+                </div>
+                <div class="stat-tile count">
+                  <div class="tile-icon">
+                    <UnorderedListOutlined />
+                  </div>
+                  <div class="tile-text">
+                    <span>记录数量</span>
+                    <strong>{{ logs.length }}</strong>
+                  </div>
+                </div>
+                <div class="stat-tile scope">
+                  <div class="tile-icon">
+                    <ClockCircleOutlined />
+                  </div>
+                  <div class="tile-text">
+                    <span>展示范围</span>
+                    <strong>最近 {{ Math.min(displayCount, logs.length) }} 条</strong>
+                  </div>
+                </div>
+              </section>
+            </header>
+
+            <div class="ledger-toolbar">
+              <div class="toolbar-left">
+                <span class="ledger-title">变动记录</span>
+                <span class="ledger-badge">最近 {{ Math.min(displayCount, logs.length) }} 条</span>
+              </div>
+            </div>
+
+            <div class="ledger-list" v-if="displayedLogs.length > 0">
+              <div
+                v-for="(log, index) in displayedLogs"
+                :key="index"
+                class="ledger-row"
+                :class="{ positive: isPositiveAmount(log.rewards_amount), negative: isNegativeAmount(log.rewards_amount) }"
+              >
+                <div class="row-dot"></div>
+                <div class="row-main">
+                  <div class="row-title">{{ log.rewards_type }}</div>
+                  <div class="row-meta">{{ formatDate(log.created_at) }}</div>
+                </div>
+                <div class="row-side">
+                  <span
+                    class="row-amount"
+                    :class="{ positive: isPositiveAmount(log.rewards_amount), negative: isNegativeAmount(log.rewards_amount) }"
+                  >
+                    {{ log.rewards_amount }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <a-empty v-else description="暂无算力点记录" class="empty-state" />
+
+            <div v-if="logs.length > 0" class="limit-hint">
+              仅显示最近 {{ Math.min(displayCount, logs.length) }} 条记录
+            </div>
+          </template>
+        </template>
       </div>
-
-      <!-- 错误状态 -->
-      <div v-else-if="fetchError" class="error-state">
-        <div class="error-icon">
-          <svg t="1773206444988" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2435" width="48" height="48">
-            <path d="M512 0a512 512 0 0 0-512 512 512 512 0 0 0 512 512 512 512 0 0 0 512-512 512 512 0 0 0-512-512z" fill="#FD6B6D" p-id="2436"></path>
-            <path d="M513.755429 565.540571L359.277714 720.018286a39.058286 39.058286 0 0 1-55.296-0.073143 39.277714 39.277714 0 0 1 0.073143-55.442286l154.331429-154.331428-155.062857-155.136a36.571429 36.571429 0 0 1 51.712-51.785143l365.714285 365.714285a36.571429 36.571429 0 1 1-51.785143 51.785143L513.755429 565.540571z m157.549714-262.582857a35.254857 35.254857 0 1 1 49.737143 49.737143l-106.057143 108.982857a35.254857 35.254857 0 1 1-49.883429-49.810285l106.203429-108.982858z" fill="#FFFFFF" p-id="2437"></path>
-          </svg>
-        </div>
-        <p class="error-text">{{ fetchError }}</p>
-        <button class="retry-btn" @click="handleRetry">重新加载</button>
-      </div>
-
-      <!-- 内容区域 -->
-      <template v-else>
-        <!-- 顶部统计卡片 -->
-        <div class="points-summary">
-          <div class="summary-card current">
-            <div class="summary-icon">
-              <!-- 优化的算力图标 -->
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 4H6C4.89 4 4 4.89 4 6V18C4 19.11 4.89 20 6 20H18C19.11 20 20 19.11 20 18V6C20 4.89 19.11 4 18 4M15 8H9V10H15V8M15 12H9V14H15V12M15 16H9V18H15V16Z" />
-              </svg>
-            </div>
-            <div class="summary-content">
-              <span class="summary-label">当前算力点</span>
-              <span class="summary-value">{{ currentPoints }}</span>
-            </div>
-          </div>
-          <div class="summary-card total">
-            <div class="summary-icon">
-              <!-- 优化的累计图标 -->
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 3H5C3.89 3 3 3.89 3 5V19C3 20.11 3.89 21 5 21H19C20.11 21 21 20.11 21 19V5C21 3.89 20.11 3 19 3M19 19H5V5H19V19M7 7H17V9H7V7M7 11H17V13H7V11M7 15H14V17H7V15Z" />
-              </svg>
-            </div>
-            <div class="summary-content">
-              <span class="summary-label">累计获得</span>
-              <span class="summary-value positive">+{{ totalPoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 日志标题 -->
-        <div class="logs-header">
-          <span class="logs-title">变动记录</span>
-          <span class="logs-count">{{ logs.length }} 条</span>
-        </div>
-
-        <!-- 日志列表 -->
-        <div class="logs-list" v-if="displayedLogs.length > 0">
-          <div
-            v-for="(log, index) in displayedLogs"
-            :key="index"
-            class="log-item"
-            :class="{ positive: String(log.rewards_amount).startsWith('+'), negative: String(log.rewards_amount).startsWith('-') }"
-          >
-            <div class="log-icon" :class="{ positive: String(log.rewards_amount).startsWith('+'), negative: String(log.rewards_amount).startsWith('-') }">
-              <!-- 优化的加减图标 -->
-              <svg v-if="String(log.rewards_amount).startsWith('+')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </div>
-            <div class="log-info">
-              <span class="log-type">{{ log.rewards_type }}</span>
-              <span class="log-date">{{ formatDate(log.created_at) }}</span>
-            </div>
-            <span
-              class="log-amount"
-              :class="{ positive: String(log.rewards_amount).startsWith('+'), negative: String(log.rewards_amount).startsWith('-') }"
-            >
-              {{ log.rewards_amount }}
-            </span>
-          </div>
-        </div>
-
-        <!-- 空状态 -->
-        <a-empty v-else description="暂无算力点记录" class="empty-state" />
-
-        <!-- 提示文字 -->
-        <div v-if="logs.length > displayCount" class="limit-hint">
-          仅显示最近 {{ displayCount }} 条记录
-        </div>
-      </template>
     </div>
   </a-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, computed, watch } from 'vue'
 import { usePointsStore } from '@/stores/points'
+import { ClockCircleOutlined, CloseCircleFilled, GiftOutlined, UnorderedListOutlined } from '@ant-design/icons-vue'
 
 interface Props {
   open: boolean
@@ -130,11 +196,42 @@ const isLoading = ref(false)
 const fetchError = ref<string | null>(null)
 
 const currentPoints = computed(() => pointsStore.current_points)
-const logs : any = computed(() => pointsStore.points_logs || [])
+const logs = computed<any[]>(() => (pointsStore.points_logs as any[]) || [])
+const sortedLogs = computed(() => {
+  // 后端返回顺序不确定，这里统一按时间倒序展示，符合“流水/账单”常见体验
+  return [...logs.value].sort((a, b) => Number(b?.created_at || 0) - Number(a?.created_at || 0))
+})
+
+const isMobile = ref(false)
+let mediaQuery: MediaQueryList | null = null
+const syncIsMobile = () => {
+  isMobile.value = !!mediaQuery?.matches
+}
+
+onMounted(() => {
+  mediaQuery = window.matchMedia('(max-width: 640px)')
+  syncIsMobile()
+  if (typeof mediaQuery.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', syncIsMobile)
+  } else {
+    // Safari < 14
+    mediaQuery.addListener(syncIsMobile)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (!mediaQuery) return
+  if (typeof mediaQuery.removeEventListener === 'function') {
+    mediaQuery.removeEventListener('change', syncIsMobile)
+  } else {
+    mediaQuery.removeListener(syncIsMobile)
+  }
+  mediaQuery = null
+})
 
 // 只显示最近10条记录
 const displayCount = 10
-const displayedLogs = computed(() => logs.value.slice(0, displayCount))
+const displayedLogs = computed(() => sortedLogs.value.slice(0, displayCount))
 
 // 计算累计获得的算力点
 const totalPoints = computed(() =>
@@ -142,9 +239,13 @@ const totalPoints = computed(() =>
 )
 
 // 格式化时间戳
-const formatDate = (timestamp: number) => {
-  if (!timestamp) return '-'
-  const date = new Date(timestamp)
+const formatDate = (timestamp: number | string) => {
+  if (timestamp === null || timestamp === undefined || timestamp === '') return '-'
+  const raw = Number(timestamp)
+  if (!Number.isFinite(raw) || raw <= 0) return '-'
+  // 兼容后端返回秒 / 毫秒
+  const ts = raw < 1e12 ? raw * 1000 : raw
+  const date = new Date(ts)
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -152,6 +253,9 @@ const formatDate = (timestamp: number) => {
   const minutes = String(date.getMinutes()).padStart(2, '0')
   return `${year}-${month}-${day} ${hours}:${minutes}`
 }
+
+const isNegativeAmount = (amount: unknown) => String(amount ?? '').trim().startsWith('-')
+const isPositiveAmount = (amount: unknown) => !isNegativeAmount(amount)
 
 // 加载数据
 const fetchData = async () => {
@@ -187,12 +291,78 @@ watch(() => props.open, (newVal) => {
 </script>
 
 <style scoped>
+:deep(.points-logs-modal) {
+  --ledger-ink: var(--text-primary);
+  --ledger-muted: var(--text-secondary);
+  --ledger-line: var(--glass-border);
+  --ledger-line-hover: var(--glass-border-hover);
+  --ledger-bg: var(--bg-primary);
+  --ledger-card: var(--glass-surface);
+  --ledger-card-hover: var(--glass-surface-hover);
+  --ledger-accent: var(--accent-blue);
+  --ledger-accent-2: var(--accent-purple);
+  --ledger-success: var(--accent-green);
+  --ledger-danger: var(--accent-pink);
+  --ledger-chip-bg: rgba(0, 0, 0, 0.06);
+  --ledger-dot: rgba(0, 0, 0, 0.35);
+  --ledger-scroll: rgba(0, 0, 0, 0.22);
+  font-family: var(--global-font-family);
+}
+
+:deep([data-theme="dark"] .points-logs-modal) {
+  --ledger-chip-bg: rgba(255, 255, 255, 0.12);
+  --ledger-dot: rgba(255, 255, 255, 0.28);
+  --ledger-scroll: rgba(255, 255, 255, 0.24);
+}
+
+:deep(.points-logs-wrap .ant-modal) {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+:deep(.points-logs-modal .ant-modal-content) {
+  background: linear-gradient(180deg, var(--ledger-card-hover), var(--ledger-bg));
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+}
+
+:deep(.points-logs-modal .ant-modal-header) {
+  background: transparent;
+  border-bottom: none;
+  padding: 18px 18px 0;
+}
+
+:deep(.points-logs-modal .ant-modal-title) {
+  font-weight: 700;
+  color: var(--ledger-ink);
+  letter-spacing: 0.02em;
+}
+
+:deep(.points-logs-modal .ant-modal-body) {
+  padding: 12px 18px 18px;
+}
+
 .points-logs-container {
-  max-height: 50vh;
+  position: relative;
+  max-height: min(70vh, 720px);
   overflow-y: auto;
-  padding: 4px;
+  padding: 10px 2px 2px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.1) transparent;
+  scrollbar-color: var(--ledger-scroll) transparent;
+}
+
+.points-logs-container::before {
+  content: '';
+  position: absolute;
+  inset: -40px -40px auto -40px;
+  height: 220px;
+  pointer-events: none;
+  background:
+    radial-gradient(120px 120px at 15% 30%, rgba(0, 114, 255, 0.26), transparent 70%),
+    radial-gradient(140px 140px at 75% 10%, rgba(175, 82, 222, 0.22), transparent 70%),
+    radial-gradient(120px 120px at 55% 80%, rgba(255, 55, 95, 0.12), transparent 70%);
+  opacity: 0.9;
+  filter: blur(2px);
 }
 
 .points-logs-container::-webkit-scrollbar {
@@ -204,8 +374,17 @@ watch(() => props.open, (newVal) => {
 }
 
 .points-logs-container::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.1);
+  background-color: var(--ledger-scroll);
   border-radius: 3px;
+}
+
+.ledger-frame {
+  position: relative;
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  border-radius: 18px;
+  padding: 16px;
+  backdrop-filter: blur(14px);
 }
 
 /* 加载状态 */
@@ -214,14 +393,13 @@ watch(() => props.open, (newVal) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  gap: 20px;
-  animation: fadeIn 0.3s ease;
+  padding: 64px 20px;
+  gap: 14px;
 }
 
 .loading-text {
-  font-size: 15px;
-  color: #666;
+  font-size: 14px;
+  color: var(--ledger-muted);
   font-weight: 500;
 }
 
@@ -231,294 +409,497 @@ watch(() => props.open, (newVal) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: 56px 20px;
   text-align: center;
-  animation: fadeIn 0.3s ease;
 }
 
 .error-icon {
-  color: #ff6b6b;
-  margin-bottom: 16px;
-  animation: shake 0.5s ease;
+  color: var(--ledger-danger);
+  margin-bottom: 12px;
+}
+
+.error-icon :deep(.anticon) {
+  font-size: 48px;
 }
 
 .error-text {
-  font-size: 15px;
-  color: #666;
-  margin: 0 0 24px;
+  font-size: 14px;
+  color: var(--ledger-muted);
+  margin: 0 0 18px;
   line-height: 1.5;
 }
 
 .retry-btn {
-  padding: 10px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, var(--ledger-accent), var(--ledger-accent-2));
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .retry-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  filter: brightness(0.96);
+  transform: translateY(-1px);
 }
 
-.retry-btn:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* 顶部统计卡片 */
-.points-summary {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.summary-card {
-  flex: 1;
-  display: flex;
-  align-items: center;
+.ledger-hero {
+  display: grid;
   gap: 10px;
   padding: 14px;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
-  animation: slideUp 0.4s ease backwards;
+  border-radius: 16px;
+  background:
+    radial-gradient(180px 140px at 16% 18%, rgba(0, 114, 255, 0.26), transparent 70%),
+    radial-gradient(220px 160px at 84% 10%, rgba(175, 82, 222, 0.22), transparent 72%),
+    linear-gradient(135deg, var(--ledger-card-hover), var(--ledger-card));
+  border: 1px solid var(--ledger-line);
+  animation: fadeUp 0.45s ease both;
 }
 
-.summary-card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.summary-card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.summary-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
+.hero-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  animation: bounceIn 0.5s ease backwards;
 }
 
-.summary-card:nth-child(1) .summary-icon {
-  animation-delay: 0.2s;
-  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-}
-
-.summary-card:nth-child(2) .summary-icon {
-  animation-delay: 0.3s;
-  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-}
-
-.summary-icon svg {
-  color: white;
-  width: 20px;
-  height: 20px;
-}
-
-.summary-content {
+.hero-text {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  z-index: 1;
 }
 
-.summary-label {
-  font-size: 13px;
-  color: var(--text-secondary);
+.hero-kicker {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ledger-muted);
+  opacity: 0.95;
+}
+
+.hero-text h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ledger-ink);
+}
+
+.hero-text p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ledger-muted);
+}
+
+.hero-balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--ledger-card-hover);
+  border-radius: 14px;
+  border: 1px solid var(--ledger-line);
+  min-width: 180px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.balance-label {
+  font-size: 12px;
+  color: var(--ledger-muted);
   font-weight: 500;
 }
 
-.summary-value {
+.balance-value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
+  color: var(--ledger-ink);
 }
 
-.summary-value.positive {
-  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.ledger-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 6px;
 }
 
-/* 日志标题 */
-.logs-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding: 0 4px;
-}
-
-.logs-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.logs-count {
-  font-size: 12px;
-  color: var(--text-secondary);
-  background: var(--glass-surface-hover);
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-/* 日志列表 */
-.logs-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.log-item {
+.stat-tile {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px;
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.stat-tile:hover {
+  transform: translateY(-1px);
+  border-color: var(--ledger-line-hover);
+  background: var(--ledger-card-hover);
+}
+
+.tile-icon {
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
-  transition: all 0.3s ease;
-  animation: slideUp 0.4s ease backwards;
-}
-
-.log-item:hover {
-  transform: translateX(4px);
-  border-color: var(--accent-blue);
-}
-
-.log-item:nth-child(1) { animation-delay: 0.1s; }
-.log-item:nth-child(2) { animation-delay: 0.15s; }
-.log-item:nth-child(3) { animation-delay: 0.2s; }
-.log-item:nth-child(4) { animation-delay: 0.25s; }
-.log-item:nth-child(5) { animation-delay: 0.3s; }
-.log-item:nth-child(6) { animation-delay: 0.35s; }
-.log-item:nth-child(7) { animation-delay: 0.4s; }
-.log-item:nth-child(8) { animation-delay: 0.45s; }
-.log-item:nth-child(9) { animation-delay: 0.5s; }
-.log-item:nth-child(10) { animation-delay: 0.55s; }
-
-.log-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  animation: scaleIn 0.3s ease;
+  background: linear-gradient(135deg, var(--ledger-accent), var(--ledger-accent-2));
+  box-shadow: 0 10px 20px rgba(0, 114, 255, 0.22);
 }
 
-.log-icon.positive {
-  background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-  color: #16a085;
+.tile-icon :deep(.anticon) {
+  font-size: 18px;
+  line-height: 1;
 }
 
-.log-icon.negative {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-  color: #e74c3c;
+.stat-tile.count .tile-icon {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
 }
 
-.log-icon svg {
-  width: 14px;
-  height: 14px;
+.stat-tile.scope .tile-icon {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.18);
 }
 
-.log-info {
+.tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tile-text span {
+  font-size: 12px;
+  color: var(--ledger-muted);
+  font-weight: 500;
+}
+
+.tile-text strong {
+  font-size: 15px;
+  color: var(--ledger-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ledger-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 14px 2px 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  animation: fadeUp 0.5s ease both;
+  animation-delay: 0.06s;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ledger-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ledger-ink);
+  white-space: nowrap;
+}
+
+.ledger-badge {
+  font-size: 11px;
+  color: var(--ledger-muted);
+  background: var(--ledger-chip-bg);
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  border-radius: 14px;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  animation: fadeUp 0.5s ease both;
+}
+
+.ledger-row:hover {
+  transform: translateY(-1px);
+  border-color: var(--ledger-line-hover);
+  background: var(--ledger-card-hover);
+}
+
+.row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ledger-dot);
+}
+
+.ledger-row.positive .row-dot {
+  background: var(--ledger-success);
+}
+
+.ledger-row.negative .row-dot {
+  background: var(--ledger-danger);
+}
+
+.m-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.m-balance-card {
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  border-radius: 16px;
+  padding: 12px;
+  backdrop-filter: blur(14px);
+}
+
+.m-balance-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.m-balance-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ledger-muted);
+  letter-spacing: 0.02em;
+}
+
+.m-balance-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ledger-ink);
+}
+
+.m-balance-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.m-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--ledger-chip-bg);
+  border: 1px solid var(--ledger-line);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.m-pill span {
+  color: var(--ledger-muted);
+}
+
+.m-pill :deep(.anticon) {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.m-toolbar {
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  border-radius: 16px;
+  padding: 12px;
+  backdrop-filter: blur(14px);
+}
+
+.m-toolbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.m-toolbar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ledger-ink);
+}
+
+.m-toolbar-meta {
+  font-size: 12px;
+  color: var(--ledger-muted);
+}
+
+.m-list {
+  background: var(--ledger-card);
+  border: 1px solid var(--ledger-line);
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 0;
   flex: 1;
+  height: 0; /* make it take the remaining space within a flex column */
+  min-height: min(240px, 40vh); /* explicit height floor, but never forces overflow on small screens */
+}
+
+.m-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--ledger-line);
+}
+
+.m-row:last-child {
+  border-bottom: none;
+}
+
+.m-row-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.m-row-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ledger-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m-row-meta {
+  font-size: 11px;
+  color: var(--ledger-muted);
+}
+
+.m-row-side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.m-row-amount {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ledger-ink);
+  text-align: right;
+}
+
+.m-row-amount.positive {
+  color: var(--ledger-success);
+}
+
+.m-row-amount.negative {
+  color: var(--ledger-danger);
+}
+
+
+.row-main {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
 
-.log-type {
+.row-title {
   font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--ledger-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.log-date {
+.row-meta {
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--ledger-muted);
 }
 
-.log-amount {
-  font-size: 15px;
+.row-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.row-amount {
+  font-size: 14px;
   font-weight: 700;
-  flex-shrink: 0;
+  color: var(--ledger-ink);
 }
 
-.log-amount.positive {
-  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.row-amount.positive {
+  color: var(--ledger-success);
 }
 
-.log-amount.negative {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.row-amount.negative {
+  color: var(--ledger-danger);
 }
+
 
 /* 空状态 */
 .empty-state {
-  padding: 40px 0;
-  animation: fadeIn 0.3s ease;
+  padding: 32px 0 24px;
 }
 
-:deep(.empty-description) {
-  color: var(--text-tertiary);
-  font-size: 15px;
+:deep(.ant-empty-description) {
+  color: var(--ledger-muted);
+  font-size: 14px;
 }
 
 :deep(.ant-empty-img) {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 /* 限制提示 */
 .limit-hint {
   text-align: center;
   font-size: 12px;
-  color: var(--text-tertiary);
+  color: var(--ledger-muted);
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px dashed var(--ledger-line);
 }
 
-/* 动画定义 */
-@keyframes fadeIn {
+@keyframes fadeUp {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -526,37 +907,107 @@ watch(() => props.open, (newVal) => {
   }
 }
 
-@keyframes bounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
+@media (prefers-reduced-motion: reduce) {
+  .ledger-hero,
+  .ledger-toolbar,
+  .ledger-row {
+    animation: none !important;
   }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+
+  .ledger-row:hover,
+  .stat-tile:hover,
+  .retry-btn:hover {
+    transform: none;
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.5);
+@media (max-width: 640px) {
+  :deep(.points-logs-wrap .ant-modal) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    padding-bottom: 0;
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  :deep(.points-logs-wrap .ant-modal-content) {
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+  }
+
+  :deep(.points-logs-wrap .ant-modal-header) {
+    padding: calc(14px + env(safe-area-inset-top)) 14px 0;
+  }
+
+  :deep(.points-logs-wrap .ant-modal-close-x) {
+    width: 46px;
+    height: 46px;
+    line-height: 46px;
+  }
+
+  :deep(.points-logs-wrap .ant-modal-body) {
+    flex: 1;
+    overflow: hidden;
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .points-logs-container {
+    height: 100%;
+    max-height: none;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .points-logs-container::before {
+    inset: -60px -40px auto -40px;
+    height: 200px;
+  }
+
+  .ledger-frame {
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    backdrop-filter: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .m-ledger {
+    flex: 1;
+    min-height: 0;
+    padding: 8px 0 0;
+    overflow: hidden;
+  }
+
+  .m-list {
+    max-height: 50vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .limit-hint {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+    opacity: 0.85;
+  }
 }
 </style>

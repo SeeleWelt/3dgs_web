@@ -172,6 +172,7 @@ export default {
       feedback: 'フィードバック',
       language: '日本語',
       logout: 'ログアウト',
+      logoutConfirm: 'ログアウトしてもよろしいですか？',
       selectLanguage: '言語を選択',
       regularAccount: '通常アカウント'
     },

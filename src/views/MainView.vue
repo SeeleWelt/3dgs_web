@@ -41,8 +41,10 @@ const toggleSidebar = () => {
 }
 
 onMounted(async () => {
+  console.log('Fetching daily points log...')
   checkMobile()
   try {
+    
     await userPointsStore.getPointsDaylyLogs();
     notification.open({
       message: '每日签到',
@@ -73,6 +75,7 @@ onUnmounted(() => {
   flex: 1;
   margin-left: 240px;
   transition: margin-left 0.3s ease;
+  min-width: 0;
 }
 
 .content {
@@ -116,14 +119,14 @@ onUnmounted(() => {
   }
 
   .content {
-    padding: 20px;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
   }
 }
 
 /* Mobile (<= 640px) */
 @media (max-width: 640px) {
   .content {
-    padding: 16px;
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
   }
 }
 

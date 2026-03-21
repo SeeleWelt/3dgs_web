@@ -255,8 +255,10 @@ export default {
       profile: '个人中心',
       language: '中文',
       logout: '登出',
+      logoutConfirm: '确定要退出登录吗？',
       selectLanguage: '选择语言',
-      regularAccount: '普通账号'
+      regularAccount: '普通账号',
+      invite: '邀请链接'
     },
     sidebar: {
       webVersion: '网页版',

@@ -287,4 +287,11 @@ watch(
   font-size: 12px;
   color: #595959;
 }
+
+@media (max-width: 640px) {
+  :deep(.ant-modal) {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}
 </style>

@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 declare global {
@@ -44,6 +44,27 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const googleButtonRef = ref<HTMLDivElement | null>(null)
 const initError = ref('')
+let resizeTimer: number | undefined
+
+const resolveButtonWidth = () => {
+  if (typeof window === 'undefined') return 480
+  return Math.min(480, Math.max(240, window.innerWidth - 48))
+}
+
+const handleResize = () => {
+  if (!googleButtonRef.value || !window.google?.accounts?.id) return
+  if (resizeTimer) window.clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(() => {
+    window.google.accounts.id.renderButton(googleButtonRef.value, {
+      theme: 'outline',
+      size: 'large',
+      text: 'continue_with',
+      shape: 'pill',
+      logo_alignment: 'left',
+      width: resolveButtonWidth()
+    })
+  }, 120)
+}
 
 const loadGoogleScript = () =>
   new Promise<void>((resolve, reject) => {
@@ -110,10 +131,11 @@ const initGoogleLogin = async () => {
       text: 'continue_with',
       shape: 'pill',
       logo_alignment: 'left',
-      width: 480
+      width: resolveButtonWidth()
     })
 
     isInitialized.value = true
+    window.addEventListener('resize', handleResize)
   } catch (error: any) {
     initError.value = error?.message || 'Failed to initialize Google login'
     emit('google-error', { message: initError.value, error })
@@ -159,6 +181,11 @@ const handleGoogleLogin = async () => {
 
 onMounted(() => {
   initGoogleLogin()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+  if (resizeTimer) window.clearTimeout(resizeTimer)
 })
 </script>
 

@@ -173,6 +173,7 @@ export default {
       profile: 'Profil',
       language: 'Deutsch',
       logout: 'Abmelden',
+      logoutConfirm: 'Sind Sie sicher, dass Sie sich abmelden möchten?',
       selectLanguage: 'Sprache wählen',
       regularAccount: 'Standardkonto'
     },

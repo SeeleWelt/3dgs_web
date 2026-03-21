@@ -281,4 +281,26 @@ defineExpose({ open, close: handleClose })
     opacity: 0;
   }
 }
+
+@media (max-width: 640px) {
+  .upgrade-success-modal {
+    width: calc(100vw - 32px);
+    padding: 24px;
+  }
+
+  .success-title {
+    font-size: 22px;
+  }
+
+  .benefits-list {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .benefit-item {
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+  }
+}
 </style>

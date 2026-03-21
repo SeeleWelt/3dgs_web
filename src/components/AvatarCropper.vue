@@ -332,4 +332,33 @@ const cropImage = () => {
 .quality-slider {
   width: 140px;
 }
+
+@media (max-width: 768px) {
+  :deep(.ant-modal) {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .cropper-box {
+    height: 32vh;
+  }
+
+  .rotation-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .quality-area {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .quality-slider {
+    width: min(240px, 100%);
+  }
+}
 </style>

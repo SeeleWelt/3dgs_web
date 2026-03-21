@@ -38,7 +38,7 @@
 
 
       <div class="custom-card table-container">
-        <table class="custom-table">
+        <table class="custom-table centered">
           <thead>
             <tr>
               <th>{{ t('developerLang.name') }}</th>
@@ -160,7 +160,9 @@
           :pagination="{ pageSize: pageSize, showSizeChanger: false }"
           row-key="id"
           :columns="historyColumns"
+          :scroll="{ x: 720 }"
           size="middle"
+          class="centered-table"
         />
       </div>
     </div>
@@ -176,7 +178,7 @@
       <p class="section-desc">{{ t('developerLang.webhookDesc') }}</p>
 
       <div class="custom-card table-container">
-        <table class="custom-table">
+        <table class="custom-table centered">
           <thead>
             <tr>
               <th>{{ t('developerLang.callbackUrl') }}</th>
@@ -286,7 +288,7 @@
       @cancel="showRenameModal = false"
       :okText="t('developerLang.confirm')"
       :cancelText="t('developerLang.cancel')"
-      :okButtonProps="{ style: { background: '#15DFCD', borderColor: '#15DFCD' }, loading: isRenamingApiKey }"
+      :okButtonProps="{ style: { background: '#8B5CF6', borderColor: '#8B5CF6' }, loading: isRenamingApiKey }"
     >
       <div class="form-group">
         <label>{{ t('developerLang.newName') }}</label>
@@ -297,7 +299,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, createVNode, computed } from 'vue'
+import { ref, createVNode, computed, onMounted, onUnmounted } from 'vue'
 import { Modal, message } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
@@ -306,6 +308,20 @@ import { ApiServer } from '@/utils/taskService'
 
 const { t } = useI18n()
 const currentTab = ref('api')
+
+const developerContentClass = 'developer-content'
+
+const setDeveloperContentClass = () => {
+  const contentElement = document.querySelector('.content')
+  if (!contentElement) return
+  contentElement.classList.add(developerContentClass)
+}
+
+const unsetDeveloperContentClass = () => {
+  const contentElement = document.querySelector('.content')
+  if (!contentElement) return
+  contentElement.classList.remove(developerContentClass)
+}
 
 const showCreateApiKeyModal = ref(false)
 const showCreateWebhookModal = ref(false)
@@ -689,21 +705,29 @@ fetchApiKeys()
 getOpenCredits()
 getLogs()
 getWebhooks()
+
+onMounted(() => {
+  setDeveloperContentClass()
+})
+
+onUnmounted(() => {
+  unsetDeveloperContentClass()
+})
 </script>
 
 <style scoped>
 .developer-view {
-  padding: 30px;
+  padding: 32px;
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   color: var(--text-primary);
-  /* Make sure default color scheme is adapted to light/dark */
-  --btn-cyan-bg: #15DFCD;
-  --btn-cyan-hover: #12cfbe;
-  --border-color: var(--glass-border, #e5e7eb);
-  --bg-card: var(--bg-secondary, #fafafa);
-  --text-main: var(--text-primary, #111827);
-  --text-muted: var(--text-secondary, #6b7280);
+  --btn-cyan-bg: #8B5CF6;
+  --btn-cyan-hover: #7C3AED;
+  --border-color: #e8e8e8;
+  --bg-card: #ffffff;
+  --text-main: #1a1a1a;
+  --text-muted: #666666;
   animation: fadeInUp 0.4s ease-out;
 }
 
@@ -719,59 +743,66 @@ getWebhooks()
 }
 
 .top-nav {
-  margin-bottom: 30px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e8e8e8;
+  padding-bottom: 14px;
 }
 
 .pill-tabs {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pill-tab {
-  padding: 6px 16px;
-  border-radius: 20px;
+  padding: 8px 18px;
+  border-radius: 22px;
   border: none;
-  background: var(--bg-card);
-  color: var(--text-muted);
+  background: #f5f5f5;
+  color: #666666;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
+}
+
+.pill-tab:hover {
+  background: #eeeeee;
+  color: #333333;
 }
 
 .pill-tab.active {
-  background: var(--text-main);
-  color: var(--bg-primary, #fff);
-  font-weight: 500;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .section-header h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   margin: 0;
-  color: var(--text-main);
+  color: #1a1a1a;
 }
 
 .section-header h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0;
-  color: var(--text-main);
+  color: #1a1a1a;
 }
 
-.mt-8 { margin-top: 40px; }
+.mt-8 { margin-top: 36px; }
 .mt-4 { margin-top: 16px; }
 
 .section-desc {
-  color: var(--text-muted);
+  color: #666666;
   font-size: 14px;
   margin-bottom: 20px;
 }
@@ -783,15 +814,17 @@ getWebhooks()
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 .btn-cyan:hover {
   background: var(--btn-cyan-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(21, 223, 205, 0.3);
 }
 .btn-icon {
   width: 16px;
@@ -838,52 +871,96 @@ getWebhooks()
 }
 
 .custom-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .table-container {
   overflow-x: auto;
   border-radius: 12px;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 .table-container.no-padding {
   padding: 0;
 }
 
+.custom-table.centered thead th {
+  text-align: center;
+}
+
+.custom-table.centered tbody td {
+  text-align: center;
+}
+
+.centered-table :deep(.ant-table-thead > tr > th) {
+  text-align: center;
+}
+
+.centered-table :deep(.ant-table-tbody > tr > td) {
+  text-align: center;
+}
+
 .custom-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
   font-size: 14px;
 }
 
+.tab-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+.centered-table :deep(.ant-table) {
+  width: 100%;
+  max-width: 100%;
+}
+
+.centered-table :deep(.ant-table-container) {
+  overflow-x: auto;
+}
+
+.centered-table :deep(.ant-table-content) {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 .custom-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--bg-card);
-  color: var(--text-muted);
-  font-weight: 600;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
+  background: #fafafa;
+  color: #666666;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8e8e8;
 }
 
 .custom-table tbody td {
-  padding: 14px 16px;
-  color: var(--text-main);
-  border-bottom: 1px solid var(--border-color);
+  padding: 16px 20px;
+  color: #1a1a1a;
+  border-bottom: 1px solid #f5f5f5;
   vertical-align: middle;
+  font-size: 13px;
 }
 
 .custom-table tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.02);
+  background: #fafafa;
 }
 
 .custom-table tbody tr:hover {
-  background: rgba(21, 223, 205, 0.06);
+  background: rgba(139, 92, 246, 0.06);
 }
 
 .custom-table tr:last-child td {
@@ -909,8 +986,9 @@ getWebhooks()
 
 .empty-text {
   text-align: center;
-  color: var(--text-muted);
+  color: #999999;
   padding: 30px !important;
+  font-size: 14px;
 }
 
 .actions-btn {
@@ -919,7 +997,7 @@ getWebhooks()
   border-radius: 8px;
   font-size: 18px;
   cursor: pointer;
-  color: var(--text-muted);
+  color: #888888;
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -929,9 +1007,9 @@ getWebhooks()
 }
 
 .actions-btn:hover {
-  border-color: var(--border-color);
-  color: var(--text-main);
-  background: rgba(0, 0, 0, 0.03);
+  border-color: #e8e8e8;
+  color: #1a1a1a;
+  background: #f5f5f5;
 }
 
 .usage-cards {
@@ -944,25 +1022,30 @@ getWebhooks()
 }
 
 .card-label {
-  color: var(--text-muted);
-  font-size: 14px;
+  color: #666666;
+  font-size: 13px;
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .card-value {
-  font-size: 42px;
-  font-weight: 600;
-  color: var(--text-main);
-  line-height: 1;
+  font-size: 38px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.1;
   margin-bottom: 12px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .card-hint {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: #888888;
 }
 .card-hint a {
   color: #9ca3af;
@@ -980,8 +1063,9 @@ getWebhooks()
 }
 
 .card-bottom-text {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: #888888;
+  margin-top: 4px;
 }
 
 .btn-topup {
@@ -990,7 +1074,7 @@ getWebhooks()
 
 .total-text {
   font-size: 14px;
-  color: var(--text-muted);
+  color: #666666;
 }
 
 .chart-container {
@@ -1004,8 +1088,8 @@ getWebhooks()
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: #999999;
+  font-size: 11px;
   padding-right: 15px;
   text-align: right;
   width: 40px;
@@ -1015,7 +1099,7 @@ getWebhooks()
 .chart-area {
   flex: 1;
   position: relative;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e8e8e8;
   height: calc(100% - 25px);
 }
 
@@ -1032,7 +1116,7 @@ getWebhooks()
 }
 
 .grid-line {
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px dashed #e8e8e8;
   opacity: 0.6;
 }
 
@@ -1059,8 +1143,8 @@ getWebhooks()
   right: 0;
   display: flex;
   justify-content: space-between;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: #999999;
+  font-size: 11px;
   padding-top: 10px;
   padding-left: 20px;
   padding-right: 20px;
@@ -1074,26 +1158,27 @@ getWebhooks()
 .form-group label {
   display: block;
   font-size: 14px;
-  color: var(--text-main);
+  font-weight: 600;
+  color: #1a1a1a;
   margin-bottom: 8px;
 }
 
 .form-help {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 8px;
+  font-size: 12px;
+  color: #888888;
+  margin-top: 6px;
   line-height: 1.4;
 }
 
 .form-error {
-  font-size: 13px;
-  color: #ff4d4f;
-  margin-top: 8px;
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 6px;
   line-height: 1.4;
 }
 
 .result-desc {
-  color: var(--text-muted);
+  color: #666666;
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 16px;
@@ -1113,10 +1198,209 @@ getWebhooks()
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 .status-badge.active {
-  background: rgba(21, 223, 205, 0.1);
-  color: #12cfbe;
+  background: rgba(139, 92, 246, 0.15);
+  color: #7c3aed;
+}
+
+@media (max-width: 960px) {
+  :global(.content.developer-content) {
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .developer-view {
+    padding: 20px;
+    width: 100%;
+    overflow-x: hidden;
+    min-width: 0;
+    max-width: 100vw;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 100%;
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+  }
+
+  .section-header h3 {
+    font-size: 15px;
+  }
+
+  .usage-cards {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .pill-tabs {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    max-width: 100%;
+  }
+
+  .pill-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pill-tab {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .custom-card {
+    padding: 16px;
+    border-radius: 12px;
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+  }
+
+  .custom-table {
+    display: table;
+    min-width: 720px;
+    max-width: 100%;
+  }
+
+  .custom-table thead th {
+    padding: 14px 16px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .custom-table tbody td {
+    padding: 14px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+    min-width: 0;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-value {
+    font-size: 32px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .result-row {
+    flex-direction: column;
+  }
+
+  .result-row .ant-input {
+    width: 100% !important;
+  }
+
+  .copy-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .developer-view {
+    padding: 14px;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .section-header {
+    margin-bottom: 10px;
+    max-width: 100%;
+  }
+
+  .section-header h2 {
+    font-size: 16px;
+  }
+
+  .section-header h3 {
+    font-size: 14px;
+  }
+
+  .pill-tabs {
+    flex-direction: row;
+    gap: 6px;
+    padding-bottom: 4px;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .pill-tab {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 18px;
+  }
+
+  .pill-tab.active {
+    padding: 8px 14px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    margin-bottom: 16px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .custom-card {
+    padding: 14px;
+    border-radius: 10px;
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+  }
+
+  .custom-table {
+    min-width: 680px;
+  }
+
+  .card-label {
+    font-size: 12px;
+  }
+
+  .card-value {
+    font-size: 26px;
+  }
+
+  .card-bottom-text {
+    font-size: 11px;
+  }
+
+  .empty-text {
+    padding: 20px !important;
+    font-size: 13px;
+  }
+
+  .actions-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
 }
 </style>

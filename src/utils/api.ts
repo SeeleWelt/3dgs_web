@@ -124,6 +124,10 @@ const API = {
   // 保存模型设置
   SAVE_MODEL_SETTING: "/api/saveModelSetting",
   GET_MODEL_SETTING: "/api/getModelSetting",
+
+  // 用户登出
+  USER_SIGNOUT: '/api/signOut',
+  
 } as const;
 
 export default API;

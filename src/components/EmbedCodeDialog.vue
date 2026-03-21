@@ -138,4 +138,11 @@ onMounted(async () => {
   font-size: 12px;
   color: #8c8c8c;
 }
+
+@media (max-width: 640px) {
+  :deep(.ant-modal) {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}
 </style>

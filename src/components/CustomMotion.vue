@@ -1,10 +1,10 @@
 <template>
   <a-modal
     v-model:open="visible"
-    :width="1200"
+    :width="isMobile ? '100vw' : 1520"
     :footer="null"
     :mask-closable="false"
-    class="custom-motion-modal"
+    :class="['custom-motion-modal', { 'custom-motion-modal-mobile': isMobile }]"
     @cancel="handleCancel"
     :zIndex = "1001"
   >
@@ -14,7 +14,7 @@
         <span>自定义运镜</span>
       </div>
     </template>
-    <div class="custom-motion-container" ref="containerRef" @mousemove="handleMouseMove">
+    <div class="custom-motion-container" ref="containerRef" @mousemove="handleMouseMove" @touchstart.passive="handleMouseMove">
       <!-- 左侧预览区域 -->
       <div class="preview-panel">
         <div
@@ -71,12 +71,6 @@
                   重置
                 </a-button>
               </a-tooltip>
-              <a-tooltip title="操作说明">
-                <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="showGestureModal = true">
-                  <template #icon><QuestionCircleOutlined /></template>
-                  说明
-                </a-button>
-              </a-tooltip>
             </div>
             <div class="btn-group right">
               <a-tooltip title="切换飞行模式">
@@ -98,10 +92,39 @@
 
       <!-- 右侧配置区域 -->
       <div class="config-panel">
+        <div v-if="isMobile" class="mobile-config-tabs">
+          <button
+            type="button"
+            class="mobile-config-tab"
+            :class="{ active: mobileConfigSection === 'camera' }"
+            @click="mobileConfigSection = 'camera'"
+          >
+            <CameraOutlined />
+            <span>镜头</span>
+          </button>
+          <button
+            type="button"
+            class="mobile-config-tab"
+            :class="{ active: mobileConfigSection === 'keyframes' }"
+            @click="mobileConfigSection = 'keyframes'"
+          >
+            <ToolOutlined />
+            <span>关键帧</span>
+          </button>
+          <button
+            type="button"
+            class="mobile-config-tab"
+            :class="{ active: mobileConfigSection === 'settings' }"
+            @click="mobileConfigSection = 'settings'"
+          >
+            <SettingOutlined />
+            <span>设置</span>
+          </button>
+        </div>
 
-        <div class="config-content">
+        <div class="config-content" :class="{ 'mobile-config-content': isMobile }">
           <!-- 当前相机位置 -->
-          <div class="config-section">
+          <div v-if="!isMobile || mobileConfigSection === 'camera'" class="config-section config-section-camera">
             <div class="section-title">当前相机位置</div>
             <div class="camera-position-display">
               <div class="position-item">
@@ -121,17 +144,35 @@
               <template #icon><CameraOutlined /></template>
               快照保存当前位置
             </a-button>
+            <div v-if="!isMobile" class="desktop-motion-stats">
+              <span class="motion-stat-pill">{{ keyframes.length }}/{{ maxKeyframesNum }} 关键帧</span>
+              <span class="motion-stat-pill">{{ totalDuration > 0 ? `${totalDuration.toFixed(1)}s` : '未生成轨迹' }}</span>
+              <span class="motion-stat-pill" :class="{ active: closedLoop }">{{ closedLoop ? '闭环' : '开放轨迹' }}</span>
+            </div>
           </div>
 
           <!-- 关键帧列表 -->
-          <div class="config-section">
+          <div v-if="!isMobile || mobileConfigSection === 'keyframes'" class="config-section config-section-keyframes">
             <div class="section-title">
               <span>关键帧</span>
               <span class="keyframes-count" :class="{ 'has-keyframes': displayKeyframes.length > 0 }">
                 {{ displayKeyframes.length }}/{{ maxKeyframesNum }}
               </span>
             </div>
-            <div class="keyframes-list" v-if="displayKeyframes.length > 0">
+            <div v-if="!isMobile" class="desktop-keyframe-toolbar">
+              <div class="desktop-keyframe-summary">
+                <div class="desktop-keyframe-title">
+                  {{ selectedKeyframe ? `当前选中第 ${selectedKeyframeIndex + 1} 帧` : '点击关键帧进行预览或修改' }}
+                </div>
+                <div class="desktop-keyframe-hint">
+                  {{ displayKeyframes.length > 6 ? '列表支持独立滚动，拖拽即可调整顺序' : '支持拖拽排序，右侧按钮可快速预览、更新和删除' }}
+                </div>
+              </div>
+              <div class="desktop-keyframe-state" :class="{ active: isPreviewMode }">
+                {{ isPreviewMode ? '预览中' : '编辑中' }}
+              </div>
+            </div>
+            <div class="keyframes-list" :class="{ 'keyframes-list-dense': !isMobile && displayKeyframes.length > 6 }" v-if="displayKeyframes.length > 0">
               <div
                 v-for="(kf, index) in displayKeyframes"
                 :key="index"
@@ -150,48 +191,63 @@
                 @dragleave="handleDragLeave"
                 @drop="!isPreviewMode && index < keyframes.length && handleDrop($event, index)"
               >
-                <div class="keyframes-index">
-                  {{ index < keyframes.length ? index + 1 : '↺' }}
-                </div>
                 <div class="keyframes-info">
-                  <div class="keyframes-position">
-                    X:{{ kf.position.x.toFixed(1) }} Y:{{ kf.position.y.toFixed(1) }} Z:{{ kf.position.z.toFixed(1) }}
+                  <div class="keyframes-topline">
+                    <div class="keyframes-index">
+                      {{ index < keyframes.length ? index + 1 : '↺' }}
+                    </div>
+                    <div class="keyframes-position">
+                      <span class="keyframes-coord">
+                        <span class="coord-axis">X</span>
+                        <span class="coord-value">{{ kf.position.x.toFixed(1) }}</span>
+                      </span>
+                      <span class="keyframes-coord">
+                        <span class="coord-axis">Y</span>
+                        <span class="coord-value">{{ kf.position.y.toFixed(1) }}</span>
+                      </span>
+                      <span class="keyframes-coord">
+                        <span class="coord-axis">Z</span>
+                        <span class="coord-value">{{ kf.position.z.toFixed(1) }}</span>
+                      </span>
+                    </div>
                   </div>
                   <div v-if="closedLoop && index === keyframes.length" class="keyframes-loop-label">
                     返回起点
                   </div>
-                  <div v-if="index < keyframes.length && kf.time !== undefined && kf.time !== null" class="keyframes-duration">
-                    <span class="duration-label">到下一帧:</span>
-                    <a-input-number
-                      v-model:value="keyframes[index].time"
-                      :min="0.5"
-                      :max="30"
-                      :step="0.5"
-                      size="small"
-                      style="width: 60px"
-                      :disabled="isPreviewMode"
-                      @click.stop
-                      @change="handleTimeChange"
-                    />
-                    <span class="duration-unit">秒</span>
+                  <div v-if="index < keyframes.length" class="keyframes-meta">
+                    <div v-if="kf.time !== undefined && kf.time !== null" class="keyframes-duration">
+                      <span class="duration-label">到下一帧:</span>
+                      <a-input-number
+                        v-model:value="keyframes[index].time"
+                        :min="0.5"
+                        :max="30"
+                        :step="0.5"
+                        size="small"
+                        class="duration-input"
+                        :disabled="isPreviewMode"
+                        @click.stop
+                        @change="handleTimeChange"
+                      />
+                      <span class="duration-unit">秒</span>
+                    </div>
+                    <div class="keyframes-actions">
+                      <a-tooltip title="预览">
+                        <a-button type="text" size="small" class="keyframe-action-btn" @click.stop="previewKeyframe(index)" :disabled="isPreviewMode">
+                          <template #icon><EyeOutlined /></template>
+                        </a-button>
+                      </a-tooltip>
+                      <a-tooltip title="更新位置">
+                        <a-button type="text" size="small" class="keyframe-action-btn" @click.stop="updateKeyframePosition(index)" :disabled="isPreviewMode">
+                          <template #icon><CameraOutlined /></template>
+                        </a-button>
+                      </a-tooltip>
+                      <a-tooltip title="删除">
+                        <a-button type="text" size="small" class="keyframe-action-btn" danger @click.stop="deleteKeyframe(index)" :disabled="isPreviewMode">
+                          <template #icon><DeleteOutlined /></template>
+                        </a-button>
+                      </a-tooltip>
+                    </div>
                   </div>
-                </div>
-                <div class="keyframes-actions" v-if="index < keyframes.length">
-                  <a-tooltip title="预览">
-                    <a-button type="text" size="small" @click.stop="previewKeyframe(index)" :disabled="isPreviewMode">
-                      <template #icon><EyeOutlined /></template>
-                    </a-button>
-                  </a-tooltip>
-                  <a-tooltip title="更新位置">
-                    <a-button type="text" size="small" @click.stop="updateKeyframePosition(index)" :disabled="isPreviewMode">
-                      <template #icon><CameraOutlined /></template>
-                    </a-button>
-                  </a-tooltip>
-                  <a-tooltip title="删除">
-                    <a-button type="text" size="small" danger @click.stop="deleteKeyframe(index)" :disabled="isPreviewMode">
-                      <template #icon><DeleteOutlined /></template>
-                    </a-button>
-                  </a-tooltip>
                 </div>
               </div>
             </div>
@@ -202,7 +258,7 @@
           </div>
 
           <!-- 运镜设置 -->
-          <div class="config-section">
+          <div v-if="!isMobile || mobileConfigSection === 'settings'" class="config-section config-section-settings">
             <div class="section-title">运镜设置</div>
             <div class="setting-row">
               <span class="setting-label">插值方式</span>
@@ -249,162 +305,6 @@
       </div>
     </div>
 
-    <!-- 自定义运镜使用说明对话框 -->
-    <a-modal
-      v-model:open="showGestureModal"
-      title="自定义运镜使用说明"
-      :footer="null"
-      :mask-closable="true"
-      width="560px"
-      class="gesture-modal"
-      :zIndex = "1002"
-    >
-      <div class="gesture-content">
-        <!-- 第一步：添加关键帧 -->
-        <div class="gesture-section">
-          <div class="gesture-section-title">
-            <CameraOutlined /> 添加关键帧
-          </div>
-          <div class="gesture-list">
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #e6f7ff; color: #1890ff;">
-                <CameraOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">快照保存当前位置</div>
-                <div class="gesture-detail">调整相机位置后，点击按钮添加关键帧</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 第二步：关键帧操作 -->
-        <div class="gesture-section">
-          <div class="gesture-section-title">
-            <ToolOutlined /> 关键帧操作
-          </div>
-          <div class="gesture-list">
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #fff7e6; color: #fa8c16;">
-                <ReloadOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">更新位置</div>
-                <div class="gesture-detail">将关键帧位置更新为当前相机位置</div>
-              </div>
-            </div>
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #f6ffed; color: #52c41a;">
-                <EyeOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">预览关键帧</div>
-                <div class="gesture-detail">跳转到指定关键帧位置查看效果</div>
-              </div>
-            </div>
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #fff1f0; color: #ff4d4f;">
-                <DeleteOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">删除关键帧</div>
-                <div class="gesture-detail">移除选中的关键帧</div>
-              </div>
-            </div>
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #f0f5ff; color: #2f54eb;">
-                <DragOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">拖拽排序</div>
-                <div class="gesture-detail">拖拽关键帧调整播放顺序</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 第三步：时间设置 -->
-        <div class="gesture-section">
-          <div class="gesture-section-title">
-            <ClockCircleOutlined /> 时间设置
-          </div>
-          <div class="gesture-list">
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #f9f0ff; color: #722ed1;">
-                <NumberOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">设置持续时间</div>
-                <div class="gesture-detail">修改每个关键帧到下一帧的时间（0.5-30秒）</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 第四步：预览与播放 -->
-        <div class="gesture-section">
-          <div class="gesture-section-title">
-            <PlayCircleOutlined /> 预览与播放
-          </div>
-          <div class="gesture-list">
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #fff7e6; color: #fa8c16;">
-                <CaretRightOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">播放/暂停</div>
-                <div class="gesture-detail">预览完整运镜效果</div>
-              </div>
-            </div>
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #e6f7ff; color: #1890ff;">
-                <PlayCircleOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">预览轨迹</div>
-                <div class="gesture-detail">显示完整运动路径和相机模型</div>
-              </div>
-            </div>
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #f6ffed; color: #52c41a;">
-                <SwapOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">循环播放</div>
-                <div class="gesture-detail">开启后播放完成后从头开始</div>
-              </div>
-            </div>
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #fff1f0; color: #ff4d4f;">
-                <SyncOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">闭环播放</div>
-                <div class="gesture-detail">自动从终点返回起点（需3个以上关键帧）</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 运镜设置 -->
-        <div class="gesture-section">
-          <div class="gesture-section-title">
-            <SettingOutlined /> 运镜设置
-          </div>
-          <div class="gesture-list">
-            <div class="gesture-item">
-              <div class="gesture-icon" style="background: #f0f5ff; color: #2f54eb;">
-                <LineChartOutlined />
-              </div>
-              <div class="gesture-text">
-                <div class="gesture-action">插值方式</div>
-                <div class="gesture-detail">linear: 线性 | easeIn: 缓入 | easeOut: 缓出 | easeInOut: 缓入缓出</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </a-modal>
   </a-modal>
 </template>
 
@@ -418,11 +318,6 @@ import { ApiServer } from '@/utils/taskService';
 import { applyTimedPathMotion, Easing } from '@/utils/camera-motions';
 import { Annotation, AnnotationManager } from '../../scripts/esm/annotations.mjs';
 import {
-  SwapOutlined,
-  ZoomInOutlined,
-  DragOutlined,
-  ArrowUpOutlined,
-  ArrowLeftOutlined,
   CloseOutlined,
   CameraOutlined,
   DeleteOutlined,
@@ -431,17 +326,12 @@ import {
   PauseOutlined,
   PauseCircleOutlined,
   CaretRightOutlined,
-  QuestionCircleOutlined,
   AimOutlined,
   PlayCircleOutlined,
   ToolOutlined,
-  ClockCircleOutlined,
-  NumberOutlined,
-  SyncOutlined,
   SettingOutlined,
-  LineChartOutlined,
 } from '@ant-design/icons-vue';
-
+import axios from 'axios';
 // 最大关键帧数量限制
 const MAX_KEYFRAMES_NUM = 20;
 
@@ -482,11 +372,6 @@ vec4 getPickOutput() {
 export default {
   name: 'CustomMotion',
   components: {
-    SwapOutlined,
-    ZoomInOutlined,
-    DragOutlined,
-    ArrowUpOutlined,
-    ArrowLeftOutlined,
     CloseOutlined,
     CameraOutlined,
     DeleteOutlined,
@@ -494,15 +379,10 @@ export default {
     ReloadOutlined,
     PauseOutlined,
     CaretRightOutlined,
-    QuestionCircleOutlined,
     AimOutlined,
     PlayCircleOutlined,
     ToolOutlined,
-    ClockCircleOutlined,
-    NumberOutlined,
-    SyncOutlined,
     SettingOutlined,
-    LineChartOutlined,
     PauseCircleOutlined,
   },
   props: {
@@ -596,8 +476,8 @@ export default {
       keyframeAnnotationEntities: [],
 
       // UI状态
-      showGestureModal: false,
       isMobile: false,
+      mobileConfigSection: 'camera',
 
       // 任务信息
       task_id: this.taskId,
@@ -616,6 +496,12 @@ export default {
     // 最大关键帧数量
     maxKeyframesNum() {
       return MAX_KEYFRAMES_NUM;
+    },
+    selectedKeyframe() {
+      if (this.selectedKeyframeIndex < 0 || this.selectedKeyframeIndex >= this.keyframes.length) {
+        return null;
+      }
+      return this.keyframes[this.selectedKeyframeIndex];
     },
     // 显示用的关键帧列表（闭环时在最后添加起点作为终点）
     displayKeyframes() {
@@ -650,7 +536,7 @@ export default {
         this.$nextTick(() => {
           this.initViewer();
         });
-      } else if (val && this.modelLoaded && this.initialCameraPose && this.keyframes.length >= 2) {
+      } else if (val && this.modelLoaded && this.initialCameraPose && this.keyframes.length >= 1) {
         // 如果模型已加载且有关键帧，绘制轨迹
         this.$nextTick(() => {
           this.updateTrajectory();
@@ -706,6 +592,7 @@ export default {
       this.previewProgress = 0;
       this.initialCameraPose = null;
       this.cameraData = {};
+      this.mobileConfigSection = 'camera';
     },
     
     // 加载自定义运镜参数
@@ -1045,7 +932,7 @@ export default {
 
 
       // 模型加载完成后绘制轨迹
-      if (this.keyframes.length >= 2) {
+      if (this.keyframes.length >= 1) {
         this.$nextTick(() => {
           this.updateTrajectory();
         });
@@ -1095,7 +982,7 @@ export default {
     // 创建关键帧标注
     createKeyframeAnnotations() {
       try {
-        if (!this.app || !this.annotationManager || this.keyframes.length < 2) return;
+        if (!this.app || !this.annotationManager || this.keyframes.length < 1) return;
 
         // 清除旧的标注
         this.clearKeyframeAnnotations();
@@ -1206,7 +1093,7 @@ export default {
     // 更新轨迹线 - 使用 applyPathMotion 计算实际路径
     updateTrajectory() {
       try {
-        if (!this.app || this.keyframes.length < 2) {
+        if (!this.app || this.keyframes.length < 1) {
           this.clearTrajectory();
           return;
         }
@@ -1219,6 +1106,12 @@ export default {
 
         // 清除旧轨迹
         this.clearTrajectory();
+
+        // 单关键帧也需要显示标注，只是不绘制轨迹线
+        this.createKeyframeAnnotations();
+        if (this.keyframes.length < 2) {
+          return;
+        }
 
       // 构建路径点（直接使用关键帧位置）
       const pathPoints = this.keyframes.map(kf => {
@@ -1315,9 +1208,6 @@ export default {
         meshInstances: [meshInstance]
       });
       this.app.root.addChild(this.trajectoryEntity);
-
-      // 创建关键帧标注
-      this.createKeyframeAnnotations();
 
       console.log('轨迹绘制完成，顶点数:', numVertices, '焦点:', focus);
       } catch (e) {
@@ -1506,15 +1396,11 @@ export default {
         this.previewCameraMarker = new pc.Entity('preview-camera');
 
         // 加载camera.glb模型
-        const cameraAsset = await this.loadGLBAsset('/camera.glb');
-        console.log(cameraAsset)
-        // console.log("cameraAsset", cameraAsset)
+        const cameraAsset = await this.loadGLBAsset('');
         if (cameraAsset) {
-          this.previewCameraMarker.addComponent('render', {
-            asset: cameraAsset.asset
-          });
           // 设置模型大小
-          this.previewCameraMarker.setLocalScale(0.5, 0.5, 0.5);
+          this.previewCameraMarker= cameraAsset.asset.resource.instantiateRenderEntity();
+          this.previewCameraMarker.setLocalScale(0.03, 0.03, 0.03);
         } else {
           // 如果加载失败，使用球体作为后备
           this.previewCameraMarker.addComponent('render', { type: 'sphere' });
@@ -1667,10 +1553,27 @@ export default {
           reject(new Error('App not initialized'));
           return;
         }
+        let assetUrl = url;
+        // if(url.startsWith('http')) {
+        //   assetUrl = url;
+        // } else {
+        //   const response = axios({
+        //     method: 'get',
+        //     url: url,
+        //     responseType: 'arraybuffer',
+        //   }).then((response) => {
+        //       const data = new Uint8Array(response.data);
+        //       console.log("模型数据下载完成");
 
+        //       // 2. 将二进制数据转换为 URL
+        //       const blob = new Blob([data], { type: 'model/gltf-binary' });
+        //       const fileUrl = URL.createObjectURL(blob);
+        //       assetUrl = fileUrl;
+        //   });
+        // }
         // 创建资产
         const asset = new pc.Asset('camera-model', 'container', {
-          url: url
+          url: assetUrl
         });
 
         // 监听加载完成
@@ -1809,6 +1712,11 @@ export default {
       const targetPos = applyTimedPathMotion(pathPoints, currentTime, durations, easingFn);
 
       this.previewCameraMarker.setPosition(targetPos.x, targetPos.y, targetPos.z);
+      // const rot = new pc.Quat().setFromDirections(targetPos.clone().normalize(), 
+      // this.getModelCenter().clone().normalize());
+      // this.previewCameraMarker.setRotation(rot);
+      
+      // this.previewCameraMarker.setEulerAngles(0, 0, 0); // 可根据需要设置旋转
 
       // 更新连接线位置
       this.updateConnectionLine();
@@ -2012,7 +1920,6 @@ export default {
     // 更新播放 - 使用时间驱动
     updatePlayback(dt) {
       if (!this.isLoopPlaying || this.keyframes.length < 2 || this.totalDuration <= 0) return;
-      console.log(this.isLoopPlaying)
       // 时间累加
       this.playProgress += dt;
 
@@ -2105,6 +2012,10 @@ export default {
 
     // 控件显示计时器
     showControlsTimer() {
+      if (this.isMobile) {
+        this.showControls = true;
+        return;
+      }
       this.showControls = true;
       if (this.controlsHideTimer) {
         clearTimeout(this.controlsHideTimer);
@@ -2168,14 +2079,15 @@ export default {
 <style scoped>
 .custom-motion-container {
   display: flex;
-  width: 1200px;
+  width: 1520px;
   height: 80vh;
   background: #0f1218;
   overflow: hidden;
 }
 
 .preview-panel {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   position: relative;
   overflow: hidden;
   border-radius: 8px 0 0 8px;
@@ -2552,9 +2464,7 @@ export default {
 }
 
 .keyframes-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: block;
   padding: 6px 8px;
   background: #fafafa;
   border-radius: 6px;
@@ -2613,34 +2523,88 @@ export default {
 }
 
 .keyframes-info {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 6px;
+}
+
+.keyframes-topline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.keyframes-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
 }
 
 .keyframes-position {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.keyframes-coord {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #f3f6fa;
+  border: 1px solid #e7edf5;
+}
+
+.coord-axis {
   font-size: 10px;
-  color: #1d1d1f;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+}
+
+.coord-value {
+  font-size: 10px;
+  font-weight: 600;
+  color: #1f2937;
   font-family: 'Monaco', 'Consolas', monospace;
-  letter-spacing: 0.3px;
 }
 
 .keyframes-duration {
-  font-size: 9px;
-  color: #8c8c8c;
-  margin-top: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 10px;
+  color: #5f6b7a;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
+  flex-wrap: nowrap;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #edf1f5;
 }
 
 .keyframes-duration .duration-label {
   flex-shrink: 0;
+}
+
+.duration-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:deep(.duration-input.ant-input-number) {
+  width: 100% !important;
 }
 
 .keyframes-duration .duration-unit {
@@ -2656,14 +2620,20 @@ export default {
 
 .keyframes-actions {
   display: flex;
-  gap: 1px;
+  gap: 4px;
   flex-shrink: 0;
+  align-items: center;
+}
+
+.keyframe-action-btn {
+  flex: 0 0 auto;
 }
 
 .keyframes-actions .ant-btn {
-  padding: 2px 4px;
-  height: 24px;
-  min-width: 24px;
+  padding: 0 6px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 6px;
 }
 
 .keyframes-actions .ant-btn .anticon {
@@ -2857,6 +2827,510 @@ export default {
   color: #666;
   line-height: 1.5;
 }
+
+@media (min-width: 769px) {
+  .custom-motion-container {
+    background: linear-gradient(135deg, #0f1218 0%, #161c27 100%);
+  }
+
+  .preview-panel {
+    flex: 1 1 auto;
+  }
+
+  .config-panel {
+    flex: 0 0 620px;
+    width: 620px;
+    background: #f7f9fc;
+  }
+
+  .config-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 12px;
+    overflow: hidden;
+    padding: 16px;
+    align-items: stretch;
+  }
+
+  .config-section {
+    margin-bottom: 0;
+    padding: 14px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #edf1f5;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  }
+
+  .config-section-camera,
+  .config-section-settings {
+    min-width: 0;
+  }
+
+  .config-section-keyframes {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .config-section-camera {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .config-section-settings {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .config-section-keyframes {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #5f6b7a;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .desktop-motion-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .motion-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #f3f6fa;
+    color: #516073;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #e6ebf2;
+  }
+
+  .motion-stat-pill.active {
+    background: #e8f2ff;
+    color: #1677ff;
+    border-color: rgba(22, 119, 255, 0.18);
+  }
+
+  .camera-position-display {
+    gap: 8px;
+    padding: 10px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f7faff 0%, #f1f6fd 100%);
+    border: 1px solid #e8eef6;
+  }
+
+  .position-label {
+    margin-bottom: 4px;
+  }
+
+  .position-value {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .snapshot-btn,
+  .preview-btn-wrapper .ant-btn,
+  .config-footer .ant-btn {
+    height: 40px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .desktop-keyframe-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    background: #f7f9fc;
+    border: 1px solid #e9eef5;
+  }
+
+  .desktop-keyframe-summary {
+    min-width: 0;
+  }
+
+  .desktop-keyframe-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.4;
+  }
+
+  .desktop-keyframe-hint {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #748091;
+  }
+
+  .desktop-keyframe-state {
+    flex: 0 0 auto;
+    min-width: 64px;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #edf1f6;
+    color: #59687a;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .desktop-keyframe-state.active {
+    background: #e8f2ff;
+    color: #1677ff;
+  }
+
+  .keyframes-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    padding-right: 6px;
+  }
+
+  .keyframes-item {
+    display: block;
+    padding: 10px 12px;
+    min-height: 68px;
+    border-radius: 12px;
+    border-color: #edf1f5;
+  }
+
+  .keyframes-item:hover {
+    background: #f8fbff;
+    border-color: #dce8f8;
+  }
+
+  .keyframes-item.active {
+    box-shadow: inset 0 0 0 1px rgba(24, 144, 255, 0.18);
+  }
+
+  .keyframes-index {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .keyframes-position {
+    gap: 8px;
+  }
+
+  .keyframes-topline {
+    gap: 10px;
+  }
+
+  .keyframes-duration {
+    gap: 6px;
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+
+  .keyframes-meta {
+    gap: 10px;
+  }
+
+  .keyframes-coord {
+    min-height: 26px;
+    padding: 0 10px;
+  }
+
+  .coord-axis {
+    font-size: 11px;
+  }
+
+  .coord-value {
+    font-size: 11px;
+  }
+
+  :deep(.duration-input.ant-input-number) {
+    width: 100% !important;
+    border-radius: 8px;
+  }
+
+  .keyframes-actions {
+    gap: 4px;
+  }
+
+  .keyframes-actions .ant-btn {
+    height: 28px;
+    min-width: 28px;
+    border-radius: 6px;
+  }
+
+  .keyframes-empty {
+    flex: 1 1 auto;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 12px;
+    background: #f7f9fc;
+    border: 1px dashed #d9e2ec;
+  }
+
+  .setting-row {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-bottom: none;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #edf1f5;
+  }
+
+  .setting-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .preview-btn-wrapper {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  .config-footer {
+    padding: 14px 16px;
+    background: #ffffff;
+    border-top: 1px solid #e8edf3;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.04);
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-motion-container {
+    width: 100%;
+    height: calc(100dvh - 58px);
+    flex-direction: column;
+    background: #ffffff;
+  }
+
+  .preview-panel {
+    flex: none;
+    height: 34vh;
+    min-height: 240px;
+    border-radius: 0;
+  }
+
+  .viewer-container {
+    height: 100%;
+  }
+
+  .bottom-controls {
+    opacity: 1;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .progress-section {
+    margin-bottom: 8px;
+  }
+
+  .progress-time {
+    justify-content: flex-end;
+    margin-bottom: 6px;
+  }
+
+  .control-buttons {
+    gap: 8px;
+  }
+
+  .btn-group {
+    gap: 6px;
+  }
+
+  .btn-group.right {
+    margin-left: auto;
+  }
+
+  .control-icon-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    font-size: 0;
+  }
+
+  .control-icon-btn .anticon {
+    font-size: 18px;
+  }
+
+  .mode-tip {
+    top: 10px;
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+
+  .config-panel {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    border-left: none;
+    border-top: 1px solid #f0f0f0;
+    border-radius: 20px 20px 0 0;
+    margin-top: -8px;
+    box-shadow: 0 -10px 24px rgba(15, 18, 24, 0.08);
+    position: relative;
+    z-index: 1;
+  }
+
+  .mobile-config-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 12px 0;
+    background: #ffffff;
+  }
+
+  .mobile-config-tab {
+    flex: 1;
+    height: 40px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f7f8fa;
+    color: #4b5563;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-config-tab.active {
+    background: #1d1d1f;
+    border-color: #1d1d1f;
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(29, 29, 31, 0.18);
+  }
+
+  .mobile-config-tab .anticon {
+    font-size: 15px;
+  }
+
+  .config-content {
+    padding: 12px;
+  }
+
+  .mobile-config-content {
+    padding-top: 12px;
+  }
+
+  .mobile-config-content .config-section {
+    margin-bottom: 0;
+  }
+
+  .camera-position-display {
+    gap: 8px;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .position-value {
+    font-size: 14px;
+  }
+
+  .snapshot-btn,
+  .preview-btn-wrapper .ant-btn,
+  .config-footer .ant-btn {
+    height: 42px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .keyframes-list {
+    gap: 8px;
+    max-height: none;
+    padding-right: 0;
+  }
+
+  .keyframes-item {
+    padding: 10px;
+    min-height: 68px;
+    border-radius: 10px;
+  }
+
+  .keyframes-index {
+    width: 28px;
+    height: 28px;
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .keyframes-position {
+    gap: 6px;
+  }
+
+  .keyframes-topline {
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .keyframes-meta {
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .keyframes-coord {
+    min-height: 24px;
+    padding: 0 8px;
+  }
+
+  .keyframes-duration {
+    gap: 6px;
+    flex-wrap: nowrap;
+    padding: 4px 6px;
+  }
+
+  :deep(.duration-input.ant-input-number) {
+    width: 100% !important;
+  }
+
+  .keyframes-actions .ant-btn {
+    min-width: 28px;
+    height: 28px;
+  }
+
+  .setting-row {
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .setting-row .ant-select {
+    width: 132px !important;
+  }
+
+  .setting-row .ant-checkbox-wrapper {
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  .config-footer {
+    padding: 12px;
+  }
+
+  .gesture-content {
+    padding: 16px;
+    max-height: 72vh;
+  }
+}
 </style>
 
 <style>
@@ -2892,5 +3366,41 @@ export default {
 
 .custom-motion-modal .ant-modal-title {
   padding: 0;
+}
+
+@media (max-width: 768px) {
+  .custom-motion-modal-mobile {
+    width: 100vw !important;
+    max-width: 100vw;
+    margin: 0;
+    padding-bottom: 0;
+    top: 0;
+  }
+
+  .custom-motion-modal-mobile .ant-modal-content {
+    min-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .custom-motion-modal-mobile .ant-modal-header {
+    padding: 12px 16px;
+  }
+
+  .custom-motion-modal-mobile .ant-modal-body {
+    min-height: calc(100dvh - 58px);
+  }
+
+  .custom-motion-modal-mobile .ant-modal-close {
+    top: 10px;
+    inset-inline-end: 10px;
+  }
+
+  .gesture-modal {
+    max-width: calc(100vw - 24px);
+  }
+
+  .gesture-modal .ant-modal-content {
+    border-radius: 16px;
+  }
 }
 </style>
