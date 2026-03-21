@@ -1314,7 +1314,7 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .auth-container {
     padding: 28px 20px 32px;
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .auth-wrapper {
@@ -1367,6 +1367,7 @@ onUnmounted(() => {
 
   .auth-mode-switch-content{
     min-height: 0;
+    max-width: 360px;
   }
 
   .form-subtitle {
