@@ -7,10 +7,10 @@
         :alt="model.taskName"
         class="model-preview"
       />
-      <div v-if="isPreviewLoading" class="loading-overlay" aria-label="loading">
+      <div v-if="isPreviewLoading" class="loading-overlay" :aria-label="t('common.loading')">
         <span class="loading-spinner"></span>
       </div>
-      <span v-if="model.isNew" class="new-badge">New</span>
+      <span v-if="model.isNew" class="new-badge">{{ t('modelCard.badges.new') }}</span>
     </div>
     <div class="model-info">
       <p class="model-author">
@@ -31,6 +31,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 interface OfficialModel {
   taskId?: string

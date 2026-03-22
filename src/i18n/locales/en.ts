@@ -1,4 +1,468 @@
 export default {
+    avatarCropper: {
+      title: "Crop Image",
+      okText: "Confirm",
+      cancelText: "Cancel",
+      flipHorizontal: "Flip Horizontal",
+      flipVertically: "Flip Vertical",
+      rotateRight: "Rotate Right 90°",
+      rotateLeft: "Rotate Left 90°",
+      originalImage: "Original",
+      quality: "Quality",
+      reset: "Reset"
+    },
+    embedCode: {
+      title: "Embed Code",
+      copyCode: "Copy Code",
+      close: "Close",
+      embedCodeLabel: "Embeddable Web Code",
+      embedTip: "Paste the above code into your webpage HTML.",
+      noCode: "No embed code available",
+      codeCopied: "Embed code copied",
+      copyFailed: "Copy failed, please copy manually"
+    },
+    customMotion: {
+      title: "Custom Camera Motion",
+      previewArea: "Preview Area",
+      loading: "Loading...{progress}%",
+      loadingSuccess: "Loaded successfully!",
+      loadingFailed: "Loading failed, please retry",
+      retryLoad: "Retry Loading",
+      controlBar: "Control Bar",
+      progressBar: "Progress Bar",
+      play: "Play",
+      pause: "Pause",
+      resetView: "Reset View",
+      reset: "Reset",
+      flightMode: "Toggle Flight Mode",
+      orbit: "Orbit",
+      flight: "Flight",
+      flightModeHint: "Flight Mode",
+      configArea: "Config Area",
+      camera: "Camera",
+      keyframes: "Keyframes",
+      settings: "Settings",
+      currentCameraPosition: "Current Camera Position",
+      snapshot: "Save Current Position",
+      keyframeCount: "{count}/{max} Keyframes",
+      duration: "{duration}s",
+      openTrajectory: "Open Trajectory",
+      closedLoop: "Closed Loop",
+      keyframeList: "Keyframe List",
+      selectedKeyframe: "Currently Selected Frame {index}",
+      clickKeyframe: "Click keyframe to preview or edit",
+      scrollToSort: "List supports independent scrolling, drag to reorder",
+      dragToSort: "Drag to reorder, use buttons on right to preview, update and delete",
+      editing: "Editing",
+      previewing: "Previewing",
+      returnToStart: "Return to Start",
+      toNextFrame: "To next frame:",
+      seconds: "s",
+      preview: "Preview",
+      updatePosition: "Update Position",
+      delete: "Delete",
+      noKeyframes: "No keyframes",
+      clickSnapshotHint: "Click 'Save Current Position' to add keyframes",
+      motionSettings: "Motion Settings",
+      interpolation: "Interpolation",
+      linear: "Linear",
+      easeIn: "Ease In",
+      easeOut: "Ease Out",
+      easeInOut: "Ease In Out",
+      loopPlay: "Loop Playback",
+      closedLoopPlay: "Closed Loop",
+      autoReturn: "Auto Return to Start",
+      totalDuration: "Total Duration",
+      stopPreview: "Stop Preview",
+      previewTrajectory: "Preview Trajectory",
+      cancel: "Cancel",
+      confirm: "Confirm",
+      noTrajectory: "No trajectory generated",
+      toastDefault: "Action notice",
+      minKeyframesWarning: "Please add at least 2 keyframes",
+      maxKeyframesWarning: "Keyframe limit reached ({max})",
+      unsavedChangesTitle: "Camera motion settings changed",
+      unsavedChangesContent: "The camera motion settings have changed since opening. Save changes?",
+      discardChanges: "Don't save",
+      getCanvasFailed: "Failed to get render canvas",
+      initRendererFailed: "Failed to initialize renderer: {message}",
+      defaultAnnotation: "Default annotation",
+      keyframeAnnotation: "Keyframe {index}"
+    },
+    createMesh: {
+      advancedOptions: "Advanced Options",
+      basicInfo: "Basic Info",
+      taskName: "Task Name",
+      taskNamePlaceholder: "Default: image filename",
+      modelDescription: "Model Description",
+      modelDescPlaceholder: "Optional, describe the subject in the image",
+      generateOptions: "Generation Options",
+      quickReconstruct: "Quick Reconstruct",
+      quickReconstructDesc: "Faster generation, suitable for quick preview",
+      backgroundRemoval: "Background Removal",
+      backgroundRemovalDesc: "Automatically separate subject, reduce environment interference",
+      multiViewReconstruct: "Multi-view Reconstruct",
+      multiViewReconstructDesc: "Generate multiple views from a single image",
+      instructions: "Instructions",
+      instructionTip: "Use images with clean background and clear subject for best results.",
+      readImageFailed: "Failed to read image dimensions",
+      onlySupportImage: "Only JPG, PNG or WEBP images supported",
+      imageTooSmall: "Image too small, recommend ≥ 128x128 pixels",
+      readImageInfoFailed: "Failed to read image info",
+      uploadInProgress: "Upload in progress, please cancel upload first",
+      selectImageFirst: "Please select an image file first",
+      uploadSuccess: "Upload successful, model generation started",
+      uploadCanceled: "Upload canceled",
+      uploadFailed: "Upload failed, please retry"
+    },
+    uploadTutorial: {
+      title: "Upload Tutorial",
+      desc: "Learn how to take photos for the best results",
+      tipsTitle: "Photography Tips",
+      tip1Title: "Adequate Lighting",
+      tip1Desc: "Ensure good lighting, avoid backlight",
+      tip2Title: "Multiple Angles",
+      tip2Desc: "Photograph subject from different angles, cover 360 degrees",
+      tip3Title: "Stable Shooting",
+      tip3Desc: "Keep camera stable, avoid blur",
+      tip4Title: "Clean Background",
+      tip4Desc: "Choose a simple background to highlight the subject",
+      uploadPhotos: "Upload Photos",
+      viewExamples: "View Examples"
+    },
+    tutorialGuide: {
+      title: "Getting Started",
+      videoPlaceholder: "Tutorial video is being prepared...",
+      mustComplete: "Please complete the guide first",
+      actions: {
+        prev: "Previous",
+        next: "Next",
+        start: "Start"
+      },
+      steps: {
+        step1: {
+          title: "Upload Media",
+          description: "Upload the video or images for reconstruction"
+        },
+        step2: {
+          title: "Fill Basic Info",
+          description: "Set the task name and optional model description"
+        },
+        step3: {
+          title: "Configure Options",
+          description: "Choose whether to enable background removal"
+        },
+        step4: {
+          title: "Generate Model",
+          description: "Spend points and start AI 3D model generation"
+        }
+      }
+    },
+    uploadProgress: {
+      title: "Upload Progress",
+      uploading: "Uploading...",
+      processing: "Processing...",
+      success: "Complete",
+      failed: "Failed",
+      cancel: "Cancel",
+      retry: "Retry",
+      uploadSpeed: "Upload Speed",
+      estimatedTime: "Estimated Time Remaining",
+      points: {
+        insufficient: "Insufficient points"
+      },
+      pointsTooltip: {
+        current: "Current points: {points}",
+        consumed: "This time: -{points}",
+        remaining: "Remaining points: {points}"
+      },
+      actions: {
+        advancedOptions: "Advanced options",
+        removeVideo: "Remove video",
+        removeImage: "Remove image",
+        removeAllImages: "Remove all images",
+        cancelUpload: "Cancel upload",
+        startGenerate: "Start generating"
+      },
+      meta: {
+        duration: "Duration {value}",
+        size: "Size {value}"
+      },
+      fileStatus: {
+        uploading: "Uploading... {percent}%",
+        pendingHint: "Pending. Upload will start after clicking \"Start generating\".",
+        completed: "Upload complete",
+        cancelled: "Cancelled",
+        failed: "Upload failed"
+      },
+      image: {
+        selectedCount: "Selected {count} images",
+        expandAll: "Expand all",
+        collapse: "Collapse",
+        addMore: "Add more images"
+      },
+      queue: {
+        inProgress: "{count} tasks in progress"
+      },
+      type: {
+        videoTask: "Video task",
+        imageTask: "Image task",
+        task: "Task"
+      },
+      status: {
+        pending: "Pending",
+        uploading: "Uploading",
+        success: "Completed",
+        failed: "Failed",
+        cancelled: "Cancelled"
+      },
+      videoErrors: {
+        playback: "Video cannot be played",
+        decode: "Video codec not supported (possibly H.265/HEVC)",
+        formatNotSupported: "Video format not supported",
+        network: "Video loading failed, please check your network",
+        aborted: "Video loading was aborted"
+      },
+      video: {
+        loading: "Loading video, please wait...",
+        timeout: "Video loading timed out",
+        blackScreenWarning: "Video may not play correctly (codec issue), but you can still generate the model"
+      }
+    },
+    fileUpload: {
+      compact: {
+        desktopHint: "Click or drag to re-upload files",
+        mobileHint: "Tap to re-upload"
+      },
+      mainText: "Click to upload or drag video/images into this area",
+      subText: "Supports video (mp4, mov, avi, mkv, webm) or images (jpg, png, jpeg)",
+      video: {
+        label: "Video upload:",
+        formats: "Supported formats: mp4, mov, avi, mkv, webm",
+        duration: "Min {min} s, max {max} min",
+        onlyOne: "Only 1 video per upload",
+        resolutionLimit: "Resolution limit: up to 8K (7680x4320)"
+      },
+      image: {
+        label: "Image upload:",
+        formats: "Supported formats: jpg, png, jpeg",
+        count: "Min {min} images, max {max} images",
+        resolutionLimit: "Resolution limit: up to 8K (7680x4320)"
+      },
+      mobileSummary: "Video: {videoMinSec}s~{videoMaxMin}min | Images: {imageMin}~{imageMax}",
+      mobileVideoSummary: "Video: {videoMinSec}s~{videoMaxMin}min, MP4/MOV/AVI/MKV/WEBM",
+      mobileImageSummary: "Images: {imageMin}~{imageMax}, JPG/PNG/JPEG",
+      messages: {
+        mixedTypes: "Uploaded files have inconsistent types, please reselect"
+      }
+    },
+    emptyStateErrors: {
+      retry: "Reload",
+      network: {
+        title: "Network connection failed",
+        description: "Please check your network and try again"
+      },
+      server: {
+        title: "Server error",
+        description: "Service is temporarily unavailable, please try again later"
+      },
+      unknown: {
+        title: "Load failed",
+        description: "Please try again later"
+      }
+    },
+    emptyState: {
+      title: "No Content",
+      description: "There's nothing here yet, come and create one!",
+      createNow: "Create Now"
+    },
+    createCard: {
+      title: "Create New Project",
+      aiScan: "AI Scan",
+      mesh: "Mesh",
+      description: "Select creation method"
+    },
+    pointsLogsLite: {
+      title: "Points Details",
+      date: "Date",
+      type: "Type",
+      amount: "Amount",
+      balance: "Balance",
+      description: "Description",
+      recharge: "Recharge",
+      consumption: "Consumption",
+      refund: "Refund",
+      bonus: "Bonus",
+      noRecords: "No Records"
+    },
+    officialModel: {
+      title: "Official Models",
+      viewModel: "View Model",
+      createProject: "Create Project"
+    },
+    modelCardLite: {
+      viewModel: "View Model",
+      createProject: "Create Project",
+      author: "Author",
+      views: "Views",
+      badges: {
+        new: "New"
+      }
+    },
+    shareDialog: {
+      title: "Share",
+      copyLink: "Copy Link",
+      linkCopied: "Link copied",
+      shareTo: "Share to",
+      embed: "Embed",
+      close: "Close",
+      copyFailed: "Copy failed, please copy manually",
+      shareTitle: "Check out this 3D model",
+      shareSummary: "Check out this 3D model",
+      qqTitle: "3D Model Share",
+      wechatHint: "Please use WeChat to scan and share",
+      platforms: {
+        wechat: "WeChat",
+        bilibili: "Bilibili",
+        twitter: "X",
+        qq: "QQ",
+        weibo: "Weibo",
+        linkedin: "LinkedIn"
+      }
+    },
+    exportDialog: {
+      title: "Export Model",
+      formatLabel: "Export format",
+      formatPlaceholder: "Select export format",
+      supportLabel: "Support:",
+      supportedTip: "PLY, SOG supported",
+      unsupportedTip: "OBJ, FBX, GLTF not supported yet",
+      actions: {
+        close: "Close",
+        cancelExport: "Cancel export",
+        startExport: "Start export"
+      },
+      status: {
+        preparing: "Preparing export...",
+        exporting: "Exporting {format}...",
+        completed: "Export complete",
+        cancelled: "Export cancelled",
+        failed: "Export failed"
+      },
+      formats: {
+        ply: "PLY",
+        sog: "SOG",
+        sogUnsupported: "SOG (Not supported)",
+        objUnsupported: "OBJ (Not supported)",
+        fbxUnsupported: "FBX (Not supported)",
+        gltfUnsupported: "GLTF (Not supported)"
+      },
+      messages: {
+        missingTaskId: "Missing task ID, unable to export",
+        formatNotSupported: "This format is not supported for export",
+        exportSuccess: "Model exported successfully",
+        exportCancelled: "Export cancelled",
+        sessionExpired: "Session expired, please log in again to export",
+        exportFailed: "Export failed, please retry"
+      },
+      errors: {
+        tokenFailed: "Failed to get download token"
+      }
+    },
+    upgradeSuccess: {
+      title: "Upgrade Successful",
+      description: "You have successfully upgraded to Pro version",
+      features: "Pro Version Benefits",
+      feature1: "Unlimited Projects",
+      feature2: "Priority Processing",
+      feature3: "HD Export",
+      feature4: "Exclusive Support",
+      continue: "Continue",
+      goPro: "View Pro Details"
+    },
+    socialLogin: {
+      continueWithGoogle: "Continue with Google",
+      continueWithApple: "Continue with Apple"
+    },
+    phoneAuthLite: {
+      title: "Phone Login",
+      subtitle: "Please enter your phone number",
+      phonePlaceholder: "Please enter phone number",
+      getCode: "Get Verification Code",
+      nextStep: "Next",
+      changePhone: "Change Phone Number"
+    },
+    contactUs: {
+      title: "Contact Us",
+      email: "Email",
+      emailPlaceholder: "your@email.com",
+      message: "Message",
+      messagePlaceholder: "Please enter your message...",
+      submit: "Submit",
+      success: "Submitted Successfully",
+      failed: "Submission Failed",
+      wechat: {
+        title: "Scan to Add WeChat",
+        subtitle: "Partnerships / Pre-sales Support / Solutions Discussion",
+        qrAlt: "WeChat QR code",
+        qrPlaceholder: "QR code not available yet",
+        wechatIdLabel: "WeChat ID",
+        copyWechatId: "Copy WeChat ID",
+        copySuccess: "WeChat ID copied",
+        copyFailed: "Copy failed, please copy manually",
+        note: "Please add note \"MetaST\""
+      }
+    },
+    wechatQrLogin: {
+      title: "WeChat QR Login",
+      qrAlt: "WeChat login QR code",
+      loading: "Loading QR code...",
+      successRedirect: "Login successful! Redirecting...",
+      refresh: "Refresh QR code",
+      unknownError: "Unknown error",
+      status: {
+        scanToLogin: "Please use WeChat to scan the QR code",
+        fetching: "Fetching QR code...",
+        fetchFailed: "Failed to fetch QR code: {msg}",
+        errorMessage: "Error: {message}",
+        loginExpired: "Login expired, please log in again",
+        tooFrequent: "Too many requests, please try again later",
+        serverError: "Server error, please try again later",
+        networkError: "Network error, please refresh and retry",
+        scannedConfirm: "Scanned. Please confirm login in WeChat",
+        expired: "QR code expired, please refresh",
+        cancelled: "Login cancelled",
+        queryFailed: "Failed to check login status"
+      }
+    },
+    projects: {
+      title: "My Projects",
+      all: "All",
+      processing: "Processing",
+      completed: "Completed",
+      failed: "Failed",
+      empty: "No Projects",
+      emptyDesc: "Start creating your first 3D project!",
+      createFirst: "Create First Project",
+      delete: "Delete",
+      deleteConfirm: "Are you sure you want to delete this project?",
+      view: "View",
+      download: "Download",
+      share: "Share"
+    },
+    settings: {
+      title: "Settings",
+      account: "Account",
+      security: "Security",
+      notifications: "Notifications",
+      language: "Language",
+      theme: "Theme",
+      dark: "Dark",
+      light: "Light",
+      system: "System",
+      save: "Save",
+      saved: "Saved"
+    },
     developerLang: {
       "api": "API",
       "webhook": "Webhook",
@@ -87,159 +551,161 @@ export default {
       "getLinkFailed": "Failed"
     },
     apiDocs: {
-    "tocTitle": "目录",
-    "overview": {
-        "title": "3DGS API",
-        "desc": "这是通过编程方式与 3DGS 系统交互的 API 参考文档。",
-        "baseInfo": "基础说明",
-        "reqUrl": "请求地址"
-    },
-    "quickstart": {
-        "title": "快速入门",
-        "desc": "使用以下流程快速完成 API 调用：创建密钥、上传素材、查询任务并下载模型。",
-        "steps": {
-            "s1Title": "创建 API 密钥",
-            "s1Desc": "在开发者中心生成密钥，保存后用于鉴权。",
-            "s2Title": "上传视频或图片",
-            "s2Desc": "提交扫描素材，获取任务 ID。",
-            "s3Title": "查询任务状态",
-            "s3Desc": "轮询或通过 Webhook 获取完成状态。",
-            "s4Title": "下载 3D 模型",
-            "s4Desc": "使用任务 ID 获取下载链接或直传文件。"
+      tocTitle: 'Contents',
+      overview: {
+        title: '3DGS API',
+        desc: 'This reference describes how to interact with the 3DGS system programmatically.',
+        baseInfo: 'Basics',
+        reqUrl: 'Base URL'
+      },
+      quickstart: {
+        title: 'Quick Start',
+        desc: 'Use this flow to get started quickly: create a key, upload media, check task status, and download the model.',
+        steps: {
+          s1Title: 'Create an API key',
+          s1Desc: 'Generate a key in Developer Center and store it securely for authentication.',
+          s2Title: 'Upload video or images',
+          s2Desc: 'Submit scanning material and obtain a task ID.',
+          s3Title: 'Check task status',
+          s3Desc: 'Poll the task or use a webhook to get completion events.',
+          s4Title: 'Download the 3D model',
+          s4Desc: 'Use the task ID to fetch the download link or file stream.'
         }
+      },
+      auth: {
+        title: 'Authentication',
+        desc: 'Requests are authenticated with an API key.',
+        createTitle: 'Create an API key',
+        createDesc: 'Create a key in Developer Center. It is shown only once after generation.',
+        useTitle: 'Use the API key',
+        useDesc: 'Send the key in the request header.',
+        reqExample: 'Header example'
+      },
+      scan: {
+        title: '3DGS Scan',
+        desc: 'Upload video or images for 3DGS reconstruction.',
+        videoUpload: 'Video Upload',
+        supportMulti: 'Supports multipart/form-data',
+        reqHeader: 'Header',
+        reqPos: 'Location',
+        reqField: 'Field',
+        reqType: 'Type',
+        reqRequired: 'Required',
+        reqDesc: 'Description',
+        yes: 'Yes',
+        no: 'No',
+        videoDesc: 'Upload the video file. The field name must be videos. Supported formats: .mp4/.avi/.mov/.mkv/.webm. Only one file is supported. Maximum size: 1GB.',
+        paramsDesc: 'JSON string. See Attributes.',
+        reqExample: 'Request example',
+        resSuccess: 'Successful response example',
+        taskNameDesc: '1-50 characters. Chinese characters, letters, numbers, and underscores only.',
+        bgRemoveDesc: 'Whether to enable background removal',
+        userObjectDesc: 'User-defined object description',
+        attributes: 'Attributes',
+        request: 'Request',
+        response: 'Response'
+      },
+      model: {
+        title: 'Model',
+        desc: 'Query reconstruction task status and download the model.',
+        getStatus: 'Get Reconstruction Task Status',
+        statusReturn: 'Returns task status',
+        taskIdDesc: 'Task ID',
+        code200: '200 means success',
+        resMsg: 'Response message',
+        taskStatus: 'Task status',
+        statusTab: 'Status',
+        statusDesc: 'Description',
+        statusReceived: 'Received and waiting for processing',
+        statusSlicing: 'Extracting video frames',
+        statusColmap: 'COLMAP reconstruction in progress',
+        status3dgs: '3DGS training in progress',
+        statusLightning: 'Lightning fast reconstruction in progress',
+        statusBgRemoval: 'Background removal in progress',
+        statusPaused: 'Paused',
+        statusResuming: 'Resuming',
+        statusCompleted: 'Completed',
+        statusFailed: 'Failed',
+        downloadMode: 'Download 3D Model',
+        downRes: 'Successful response description',
+        downTaskId: 'Task ID. The task must be completed and updated within the last 7 days.',
+        resFile: 'Response file',
+        resSog: 'Returns a .sog file stream'
+      },
+      quota: {
+        title: 'Quota',
+        desc: 'Query remaining credit quota.',
+        returnCredits: 'Returns the current credit balance',
+        totalCredits: 'Total quota',
+        availCredits: 'Available quota',
+        usedCredits: 'Used quota'
+      },
+      webhook: {
+        title: 'Webhook',
+        desc: 'Used to receive task completion and other event notifications.',
+        needsRules: 'Webhook setup requires the following three elements',
+        rule1: 'Webhooks can be created and managed in Developer Center under Settings > Webhooks.',
+        rule2: 'Callback URL: when model status changes, the system sends a POST request to this address.',
+        rule3: 'Secret: a random string 6-50 characters long used to sign each request. Use the same secret on the server to decrypt callback content.',
+        important: 'Important notes',
+        warn1: 'Ensure NotifyUrl is publicly accessible.',
+        warn2: 'Callbacks are POST JSON with data/iv/tag fields and must be decrypted using the secret.',
+        warn3: 'Return HTTP 200 after receiving a callback, or the system retries every 30 seconds up to 3 times.',
+        decryptNode: 'Payload decryption example (Node.js)',
+        decryptPython: 'Payload decryption example (Python)'
+      },
+      errors: {
+        title: 'Errors',
+        desc: 'All errors use a unified response format.',
+        errResList: 'Error response example',
+        bizCodes: 'Business error codes',
+        errCode: 'Error code',
+        errDesc: 'Description',
+        err2001: 'Missing task_id',
+        err2002: 'Invalid task ID format',
+        err2003: 'No permission to access this task',
+        err2004: 'Task not found',
+        err2005: 'Task is not completed yet',
+        err2006: 'The model is older than 7 days and is no longer available for download',
+        err2007: 'Unsupported format',
+        err2008: 'Model file not found',
+        err2010: 'Insufficient available credits',
+        err2011: 'Task name does not meet requirements',
+        err2012: 'Invalid parameters',
+        err2500: 'Server error',
+        err2501: 'Upload failed'
+      },
+      statusCodes: {
+        title: 'Status Codes',
+        code: 'Code',
+        desc: 'HTTP status code reference.',
+        meaning: 'Meaning',
+        scDesc: 'Description',
+        sc200: 'Request succeeded',
+        sc400: 'Invalid request parameters',
+        sc401: 'Authentication failed',
+        sc403: 'No permission to access the resource',
+        sc404: 'Resource not found',
+        sc420: 'Insufficient credits',
+        sc500: 'Server error'
+      },
+      tocItems: {
+        overview: '3DGS API',
+        quickstart: 'Quick Start',
+        auth: 'Authentication',
+        createApiKey: 'Create API Key',
+        useApiKey: 'Use API Key',
+        scan: '3DGS Scan',
+        videoUpload: 'Video Upload',
+        model: 'Model',
+        modelStatus: 'Get Reconstruction Task Status',
+        modelDownload: 'Download 3D Model',
+        quota: 'Quota',
+        webhook: 'Webhook',
+        errors: 'Errors',
+        statusCodes: 'Status Codes'
+      }
     },
-    "auth": {
-        "title": "验证",
-        "desc": "使用 API 密钥进行请求鉴权。",
-        "createTitle": "创建 API 密钥",
-        "createDesc": "请前往开发者中心创建密钥。注意生成后仅显示一次。",
-        "useTitle": "使用 API 密钥",
-        "useDesc": "在请求头中携带密钥。",
-        "reqExample": "请求头示例"
-    },
-    "scan": {
-        "title": "3DGS 扫描",
-        "desc": "上传视频或图片进行 3DGS 重建。",
-        "videoUpload": "视频上传",
-        "supportMulti": "支持 multipart/form-data",
-        "reqHeader": "Header",
-        "reqPos": "位置",
-        "reqField": "字段",
-        "reqType": "类型",
-        "reqRequired": "必填",
-        "reqDesc": "说明",
-        "yes": "是",
-        "no": "否",
-        "videoDesc": "上传视频文件，字段名固定为 videos，支持 .mp4/.avi/.mov/.mkv/.webm，只支持单文件；最大 1GB",
-        "paramsDesc": "JSON 字符串，见 Attributes",
-        "reqExample": "请求示例",
-        "resSuccess": "成功响应示例",
-        "taskNameDesc": "1-50 字符，仅中文/字母/数字/下划线",
-        "bgRemoveDesc": "是否开启背景移除",
-        "userObjectDesc": "用户自定义物体描述",
-        "attributes": "Attributes",
-        "request": "Request",
-        "response": "Response"
-    },
-    "model": {
-        "title": "模型",
-        "desc": "查询重建任务状态并下载模型。",
-        "getStatus": "获取重建任务状态",
-        "statusReturn": "返回任务状态",
-        "taskIdDesc": "任务 ID",
-        "code200": "200 表示成功",
-        "resMsg": "返回消息",
-        "taskStatus": "任务状态",
-        "statusTab": "状态",
-        "statusDesc": "说明",
-        "statusReceived": "已接收，等待处理",
-        "statusSlicing": "视频切片中",
-        "statusColmap": "COLMAP 重建中",
-        "status3dgs": "3DGS 训练中",
-        "statusBgRemoval": "背景去除处理中",
-        "statusPaused": "已暂停",
-        "statusResuming": "恢复中",
-        "statusCompleted": "已完成",
-        "statusFailed": "失败",
-        "downloadMode": "下载 3D 模型",
-        "downRes": "成功响应说明",
-        "downTaskId": "任务 ID，任务需已完成且更新不超过 7 天",
-        "resFile": "响应文件",
-        "resSog": "返回 .sog 文件流"
-    },
-    "quota": {
-        "title": "额度",
-        "desc": "查询剩余算力点额度。",
-        "returnCredits": "返回当前算力点余额",
-        "totalCredits": "总额度",
-        "availCredits": "可用额度",
-        "usedCredits": "已使用额度"
-    },
-    "webhook": {
-        "title": "使用 Webhook",
-        "desc": "用于接收任务完成等事件通知。",
-        "needsRules": "Webhook 需要满足以下三项要素",
-        "rule1": "Webhook 可在开发者中心“设置 > Webhooks”中创建与管理。",
-        "rule2": "回调地址（Callback URL）：当模型状态变更时，系统会向该地址发送 POST 请求。",
-        "rule3": "签名密钥（Secret）：长度 6-50 的随机字符串，用于签名每次请求。用于加密回调内容，请在服务端使用相同密钥解密。",
-        "important": "重要说明",
-        "warn1": "请确保 NotifyUrl 可被公网访问。",
-        "warn2": "回调为 POST JSON，字段为 data/iv/tag，需用 secret 解密。",
-        "warn3": "收到通知后请返回 HTTP 200，否则每 30s 重试一次，最多 3 次。",
-        "decryptNode": "参数解密示例 (Node.js)",
-        "decryptPython": "参数解密示例 (Python)"
-    },
-    "errors": {
-        "title": "错误",
-        "desc": "所有错误返回统一格式。",
-        "errResList": "错误响应示例",
-        "bizCodes": "业务错误码",
-        "errCode": "错误码",
-        "errDesc": "说明",
-        "err2001": "缺少 task_id",
-        "err2002": "任务ID格式不正确",
-        "err2003": "无权访问此任务",
-        "err2004": "任务未找到",
-        "err2005": "任务尚未完成",
-        "err2006": "模型已超过7天，不提供下载",
-        "err2007": "不支持的格式",
-        "err2008": "模型文件未找到",
-        "err2010": "剩余可用算力点不足",
-        "err2011": "任务名称不符合要求",
-        "err2012": "参数不合格",
-        "err2500": "服务器错误",
-        "err2501": "上传失败"
-    },
-    "statusCodes": {
-        "title": "状态码",
-        "desc": "HTTP 状态码说明。",
-        "meaning": "含义",
-        "scDesc": "说明",
-        "sc200": "请求成功",
-        "sc400": "请求参数错误",
-        "sc401": "鉴权失败",
-        "sc403": "无权访问资源",
-        "sc404": "资源未找到",
-        "sc420": "算力点不足",
-        "sc500": "服务器错误"
-    },
-    "tocItems": {
-        "overview": "3DGS API",
-        "quickstart": "快速入门",
-        "auth": "验证",
-        "createApiKey": "创建 API 密钥",
-        "useApiKey": "使用 API 密钥",
-        "scan": "3DGS 扫描",
-        "videoUpload": "视频上传",
-        "model": "模型",
-        "modelStatus": "获取重建任务状态",
-        "modelDownload": "下载 3D 模型",
-        "quota": "额度",
-        "webhook": "创建 Webhook",
-        "errors": "错误",
-        "statusCodes": "状态码"
-    }
-},
     header: {
       upgrade: 'Upgrade to Pro',
       home: 'Home',
@@ -257,7 +723,9 @@ export default {
       logoutConfirm: 'Are you sure you want to log out?',
       selectLanguage: 'Select Language',
       regularAccount: 'Regular Account',
-      invite: 'Invite Link'
+      invite: 'Invite Link',
+      contactUsCta: 'Contact us for credits',
+      developer: 'Developer Center'
     },
     sidebar: {
       webVersion: 'Web',
@@ -274,6 +742,8 @@ export default {
       settings: 'Settings',
       feedback: 'Feedback',
       profile: 'Profile',
+      invite: 'Invite Link',
+      developer: 'Developer Center',
       downloadApp: 'Download App',
       joinCommunity: 'Join Community'
     },
@@ -289,8 +759,57 @@ export default {
       gs3d: '3DGS',
       gs4d: '4DGS',
       search: 'Search',
+      searchPlaceholder: 'Search by work name or description',
+      searchEmptyTitle: 'No matching results found',
+      searchEmptyDesc: 'Try a shorter keyword, or search other words from the work name or description',
       select: 'Select',
-      emptyText: 'How about creating a project now?'
+      emptyText: 'How about creating a project now?',
+      demo: {
+        meshTaskName: 'Outdoor Garden 3D Reconstruction',
+        meshTaskDesc: 'Outdoor garden scene with flowers, benches, and fences, requiring high-definition 3D reconstruction',
+      }
+    },
+    homeBatch: {
+      selectAll: 'Select all',
+      selectedCount: '{count} selected',
+      pauseAction: 'Pause selected',
+      startAction: 'Start selected',
+      exportAction: 'Export selected',
+      deleteAction: 'Delete selected',
+      exit: 'Exit',
+      exportModalTitle: 'Batch Export',
+      exportFormatLabel: 'Export format',
+      exportFormatPlaceholder: 'Please select an export format',
+      exportSupportLabel: 'Support:',
+      exportSupportOk: 'PLY and SOG are available',
+      exportSupportDisabled: 'OBJ, FBX, and GLTF are not supported yet',
+      exportStart: 'Start export',
+      exportingItem: 'Exporting {current}/{total}: {name}',
+      exportFailed: 'Export failed: {taskId}',
+      formats: {
+        objNotSupported: 'OBJ (Not supported yet)',
+        fbxNotSupported: 'FBX (Not supported yet)',
+        gltfNotSupported: 'GLTF (Not supported yet)',
+      },
+      noPausableTasks: 'No tasks can be paused',
+      pauseConfirmTitle: 'Confirm batch pause',
+      pauseConfirmContent: 'Pause the selected {count} tasks?',
+      pauseSuccess: 'Paused {count} tasks successfully',
+      noStartableTasks: 'No tasks can be started',
+      startConfirmTitle: 'Confirm batch start',
+      startConfirmContent: 'Start the selected {count} tasks?',
+      startSuccess: 'Started {count} tasks successfully',
+      selectExportFirst: 'Please select tasks to export first',
+      exportPreparing: 'Preparing export...',
+      exportTokenFailed: 'Failed to get download token: {taskId}',
+      exportCancelled: 'Export cancelled',
+      exportCompleted: 'Export complete, succeeded {success}/{total}',
+      exportSuccess: 'Exported {count} tasks successfully',
+      selectDeleteFirst: 'Please select tasks to delete first',
+      deleteConfirmTitle: 'Confirm batch delete',
+      deleteConfirmContent: 'Delete the selected {count} tasks? This cannot be undone.',
+      confirmDelete: 'Confirm delete',
+      deleteSuccess: 'Deleted {count} tasks successfully'
     },
     explore: {
       ai3dModels: 'AI Generated 3D Models',
@@ -302,7 +821,53 @@ export default {
       discordTitle: 'Join Discord Community',
       discordDesc: 'Chat with other MetaST users and ask developers questions',
       watchLater: 'Watch Later',
-      share: 'Share'
+      share: 'Share',
+      untitledModel: 'Untitled Model',
+      noDescription: 'No description',
+      unknown: 'Unknown',
+      demo: {
+        meshModel1: {
+          title: 'Wanderer',
+          description: 'Wanderer'
+        }
+      },
+      examples: {
+        gardenCourtyard: {
+          title: 'Garden Courtyard',
+          description: 'Outdoor stone and plants reconstruction'
+        },
+        robotFigure: {
+          title: 'Robot Figure',
+          description: 'High-detail hard-surface character model'
+        },
+        vintageCamera: {
+          title: 'Vintage Camera',
+          description: 'Desk object scan with metal texture details'
+        },
+        streetCorner: {
+          title: 'Street Corner',
+          description: 'Urban scene with signs and storefronts'
+        },
+        sportsCar: {
+          title: 'Sports Car',
+          description: 'Exterior and interior appearance showcase'
+        },
+        ancientVase: {
+          title: 'Ancient Vase',
+          description: 'Museum artifact with carved pattern details'
+        }
+      }
+    },
+    exploreSection: {
+      title: 'Explore Community Works',
+      modelNames: {
+        whiteTiger: 'White Tiger Sculpture',
+        oldTrain: 'Old Train',
+        castle: 'Castle Ruins',
+        electricGuitar: 'Electric Guitar',
+        rockSpecimen: 'Rock Specimen',
+        vintageCamera: 'Vintage Camera'
+      }
     },
     login: {
       welcome: 'Welcome to MetaST Engine Web',
@@ -382,6 +947,15 @@ export default {
     create: {
       title: 'Upload your photos or videos to generate your model!',
       subtitle: 'Pro tip: When capturing objects or scenes, it\'s always a good practice to shoot from different angles',
+      imageUploadConsistencyTip: 'For image uploads, walk around the object while shooting and avoid rotating it. Use photos from the same device, at the same focal length, with consistent format and resolution.',
+      help: {
+        button: 'Help',
+        title: 'How to Use',
+        supportedFormats: 'Supported formats:',
+        imageSpec: '• Images: {minImages}-{maxImages}, JPG/PNG',
+        videoSpec: '• Video: 30s to 3min, MP4/MOV',
+        qualityTip: 'Use clear, well-lit material for better results.'
+      },
       meshTitle: 'Upload a single image to generate a 3D model',
       meshSubtitle: 'Pro tip: Use images with a clean background and clear subject for best results'
     },
@@ -392,13 +966,23 @@ export default {
       editNickname: 'Edit Nickname',
       accountStats: 'Account Statistics',
       phone: 'Phone',
+      email: 'Email',
+      username: 'Username',
       lastLogin: 'Last Login',
       accountStatus: 'Account Status',
       active: 'Active',
+      lastActive: '{time} active',
+      points: 'Credits',
+      accountOverview: 'Account Overview',
+      workCount: 'Works',
+      favoriteCount: 'Favorites',
+      shareCount: 'Shares',
       accountSecurity: 'Account Security',
       personalDetails: 'Personal Details',
       nickname: 'Nickname',
+      notSet: 'Not set',
       accountSettings: 'Account Settings',
+      notifications: 'Notifications',
       changePassword: 'Change Password',
       enterNickname: 'Enter Nickname',
       saveSuccess: 'Saved Successfully',
@@ -414,9 +998,47 @@ export default {
       oldPwdRequired: 'Please enter old password',
       newPwdRequired: 'Please enter new password',
       pwdLength: 'Password must be at least 6 characters',
+      confirmPwdRequired: 'Please confirm the new password',
+      pwdLengthRule: 'Password length must be 8-16 characters',
+      pwdComplexityRule: 'Password must include uppercase letters, lowercase letters, and numbers',
       pwdNotMatch: 'Passwords do not match',
       pwdChanged: 'Password changed successfully',
-      pwdChangeFailed: 'Password change failed'
+      pwdChangeFailed: 'Password change failed',
+      phoneRequired: 'Please enter a phone number',
+      phoneInvalid: 'Please enter a valid phone number',
+      emailRequired: 'Please enter an email address',
+      emailInvalid: 'Please enter a valid email address',
+      code6Required: 'Please enter the 6-digit verification code',
+      bindPhone: 'Bind phone',
+      bindEmail: 'Bind email',
+      bindPhoneTitle: 'Bind Phone Number',
+      bindEmailTitle: 'Bind Email',
+      phoneBound: 'Phone bound',
+      emailBound: 'Email bound',
+      bound: 'Bound',
+      unbound: 'Unbound',
+      quickActions: 'Quick Actions',
+      editNicknameAction: 'Edit nickname',
+      changeAvatar: 'Change avatar',
+      pointsHistory: 'Credits history',
+      resendCode: 'Resend code',
+      emailPlaceholder: 'Please enter your email address',
+      bindEmailNotAvailable: 'Email binding is not available yet during testing',
+      bindEmailDemoOnly: 'Email binding submission is not available yet. This is currently a flow demo',
+      bindEmailSubmitNotAvailable: 'The email binding API is not available yet, so binding cannot be submitted now',
+      status: {
+        banned: 'Banned',
+        normal: 'Normal',
+        deactivating: 'Deactivating',
+        deactivated: 'Deactivated',
+        unknown: 'Unknown',
+      },
+      time: {
+        justNow: 'Just now',
+        minutesAgo: '{n} min ago',
+        hoursAgo: '{n} hr ago',
+        daysAgo: '{n} day(s) ago',
+      },
     },
     feedbackLang: {
       contact: 'Contact',
@@ -436,8 +1058,207 @@ export default {
       submitFail: 'Submission failed',
       networkError: 'Network error'
     },
+    routes: {
+      login: 'Log In',
+      home: 'Home',
+      projects: 'Projects',
+      explore: 'Explore',
+      explore4d: 'Explore 4D',
+      profile: 'Profile',
+      invite: 'Invite Link',
+      settings: 'Settings',
+      api: 'API',
+      developer: 'Developer Center',
+      tutorial: 'Tutorial',
+      feedback: 'Feedback',
+      create: 'Create',
+      createMeshScan: 'Mesh Scan',
+      create3dgsScan: '3DGS Scan',
+      shareLink: 'Share Link',
+      modelDetail: 'Model Details',
+      officialModelDetail: 'Official Model Details',
+      aiModelDetail: 'AI Model Details',
+      notFound: 'Page Not Found'
+    },
+    welcome: {
+      title: 'Welcome back 👋',
+      subtitle: 'Start creating your 3D model and bring ideas to life'
+    },
+    auth: {
+      logoutSuccess: 'Logged out successfully',
+      logoutFailed: 'Logout failed',
+      emailCodeSent: 'Verification code sent, please check your email',
+      phoneBindSuccess: 'Phone number linked successfully'
+    },
+    authErrors: {
+      emailFormat: 'Invalid email format',
+      invalidCredentials: 'Incorrect email or password',
+      tooManyRequests: 'Too many requests, please try again later',
+      accountBanned: 'Account has been banned',
+      accountDeactivated: 'Account has been deactivated',
+      loginFailedGeneric: 'Login failed, please check your email and password',
+      codeInvalidOrExpired: 'Verification code is invalid or expired',
+      emailAlreadyRegistered: 'Email already registered',
+      passwordComplexity: 'Password must be at least 8 characters and include uppercase, lowercase letters and numbers',
+      registerFailedGeneric: 'Registration failed, please try again later',
+      codeInvalid: 'Invalid verification code',
+      phoneLoginFailed: 'Phone login failed'
+    },
+    errors: {
+      missingAuth: 'Missing authentication info',
+      invalidParams: 'Invalid parameters',
+      sessionExpired: 'Not logged in or session expired, please log in again',
+      unauthorized: 'Unauthorized, please log in again',
+      forbidden: 'You do not have permission to perform this action',
+      nicknameUpdateFailed: 'Failed to update nickname',
+      avatarUpdateFailed: 'Failed to update avatar',
+      requestError: 'Request error, please check your input',
+      oldPasswordIncorrect: 'Incorrect old password',
+      userNotFound: 'User not found',
+      phoneInvalid: 'Invalid phone number format',
+      sendCodeFailed: 'Failed to send verification code',
+      sendEmailTooOften: 'Too many email sends, please try again later',
+      sendEmailFailed: 'Failed to send verification code, please try again later',
+      phoneAlreadyRegistered: 'Phone number already registered',
+      phoneBindFailed: 'Failed to link phone number'
+    },
+    imageUpload: {
+      mainText: 'Click to upload or drag an image into this area',
+      subText: 'Only one image is supported. Selecting a new file will replace the current one',
+      label: 'Image upload:',
+      formats: 'Supported formats: jpg, png, webp',
+      recommendedSize: 'Recommended size: at least 512x512 pixels',
+      onlyOne: 'Only 1 image per upload'
+    },
+    pointsLogs: {
+      title: 'Points Details',
+      loading: 'Loading...',
+      retry: 'Reload',
+      balanceTitle: 'Points Balance',
+      totalEarnedMobile: 'Total +{total}',
+      recordCountMobile: '{count} records',
+      recentCount: 'Recent {count}',
+      changeRecords: 'Change Records',
+      heroKicker: 'META·ST / LEDGER',
+      heroTitle: 'Points Ledger',
+      heroDescription: 'Review every change clearly and scan recent records quickly',
+      currentBalance: 'Current Balance',
+      totalEarned: 'Total Earned',
+      recordCount: 'Record Count',
+      displayScope: 'Display Scope',
+      showingRecentOnly: 'Showing only the latest {count} records',
+      loadFailed: 'Failed to load data. Please try again later',
+      date: 'Date',
+      type: 'Type',
+      amount: 'Amount',
+      balance: 'Balance',
+      description: 'Description',
+      recharge: 'Recharge',
+      consumption: 'Consumption',
+      refund: 'Refund',
+      bonus: 'Bonus',
+      noRecords: 'No Records'
+    },
+    modelCard: {
+      viewModel: 'View Model',
+      createProject: 'Create Project',
+      author: 'Author',
+      views: 'Views',
+      badges: {
+        new: 'New'
+      },
+      queueBadge: 'In queue · {count} tasks',
+      reviewRejected: 'Review rejected',
+      viewDetails: 'View details',
+      deleteConfirm: 'Delete this model?',
+      delete: 'Delete',
+      untitledTask: 'Untitled task',
+      workDescription: 'Description',
+      noDescription: 'No description',
+      workStats: 'Stats',
+      techSpecs: 'Technical Specs',
+      unknownError: 'Unknown error',
+      unknown: 'Unknown',
+      reviewViolation: 'This content contains violating information and did not pass review',
+      stats: {
+        views: 'Views',
+        downloads: 'Downloads',
+        shares: 'Shares'
+      },
+      fields: {
+        status: 'Status',
+        startedAt: 'Started At',
+        finishedAt: 'Finished At',
+        errorReason: 'Error Reason',
+        reviewResult: 'Review Result',
+        frameCount: 'Frame Count'
+      },
+      status: {
+        received: 'Received',
+        slicing: 'Extracting frames',
+        reconstructingColmap: 'COLMAP reconstructing',
+        reconstructing3dgs: '3DGS training',
+        reconstructingLightning: 'Fast reconstructing',
+        processingBgRemoval: 'Removing background',
+        paused: 'Paused',
+        resuming: 'Resuming',
+        completed: 'Completed',
+        failed: 'Failed',
+        processing: 'Processing'
+      },
+      actions: {
+        start: 'Start',
+        starting: 'Starting...',
+        pause: 'Pause',
+        pausing: 'Pausing...'
+      },
+      messages: {
+        taskFailed: 'Task failed. Please click restart',
+        reviewBlocked: 'This task did not pass review and cannot be viewed',
+        processing: 'Task is processing and will be available after completion',
+        resumeSuccess: 'Task restarted',
+        resumeFailed: 'Failed to restart. Please try again later',
+        pauseSuccess: 'Task paused',
+        pauseFailed: 'Failed to pause. Please try again later',
+        deleteSuccess: 'Model deleted',
+        deleteFailed: 'Failed to delete. Please try again later'
+      }
+    },
+    phoneAuth: {
+      title: 'Phone Login',
+      subtitle: 'Please enter your phone number',
+      phonePlaceholder: 'Please enter phone number',
+      getCode: 'Get Verification Code',
+      nextStep: 'Next',
+      changePhone: 'Change Phone Number',
+      backToEdit: 'Back to edit',
+      resendAfter: 'Resend after {seconds}s',
+      submitVerification: 'Verify',
+      requiredPhone: 'Please enter phone number',
+      requestErrors: {
+        badRequest: 'Request error. Please check your input',
+        unauthorized: 'Unauthorized. Please log in again',
+        invalidCode: 'Invalid verification code',
+        tooManyRequests: 'Too many requests. Please try again later',
+        serverError: 'Server error. Please try again later'
+      },
+      invalidPhoneByRegion: {
+        cn: 'Please enter a valid mainland China phone number',
+        us: 'Please enter a valid US phone number',
+        uk: 'Please enter a valid UK phone number',
+        jp: 'Please enter a valid Japan phone number',
+        de: 'Please enter a valid Germany phone number',
+        fr: 'Please enter a valid France phone number',
+        ru: 'Please enter a valid Russia phone number',
+        es: 'Please enter a valid Spain phone number'
+      }
+    },
     common: {
       confirm: 'Confirm',
-      cancel: 'Cancel'
+      close: 'Close',
+      cancel: 'Cancel',
+      loading: 'Loading',
+      pro: 'PRO',
+      comingSoon: 'Coming soon'
     }
   };

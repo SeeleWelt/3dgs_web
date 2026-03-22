@@ -13,11 +13,15 @@
         <p>{{ description }}</p>
       </div>
     </div>
-    <span v-if="pro" class="pro-badge">PRO</span>
+    <span v-if="pro" class="pro-badge">{{ t('common.pro') }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
+
 defineProps<{
   title: string
   description: string

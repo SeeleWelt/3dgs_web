@@ -17,77 +17,83 @@
           </div>
         </div>
 
-        <div class="tabs-right">
+        <div class="tabs-right" :class="{ 'is-management-mode': isManagementMode }">
           <div class="search-box" v-if="!isManagementMode">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"/>
               <path d="M21 21l-4.35-4.35"/>
             </svg>
-            <input v-model="searchQuery" type="text" placeholder="按作品名称或描述进行搜索" />
+            <input v-model="searchQuery" type="text" :placeholder="t('home.searchPlaceholder')" />
           </div>
           <!-- Management mode buttons -->
           <template v-if="isManagementMode">
-            <div class="select-all-wrap">
-              <a-checkbox
-                :checked="isAllSelected"
-                :indeterminate="isIndeterminate"
-                @change="handleSelectAll"
-              />
-              <span class="select-all-text">全选</span>
+            <div class="management-toolbar">
+              <div class="management-meta">
+                <div class="select-all-wrap">
+                  <a-checkbox
+                    :checked="isAllSelected"
+                    :indeterminate="isIndeterminate"
+                    @change="handleSelectAll"
+                  />
+                  <span class="select-all-text">{{ t('homeBatch.selectAll') }}</span>
+                </div>
+                <span class="selected-count">{{ t('homeBatch.selectedCount', { count: selectedCount }) }}</span>
+              </div>
+              <div class="management-actions">
+                <Transition name="fade-slide">
+                  <button
+                    v-if="canPause"
+                    class="action-btn pause-btn"
+                    @click="handleBatchPause"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="6" y="4" width="4" height="16"/>
+                      <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                    {{ t('homeBatch.pauseAction') }}
+                  </button>
+                </Transition>
+                <Transition name="fade-slide">
+                  <button
+                    v-if="canResume"
+                    class="action-btn start-btn"
+                    @click="handleBatchResume"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    {{ t('homeBatch.startAction') }}
+                  </button>
+                </Transition>
+                <Transition name="fade-slide">
+                  <button
+                    v-if="canExport"
+                    class="action-btn export-btn"
+                    @click="handleBatchExport"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    {{ t('homeBatch.exportAction') }}
+                  </button>
+                </Transition>
+                <Transition name="fade-slide">
+                  <button
+                    v-if="selectedCount > 0"
+                    class="action-btn delete-btn"
+                    @click="handleBatchDelete"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                    </svg>
+                    {{ t('homeBatch.deleteAction') }}
+                  </button>
+                </Transition>
+              </div>
             </div>
-            <span class="selected-count">已选 {{ selectedCount }} 项</span>
-            <Transition name="fade-slide">
-              <button
-                v-if="canPause"
-                class="action-btn pause-btn"
-                @click="handleBatchPause"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="6" y="4" width="4" height="16"/>
-                  <rect x="14" y="4" width="4" height="16"/>
-                </svg>
-                批量暂停
-              </button>
-            </Transition>
-            <Transition name="fade-slide">
-              <button
-                v-if="canResume"
-                class="action-btn start-btn"
-                @click="handleBatchResume"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-                批量开始
-              </button>
-            </Transition>
-            <Transition name="fade-slide">
-              <button
-                v-if="canExport"
-                class="action-btn export-btn"
-                @click="handleBatchExport"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                批量导出
-              </button>
-            </Transition>
-            <Transition name="fade-slide">
-              <button
-                v-if="selectedCount > 0"
-                class="action-btn delete-btn"
-                @click="handleBatchDelete"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                </svg>
-                批量删除
-              </button>
-            </Transition>
           </template>
           <button class="select-btn" :class="{ active: isManagementMode }" @click="toggleManagementMode">
             <svg v-if="!isManagementMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,7 +105,7 @@
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
-            {{ isManagementMode ? '退出' : t('home.select') }}
+            {{ isManagementMode ? t('homeBatch.exit') : t('home.select') }}
           </button>
         </div>
       </div>
@@ -153,8 +159,8 @@
             <path d="M8.5 10.5h5"></path>
           </svg>
         </div>
-        <p class="search-empty-title">没有找到对应结果</p>
-        <p class="search-empty-desc">试试更短的关键词，或搜索作品名称/描述中的其他词</p>
+        <p class="search-empty-title">{{ t('home.searchEmptyTitle') }}</p>
+        <p class="search-empty-desc">{{ t('home.searchEmptyDesc') }}</p>
       </div>
 
       <EmptyState v-else :type="activeTypeTab === 'mesh' ? 'mesh-scan' : '3dgs-scan'" :error="fetchError" @retry="fetchCurrentTab" />
@@ -163,7 +169,7 @@
     <!-- Batch Export Format Modal -->
     <a-modal
       v-model:open="showBatchExportModal"
-      title="批量导出"
+      :title="t('homeBatch.exportModalTitle')"
       :mask-closable="isExporting"
       :closable="!isExporting"
       :footer="null"
@@ -171,20 +177,20 @@
     >
       <div class="export-form">
         <div class="form-item">
-          <label class="form-label">导出格式</label>
+          <label class="form-label">{{ t('homeBatch.exportFormatLabel') }}</label>
           <a-select
             v-model:value="selectedExportFormat"
             :options="formatOptions"
-            placeholder="请选择导出格式"
+            :placeholder="t('homeBatch.exportFormatPlaceholder')"
             style="width: 100%"
           />
         </div>
 
         <div class="format-tip">
-          <span class="tip-label">支持情况：</span>
-          <span class="tip-ok">PLY、SOG 可导出</span>
+          <span class="tip-label">{{ t('homeBatch.exportSupportLabel') }}</span>
+          <span class="tip-ok">{{ t('homeBatch.exportSupportOk') }}</span>
           <span class="tip-split">|</span>
-          <span class="tip-disabled">OBJ、FBX、GLTF 暂不支持</span>
+          <span class="tip-disabled">{{ t('homeBatch.exportSupportDisabled') }}</span>
         </div>
 
         <div v-if="exportStatusText" class="status-text">{{ exportStatusText }}</div>
@@ -196,14 +202,14 @@
         />
 
         <div class="export-actions">
-          <a-button @click="cancelBatchExport" :disabled="isExporting">关闭</a-button>
+          <a-button @click="cancelBatchExport" :disabled="isExporting">{{ t('common.close') }}</a-button>
           <a-button
             type="primary"
             :loading="isExporting"
             :disabled="isExporting"
             @click="confirmBatchExport"
           >
-            开始导出
+            {{ t('homeBatch.exportStart') }}
           </a-button>
         </div>
       </div>
@@ -349,15 +355,15 @@ const handleBatchPause = async () => {
   )
 
   if (selected.length === 0) {
-    message.warning('没有可暂停的任务')
+    message.warning(t('homeBatch.noPausableTasks'))
     return
   }
 
   Modal.confirm({
-    title: '确认批量暂停',
-    content: `确定要暂停选中的 ${selected.length} 个任务吗？`,
-    okText: '确认',
-    cancelText: '取消',
+    title: t('homeBatch.pauseConfirmTitle'),
+    content: t('homeBatch.pauseConfirmContent', { count: selected.length }),
+    okText: t('common.confirm'),
+    cancelText: t('common.cancel'),
     onOk: async () => {
       let successCount = 0
 
@@ -375,7 +381,7 @@ const handleBatchPause = async () => {
         }
       }
 
-      message.success(`成功暂停 ${successCount} 个任务`)
+      message.success(t('homeBatch.pauseSuccess', { count: successCount }))
       await fetchCurrentTab()
     }
   })
@@ -390,15 +396,15 @@ const handleBatchResume = async () => {
   )
 
   if (selected.length === 0) {
-    message.warning('没有可开始的任务')
+    message.warning(t('homeBatch.noStartableTasks'))
     return
   }
 
   Modal.confirm({
-    title: '确认批量开始',
-    content: `确定要开始选中的 ${selected.length} 个任务吗？`,
-    okText: '确认',
-    cancelText: '取消',
+    title: t('homeBatch.startConfirmTitle'),
+    content: t('homeBatch.startConfirmContent', { count: selected.length }),
+    okText: t('common.confirm'),
+    cancelText: t('common.cancel'),
     onOk: async () => {
       let successCount = 0
 
@@ -416,7 +422,7 @@ const handleBatchResume = async () => {
         }
       }
 
-      message.success(`成功开始 ${successCount} 个任务`)
+      message.success(t('homeBatch.startSuccess', { count: successCount }))
       await fetchCurrentTab()
     }
   })
@@ -430,13 +436,13 @@ const exportProgress = ref(0)
 const exportStatusText = ref('')
 const abortController = ref<AbortController | null>(null)
 
-const formatOptions = [
+const formatOptions = computed(() => [
   { label: 'SOG', value: 'sog' },
   { label: 'PLY', value: 'ply' },
-  { label: 'OBJ（暂不支持）', value: 'obj', disabled: true },
-  { label: 'FBX（暂不支持）', value: 'fbx', disabled: true },
-  { label: 'GLTF（暂不支持）', value: 'gltf', disabled: true },
-]
+  { label: t('homeBatch.formats.objNotSupported'), value: 'obj', disabled: true },
+  { label: t('homeBatch.formats.fbxNotSupported'), value: 'fbx', disabled: true },
+  { label: t('homeBatch.formats.gltfNotSupported'), value: 'gltf', disabled: true },
+])
 
 // Open batch export modal
 const handleBatchExport = () => {
@@ -473,13 +479,13 @@ const downloadBlob = (blob: Blob, fileName: string) => {
 const confirmBatchExport = async () => {
   const selected = filteredModels.value.filter(m => selectedModels.value.has(m.taskId || ''))
   if (selected.length === 0) {
-    message.warning('请先选择要导出的任务')
+    message.warning(t('homeBatch.selectExportFirst'))
     return
   }
 
   isExporting.value = true
   exportProgress.value = 0
-  exportStatusText.value = '正在准备导出...'
+  exportStatusText.value = t('homeBatch.exportPreparing')
   abortController.value = new AbortController()
   const token = localStorage.getItem('token')
 
@@ -487,7 +493,11 @@ const confirmBatchExport = async () => {
 
   for (let i = 0; i < selected.length; i++) {
     const model = selected[i]
-    exportStatusText.value = `正在导出 ${i + 1}/${selected.length}: ${model.taskName || model.taskId}`
+    exportStatusText.value = t('homeBatch.exportingItem', {
+      current: i + 1,
+      total: selected.length,
+      name: model.taskName || model.taskId,
+    })
 
     try {
       // Get download token
@@ -500,7 +510,7 @@ const confirmBatchExport = async () => {
 
       const downloadToken = tokenResp?.data?.token
       if (!downloadToken) {
-        console.warn(`获取下载令牌失败: ${model.taskId}`)
+        console.warn(t('homeBatch.exportTokenFailed', { taskId: model.taskId }))
         continue
       }
 
@@ -530,19 +540,19 @@ const confirmBatchExport = async () => {
     } catch (error: any) {
       const canceled = error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError'
       if (canceled) {
-        exportStatusText.value = '导出已取消'
+        exportStatusText.value = t('homeBatch.exportCancelled')
         isExporting.value = false
         return
       }
-      console.warn(`导出失败: ${model.taskId}`, error)
+      console.warn(t('homeBatch.exportFailed', { taskId: model.taskId }), error)
     }finally {
       isExporting.value = false
     }
   }
 
   exportProgress.value = 100
-  exportStatusText.value = `导出完成，成功 ${successCount}/${selected.length}`
-  message.success(`成功导出 ${successCount} 个任务`)
+  exportStatusText.value = t('homeBatch.exportCompleted', { success: successCount, total: selected.length })
+  message.success(t('homeBatch.exportSuccess', { count: successCount }))
   isExporting.value = false
 
   setTimeout(() => {
@@ -553,15 +563,15 @@ const confirmBatchExport = async () => {
 // Batch delete
 const handleBatchDelete = async () => {
   if (selectedCount.value === 0) {
-    message.warning('请先选择要删除的任务')
+    message.warning(t('homeBatch.selectDeleteFirst'))
     return
   }
 
   Modal.confirm({
-    title: '确认批量删除',
-    content: `确定要删除选中的 ${selectedCount.value} 个任务吗？此操作不可恢复。`,
-    okText: '确认删除',
-    cancelText: '取消',
+    title: t('homeBatch.deleteConfirmTitle'),
+    content: t('homeBatch.deleteConfirmContent', { count: selectedCount.value }),
+    okText: t('homeBatch.confirmDelete'),
+    cancelText: t('common.cancel'),
     onOk: async () => {
       const taskIds = Array.from(selectedModels.value)
       let successCount = 0
@@ -580,7 +590,7 @@ const handleBatchDelete = async () => {
         }
       }
 
-      message.success(`成功删除 ${successCount} 个任务`)
+      message.success(t('homeBatch.deleteSuccess', { count: successCount }))
       selectedModels.value.clear()
       isManagementMode.value = false
       await fetchCurrentTab()
@@ -588,10 +598,10 @@ const handleBatchDelete = async () => {
   })
 }
 
-const defaultMeshModels: Model[] = [
+const defaultMeshModels = computed<Model[]>(() => [
   {
     taskId: 'task_001',
-    taskName: '户外花园3D重建',
+    taskName: t('home.demo.meshTaskName'),
     status: 'reconstructing_3dgs',
     isPublic: true,
     nsfwBlocked: false,
@@ -606,7 +616,7 @@ const defaultMeshModels: Model[] = [
     lightning: true,
     fps: 30,
     videoCount: 1,
-    objectDescription: '户外花园场景，包含花卉、长椅、围栏，要求高清3D重建',
+    objectDescription: t('home.demo.meshTaskDesc'),
     ownerUsername: 'ric',
     authorAvatar: undefined,
     preview: 'https://picsum.photos/400/500?random=1001',
@@ -615,9 +625,9 @@ const defaultMeshModels: Model[] = [
     isNew: true,
     type: 'mesh'
   }
-]
+])
 
-const MeshModel = ref<Model[]>([...defaultMeshModels])
+const MeshModel = ref<Model[]>([...defaultMeshModels.value])
 const Model3D = ref<Model[]>([])
 const PAGE_SIZE = 12
 
@@ -634,7 +644,7 @@ const model3DPagination = ref<GetTaskListParams>({
   query: ''
 })
 
-const meshTotal = ref(defaultMeshModels.length)
+const meshTotal = ref(defaultMeshModels.value.length)
 const model3DTotal = ref(0)
 
 const typeTabs = computed(() => [
@@ -695,7 +705,7 @@ const filteredModels = computed(() => {
 
 const mapToModels = (tasks: TaskModel[], type: 'mesh' | 'gaussian'): Model[] => tasks.map(task => ({
   ...task,
-  objectDescription: task.objectDescription || '暂无描述',
+  objectDescription: task.objectDescription || t('modelCard.noDescription'),
   isNew: task.viewCount === 0,
   type
 }))
@@ -722,13 +732,13 @@ const fetchScanModels = async () => {
   fetchError.value = null
   isLoading.value = true
   try {
-    MeshModel.value = defaultMeshModels
+    MeshModel.value = defaultMeshModels.value
     meshTotal.value = 1
   } catch (error: any) {
     console.error('Fetch scan models failed:', error)
     fetchError.value = getErrorType(error)
-    MeshModel.value = [...defaultMeshModels]
-    meshTotal.value = defaultMeshModels.length
+    MeshModel.value = [...defaultMeshModels.value]
+    meshTotal.value = defaultMeshModels.value.length
   } finally {
     isLoading.value = false
   }
@@ -1058,6 +1068,25 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.management-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.management-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.management-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
 .search-box {
   display: flex;
   align-items: center;
@@ -1203,8 +1232,51 @@ onMounted(async () => {
     width: 100%;
   }
 
+  .tabs-right.is-management-mode {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+  }
+
   .search-box {
     flex: 1;
+  }
+
+  .management-toolbar {
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .management-meta {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .management-actions {
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .management-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .management-actions .action-btn {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .tabs-right.is-management-mode .select-btn {
+    align-self: start;
   }
 }
 

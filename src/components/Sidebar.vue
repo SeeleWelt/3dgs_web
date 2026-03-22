@@ -16,7 +16,7 @@
         </div>
         <div class="logo-text">
           <span class="logo-name">MetaST</span>
-          <span class="logo-badge">网页版</span>
+          <span class="logo-badge">{{ t('sidebar.webVersion') }}</span>
         </div>
       </div>
     </div>
@@ -226,9 +226,9 @@ const mainMenu = computed(() => [
 ])
 
 const toolsMenu = computed(() => [
-  { name: 'profile', label: '个人中心', path: '/tools/profile', icon: ProfileIcon },
-  { name: 'invite', label: '邀请链接', path: '/tools/invite', icon: InviteIcon },
-  { name: 'developer', label: '开发者中心', path: '/tools/developer', icon: DevelopIcon },
+  { name: 'profile', label: t('sidebar.profile'), path: '/tools/profile', icon: ProfileIcon },
+  { name: 'invite', label: t('sidebar.invite'), path: '/tools/invite', icon: InviteIcon },
+  { name: 'developer', label: t('sidebar.developer'), path: '/tools/developer', icon: DevelopIcon },
   { name: 'api', label: t('sidebar.api'), path: '/tools/api', icon: APIIcon },
   // { name: 'blender', label: t('sidebar.blender'), path: '/tools/blender', icon: BlenderIcon },
   // { name: 'unity', label: t('sidebar.unity'), path: '/tools/unity', icon: UnityIcon },

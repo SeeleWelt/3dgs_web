@@ -1,32 +1,36 @@
 <template>
   <a-modal
     :open="open"
-    title="嵌入代码"
-    ok-text="复制代码"
-    cancel-text="关闭"
+    :title="$t('embedCode.title')"
+    :ok-text="$t('embedCode.copyCode')"
+    :cancel-text="$t('embedCode.close')"
     @update:open="handleOpenChange"
     @ok="copyEmbedCode"
     @cancel="handleCancel"
   >
     <div class="embed-form">
       <div class="form-item">
-        <label class="form-label">可嵌入网页代码</label>
+        <label class="form-label">{{ $t('embedCode.embedCodeLabel') }}</label>
         <a-textarea
           :value="embedCode"
           :rows="7"
           readonly
         />
       </div>
-      <div class="form-tip">将以上代码粘贴到你的网页 HTML 中即可。</div>
+      <div class="form-tip">{{ $t('embedCode.embedTip') }}</div>
     </div>
   </a-modal>
 </template>
 
 <script setup>
 import { computed,ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { message } from 'ant-design-vue';
 import API from '@/utils/api';
 import { ApiServer } from '@/utils/taskService';
+
+const { t } = useI18n()
+
 const props = defineProps({
   open: {
     type: Boolean,
@@ -77,15 +81,15 @@ const handleCancel = () => {
 
 const copyEmbedCode = async () => {
   if (!embedCode.value) {
-    message.warning('暂无可复制的嵌入代码');
+    message.warning(t('embedCode.noCode'));
     return;
   }
 
   try {
     await navigator.clipboard.writeText(embedCode.value);
-    message.success('嵌入代码已复制');
+    message.success(t('embedCode.codeCopied'));
   } catch (error) {
-    message.error('复制失败，请手动复制');
+    message.error(t('embedCode.copyFailed'));
     return;
   }
 

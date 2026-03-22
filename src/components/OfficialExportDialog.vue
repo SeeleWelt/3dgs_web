@@ -1,7 +1,7 @@
 <template>
   <a-modal
     :open="open"
-    title="导出模型"
+    :title="t('exportDialog.title')"
     :mask-closable="!isExporting"
     :closable="!isExporting"
     @update:open="handleOpenChange"
@@ -9,19 +9,19 @@
   >
     <div class="export-form">
       <div class="form-item">
-        <label class="form-label">导出格式</label>
+        <label class="form-label">{{ t('exportDialog.formatLabel') }}</label>
         <a-select
           v-model:value="selectedFormat"
           :options="formatOptions"
-          placeholder="请选择导出格式"
+          :placeholder="t('exportDialog.formatPlaceholder')"
         />
       </div>
 
       <div class="format-tip">
-        <span class="tip-label">支持情况：</span>
-        <span class="tip-ok">PLY、SOG 可导出</span>
+        <span class="tip-label">{{ t('exportDialog.supportLabel') }}</span>
+        <span class="tip-ok">{{ t('exportDialog.supportedTip') }}</span>
         <span class="tip-split">|</span>
-        <span class="tip-disabled">OBJ、FBX、GLTF 暂不支持</span>
+        <span class="tip-disabled">{{ t('exportDialog.unsupportedTip') }}</span>
       </div>
 
       <div v-if="statusText" class="status-text">{{ statusText }}</div>
@@ -34,13 +34,13 @@
     </div>
 
     <template #footer>
-      <a-button @click="handleCancel" :disabled="isExporting">关闭</a-button>
+      <a-button @click="handleCancel" :disabled="isExporting">{{ t('exportDialog.actions.close') }}</a-button>
       <a-button
         v-if="isExporting"
         danger
         @click="cancelExport"
       >
-        取消导出
+        {{ t('exportDialog.actions.cancelExport') }}
       </a-button>
       <a-button
         v-else
@@ -48,7 +48,7 @@
         :loading="isExporting"
         @click="startExport"
       >
-        开始导出
+        {{ t('exportDialog.actions.startExport') }}
       </a-button>
     </template>
   </a-modal>
@@ -56,9 +56,12 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue';
 import API from '@/utils/api';
 import { ApiServer } from '@/utils/taskService';
+
+const { t, locale } = useI18n()
 
 const props = defineProps({
   open: {
@@ -77,13 +80,16 @@ const props = defineProps({
 
 const emit = defineEmits(['update:open']);
 
-const formatOptions = [
-  { label: 'PLY', value: 'ply' },
-  { label: 'SOG（暂不支持）', value: 'sog',disabled: true },
-  { label: 'OBJ（暂不支持）', value: 'obj', disabled: true },
-  { label: 'FBX（暂不支持）', value: 'fbx', disabled: true },
-  { label: 'GLTF（暂不支持）', value: 'gltf', disabled: true },
-];
+const formatOptions = computed(() => {
+  locale.value
+  return [
+    { label: t('exportDialog.formats.ply'), value: 'ply' },
+    { label: t('exportDialog.formats.sogUnsupported'), value: 'sog', disabled: true },
+    { label: t('exportDialog.formats.objUnsupported'), value: 'obj', disabled: true },
+    { label: t('exportDialog.formats.fbxUnsupported'), value: 'fbx', disabled: true },
+    { label: t('exportDialog.formats.gltfUnsupported'), value: 'gltf', disabled: true },
+  ]
+})
 
 const selectedFormat = ref('ply');
 const isExporting = ref(false);
@@ -93,7 +99,7 @@ const abortController = ref(null);
 const isUserCanceled = ref(false);
 
 const selectedOption = computed(() => {
-  return formatOptions.find((item) => item.value === selectedFormat.value) || null;
+  return formatOptions.value.find((item) => item.value === selectedFormat.value) || null;
 });
 
 const sanitizeBaseName = (name) => {
@@ -149,25 +155,25 @@ const startExport = async () => {
   if (isExporting.value) return;
 
   if (!props.taskId) {
-    message.error('缺少任务 ID，无法导出');
+    message.error(t('exportDialog.messages.missingTaskId'));
     return;
   }
 
   if (selectedOption.value?.disabled) {
-    message.warning('当前格式暂不支持导出');
+    message.warning(t('exportDialog.messages.formatNotSupported'));
     return;
   }
 
   isExporting.value = true;
   progress.value = 0;
-  statusText.value = '正在准备导出...';
+  statusText.value = t('exportDialog.status.preparing');
   abortController.value = new AbortController();
   isUserCanceled.value = false;
 
   const token = localStorage.getItem('token');
 
   try {
-    statusText.value = `正在导出 ${selectedFormat.value.toUpperCase()}...`;
+    statusText.value = t('exportDialog.status.exporting', { format: selectedFormat.value.toUpperCase() });
 
     const response = await ApiServer.request({
       url: `${API.DOWNLOAD_OFFICIAL_MODEL}/${props.taskId}`,
@@ -186,8 +192,8 @@ const startExport = async () => {
 
     downloadBlob(response.data);
     progress.value = 100;
-    statusText.value = '导出完成';
-    message.success('模型导出成功');
+    statusText.value = t('exportDialog.status.completed');
+    message.success(t('exportDialog.messages.exportSuccess'));
   } catch (error) {
     const canceled =
       isUserCanceled.value ||
@@ -195,17 +201,17 @@ const startExport = async () => {
       error?.name === 'CanceledError';
 
     if (canceled) {
-      statusText.value = '导出已取消';
+      statusText.value = t('exportDialog.status.cancelled');
       progress.value = 0;
-      message.info('已取消导出');
+      message.info(t('exportDialog.messages.exportCancelled'));
     } else {
       const status = error?.response?.status;
       if (status === 401) {
-        message.error('登录已过期，请重新登录后导出');
+        message.error(t('exportDialog.messages.sessionExpired'));
       } else {
-        message.error(error?.response?.data?.message || error?.message || '导出失败，请重试');
+        message.error(error?.response?.data?.message || error?.message || t('exportDialog.messages.exportFailed'));
       }
-      statusText.value = '导出失败';
+      statusText.value = t('exportDialog.status.failed');
     }
   } finally {
     isExporting.value = false;

@@ -20,22 +20,26 @@
         <p class="subtitle desktop-only">{{ t('create.subtitle') }}</p>
         <button class="help-btn mobile-only" @click="showHelp = true">
           <QuestionCircleOutlined />
-          说明
+          {{ t('create.help.button') }}
         </button>
       </div>
 
       <!-- 帮助说明弹窗 -->
       <a-modal
         v-model:open="showHelp"
-        title="使用说明"
+        :title="t('create.help.title')"
         :footer="null"
         width="320px"
       >
         <div class="help-content">
-          <p><strong>支持格式：</strong></p>
-          <p>• 图片：至少30张，JPG/PNG</p>
-          <p>• 视频：30秒~3分钟，MP4/MOV</p>
-          <p class="help-tip">建议使用清晰度高、光线充足的素材，效果更佳</p>
+          <p><strong>{{ t('create.help.supportedFormats') }}</strong></p>
+          <p>{{ t('create.help.imageSpec', { minImages: MIN_IMAGE_COUNT, maxImages: MAX_IMAGE_COUNT }) }}</p>
+          <p>{{ t('create.help.videoSpec') }}</p>
+          <p class="help-tip">{{ t('create.help.qualityTip') }}</p>
+          <div class="help-highlight">
+            <InfoCircleOutlined />
+            <span>{{ t('create.imageUploadConsistencyTip') }}</span>
+          </div>
         </div>
       </a-modal>
 
@@ -58,6 +62,14 @@
             </div>
             <p class="processing-file" v-if="processingFileName">{{ processingFileName }}</p>
           </div>
+        </div>
+
+        <div
+          v-if="(!uploadTask || uploadTask.uploadType !== 'video')"
+          class="upload-consistency-tip"
+        >
+          <InfoCircleOutlined />
+          <span>{{ t('create.imageUploadConsistencyTip') }}</span>
         </div>
 
         <FileUpload
@@ -1190,6 +1202,26 @@ onBeforeUnmount(() => {
   color: var(--text-secondary);
 }
 
+.upload-consistency-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-surface);
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.upload-consistency-tip :deep(.anticon) {
+  color: var(--accent-blue);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
 .advanced-panel {
   display: flex;
   flex-direction: column;
@@ -1441,6 +1473,27 @@ onBeforeUnmount(() => {
   margin-top: 12px !important;
 }
 
+.help-highlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+.help-highlight :deep(.anticon) {
+  color: var(--accent-blue);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .create-project-container {
@@ -1457,6 +1510,10 @@ onBeforeUnmount(() => {
 
   .mobile-only {
     display: inline-flex;
+  }
+
+  .upload-consistency-tip {
+    display: none;
   }
 
   .back-btn {

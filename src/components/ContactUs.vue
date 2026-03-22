@@ -1,7 +1,7 @@
 <template>
   <a-modal
     v-model:open="isOpen"
-    title="联系我们"
+    :title="t('contactUs.title')"
     :footer="null"
     :width="520"
     :centered="true"
@@ -28,8 +28,8 @@
 
     <div class="contact-panel">
       <div class="contact-head">
-        <h3 class="contact-title">扫码添加微信</h3>
-        <p class="contact-subtitle">合作咨询 / 售前支持 / 方案交流</p>
+        <h3 class="contact-title">{{ t('contactUs.wechat.title') }}</h3>
+        <p class="contact-subtitle">{{ t('contactUs.wechat.subtitle') }}</p>
       </div>
 
       <div class="contact-body">
@@ -37,24 +37,24 @@
           <img
             v-if="qrImageUrl && !imageLoadFailed"
             :src="qrImageUrl"
-            alt="微信二维码"
+            :alt="t('contactUs.wechat.qrAlt')"
             class="qr-image"
             @error="imageLoadFailed = true"
           />
           <div v-else class="qr-placeholder">
-            <span>二维码待上传</span>
+            <span>{{ t('contactUs.wechat.qrPlaceholder') }}</span>
           </div>
         </div>
 
         <div class="contact-info">
           <div class="wechat-id">
-            <span class="wechat-label">微信号</span>
+            <span class="wechat-label">{{ t('contactUs.wechat.wechatIdLabel') }}</span>
             <span class="wechat-value">{{ wechatId }}</span>
           </div>
-          <button class="copy-btn" @click="copyWeChat">复制微信号</button>
+          <button class="copy-btn" @click="copyWeChat">{{ t('contactUs.wechat.copyWechatId') }}</button>
           <div class="wechat-note">
             <span class="note-dot"></span>
-            <span>添加时请备注“MetaST”</span>
+            <span>{{ t('contactUs.wechat.note') }}</span>
           </div>
         </div>
       </div>
@@ -65,7 +65,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
+
+const { t } = useI18n({ useScope: 'global' })
 
 const isOpen = ref(false)
 // 旧版二维码生成逻辑暂时注释保留
@@ -131,9 +134,9 @@ const copyWeChat = async () => {
   if (!wechatId.value) return
   try {
     await navigator.clipboard.writeText(wechatId.value)
-    message.success('已复制微信号')
+    message.success(t('contactUs.wechat.copySuccess'))
   } catch (error) {
-    message.warning('复制失败，请手动复制')
+    message.warning(t('contactUs.wechat.copyFailed'))
   }
 }
 

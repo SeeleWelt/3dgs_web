@@ -4,6 +4,7 @@ import API from '../utils/api'
 import { ApiServer } from '@/utils/taskService'
 import { message } from 'ant-design-vue'
 import router from '@/router'
+import i18n from '@/i18n'
 
 type UserInfoState = {
   headimg: string | null
@@ -87,52 +88,52 @@ export const useUserStore = defineStore('user', () => {
     if (action === 'email-login') {
       switch (statusCode) {
         case 400:
-          return '邮件格式错误'
+          return String(i18n.global.t('authErrors.emailFormat'))
         case 401:
-          return '错误的邮箱或密码'
+          return String(i18n.global.t('authErrors.invalidCredentials'))
         case 429:
-          return '请求过于频繁，请稍后再试'
+          return String(i18n.global.t('authErrors.tooManyRequests'))
         case 430:
-          return '账号已被封禁'
+          return String(i18n.global.t('authErrors.accountBanned'))
         case 432:
-          return '账号已注销，无法登录'
+          return String(i18n.global.t('authErrors.accountDeactivated'))
         default:
-          return '登录失败，请检查您的邮箱和密码'
+          return String(i18n.global.t('authErrors.loginFailedGeneric'))
       }
     }
 
     if (action === 'email-register') {
       switch (statusCode) {
         case 400:
-          return '邮件格式错误'
+          return String(i18n.global.t('authErrors.emailFormat'))
         case 401:
-          return '验证码错误或已过期'
+          return String(i18n.global.t('authErrors.codeInvalidOrExpired'))
         case 402:
-          return '邮箱已注册'
+          return String(i18n.global.t('authErrors.emailAlreadyRegistered'))
         case 429:
-          return '请求过于频繁，请稍后再试'
+          return String(i18n.global.t('authErrors.tooManyRequests'))
         case 421:
-          return '密码必须至少8个字符，包含大写字母、小写字母和数字'
+          return String(i18n.global.t('authErrors.passwordComplexity'))
         default:
-          return '注册失败，请稍后再试'
+          return String(i18n.global.t('authErrors.registerFailedGeneric'))
       }
     }
 
     switch (statusCode) {
       case 400:
-        return '验证码错误或已过期'
+        return String(i18n.global.t('authErrors.codeInvalidOrExpired'))
       case 401:
-        return '未授权，请重新登录'
+        return String(i18n.global.t('errors.unauthorized'))
       case 402:
-        return '验证码错误'
+        return String(i18n.global.t('authErrors.codeInvalid'))
       case 429:
-        return '请求过于频繁，请稍后再试'
+        return String(i18n.global.t('authErrors.tooManyRequests'))
       case 430:
-        return '账号已被封禁'
+        return String(i18n.global.t('authErrors.accountBanned'))
       case 432:
-        return '账号已注销，无法登录'
+        return String(i18n.global.t('authErrors.accountDeactivated'))
       default:
-        return '手机号登录失败'
+        return String(i18n.global.t('authErrors.phoneLoginFailed'))
     }
   }
 
@@ -163,7 +164,7 @@ export const useUserStore = defineStore('user', () => {
         const user = buildUserFromResponse(data, email)
         user.loginType = 'email'
         saveLoginState(user)
-        message.success('登录成功')
+        message.success(String(i18n.global.t('login.loginSuccess')))
         isLoading.value = false
         return true
       }
@@ -192,7 +193,7 @@ export const useUserStore = defineStore('user', () => {
           ...(inviteCode ? { inviteCode } : {})
         }
       })
-      message.success('注册成功，请登录')
+      message.success(String(i18n.global.t('login.registerSuccess')))
       isLoading.value = false
       return true
     } catch (err: any) {
@@ -231,7 +232,7 @@ export const useUserStore = defineStore('user', () => {
         }, phone)
         user.loginType = 'phone'
         saveLoginState(user)
-        message.success('登录成功')
+        message.success(String(i18n.global.t('login.loginSuccess')))
         isLoading.value = false
         return true
       }
@@ -255,9 +256,9 @@ export const useUserStore = defineStore('user', () => {
   const logout = async () => {
     const {success} = await signOut();
     if(success){
-      message.success('登出成功')
+      message.success(String(i18n.global.t('auth.logoutSuccess')))
     }else{
-      message.error('登出失败')
+      message.error(String(i18n.global.t('auth.logoutFailed')))
     }
   }
 
@@ -318,7 +319,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const token = userInfo.value?.token || localStorage.getItem('token')
       if (!token) {
-        throw new Error('缺少认证信息')
+        throw new Error(String(i18n.global.t('errors.missingAuth')))
       }
       await ApiServer.request({
         method: 'POST',
@@ -332,17 +333,17 @@ export const useUserStore = defineStore('user', () => {
       }else{
         switch(err?.statusCode){
           case 400:
-            message.error('参数有误')
+            message.error(String(i18n.global.t('errors.invalidParams')))
             break
           case 401:
-            message.error('未登录或登录状态已过期，请重新登录')
+            message.error(String(i18n.global.t('errors.sessionExpired')))
             logout()
             break
           case 403:
-            message.error('没有权限执行此操作')
+            message.error(String(i18n.global.t('errors.forbidden')))
             break
           default:
-            message.error('修改昵称失败')
+            message.error(String(i18n.global.t('errors.nicknameUpdateFailed')))
         }
       }
     }
@@ -352,7 +353,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const token = userInfo.value?.token || localStorage.getItem('token')
       if (!token) {
-        throw new Error('缺少认证信息')
+        throw new Error(String(i18n.global.t('errors.missingAuth')))
       }
       await ApiServer.request({
         method: 'POST',
@@ -367,17 +368,17 @@ export const useUserStore = defineStore('user', () => {
       }else{
         switch(err?.statusCode){
           case 400:
-            message.error('参数有误')
+            message.error(String(i18n.global.t('errors.invalidParams')))
             break
           case 401:
-            message.error('未授权，请重新登录')
+            message.error(String(i18n.global.t('errors.unauthorized')))
             logout()
             break
           case 403:
-            message.error('没有权限执行此操作')
+            message.error(String(i18n.global.t('errors.forbidden')))
             break
           default:
-            message.error('修改头像失败')
+            message.error(String(i18n.global.t('errors.avatarUpdateFailed')))
         }
       }
     }
@@ -387,7 +388,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const token = userInfo.value?.token || localStorage.getItem('token')
       if (!token) {
-        throw new Error('缺少认证信息')
+        throw new Error(String(i18n.global.t('errors.missingAuth')))
       }
 
       await ApiServer.request({
@@ -399,7 +400,7 @@ export const useUserStore = defineStore('user', () => {
         }
       })
 
-      message.success('密码修改成功')
+      message.success(String(i18n.global.t('profile.pwdChanged')))
       return true
     } catch (err: any) {
       if (err?.message && String(err.message).length > 0) {
@@ -407,16 +408,16 @@ export const useUserStore = defineStore('user', () => {
       } else {
         switch (err?.statusCode) {
           case 400:
-            message.error('请求错误，请检查输入')
+            message.error(String(i18n.global.t('errors.requestError')))
             break
           case 401:
-            message.error('原密码错误')
+            message.error(String(i18n.global.t('errors.oldPasswordIncorrect')))
             break
           case 404:
-            message.error('对应用户不存在')
+            message.error(String(i18n.global.t('errors.userNotFound')))
             break
           default:
-            message.error('修改密码失败')
+            message.error(String(i18n.global.t('profile.pwdChangeFailed')))
         }
       }
       return false
@@ -430,7 +431,7 @@ export const useUserStore = defineStore('user', () => {
         url: API.SEND_CODE,
         data: { phone }
       })
-      message.success('验证码已发送')
+      message.success(String(i18n.global.t('login.codeSentSuccess')))
       return true
     } catch (err: any) {
       if (err?.message && String(err.message).length > 0) {
@@ -438,13 +439,13 @@ export const useUserStore = defineStore('user', () => {
       } else {
         switch (err?.statusCode) {
           case 400:
-            message.error('手机号格式错误')
+            message.error(String(i18n.global.t('errors.phoneInvalid')))
             break
           case 429:
-            message.error('请求过于频繁，请稍后再试')
+            message.error(String(i18n.global.t('authErrors.tooManyRequests')))
             break
           default:
-            message.error('发送验证码失败')
+            message.error(String(i18n.global.t('errors.sendCodeFailed')))
         }
       }
       return false
@@ -458,7 +459,7 @@ export const useUserStore = defineStore('user', () => {
         url: API.SEND_EMAIL,
         data: { email }
       })
-      message.success('验证码已发送，请查收邮箱')
+      message.success(String(i18n.global.t('auth.emailCodeSent')))
       return true
     } catch (err: any) {
       if (err?.message && String(err.message).length > 0) {
@@ -466,13 +467,13 @@ export const useUserStore = defineStore('user', () => {
       } else {
         switch (err?.statusCode) {
           case 400:
-            message.error('邮件格式错误')
+            message.error(String(i18n.global.t('authErrors.emailFormat')))
             break
           case 429:
-            message.error('发送邮件过于频繁')
+            message.error(String(i18n.global.t('errors.sendEmailTooOften')))
             break
           default:
-            message.error('验证码发送失败，请稍后重试')
+            message.error(String(i18n.global.t('errors.sendEmailFailed')))
         }
       }
       return false
@@ -483,7 +484,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const token = userInfo.value?.token || localStorage.getItem('token')
       if (!token) {
-        throw new Error('缺少认证信息')
+        throw new Error(String(i18n.global.t('errors.missingAuth')))
       }
 
       await ApiServer.request({
@@ -493,7 +494,7 @@ export const useUserStore = defineStore('user', () => {
       })
 
       updateProfile({ phone })
-      message.success('手机号绑定成功')
+      message.success(String(i18n.global.t('auth.phoneBindSuccess')))
       return true
     } catch (err: any) {
       if (err?.message && String(err.message).length > 0) {
@@ -501,20 +502,20 @@ export const useUserStore = defineStore('user', () => {
       } else {
         switch (err?.statusCode) {
           case 400:
-            message.error('手机号已经注册了')
+            message.error(String(i18n.global.t('errors.phoneAlreadyRegistered')))
             break
           case 401:
-            message.error('未授权，请重新登录')
+            message.error(String(i18n.global.t('errors.unauthorized')))
             logout()
             break
           case 402:
-            message.error('验证码错误')
+            message.error(String(i18n.global.t('authErrors.codeInvalid')))
             break
           case 429:
-            message.error('请求过于频繁，请稍后再试')
+            message.error(String(i18n.global.t('authErrors.tooManyRequests')))
             break
           default:
-            message.error('绑定手机号失败')
+            message.error(String(i18n.global.t('errors.phoneBindFailed')))
         }
       }
       return false

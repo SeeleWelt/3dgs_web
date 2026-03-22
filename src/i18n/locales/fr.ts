@@ -1,4 +1,468 @@
 export default {
+    avatarCropper: {
+      title: "Rogner l'image",
+      okText: "Confirmer",
+      cancelText: "Annuler",
+      flipHorizontal: "Retourner horizontalement",
+      flipVertically: "Retourner verticalement",
+      rotateRight: "Rotation droite 90°",
+      rotateLeft: "Rotation gauche 90°",
+      originalImage: "Original",
+      quality: "Qualité",
+      reset: "Réinitialiser"
+    },
+    embedCode: {
+      title: "Code d'intégration",
+      copyCode: "Copier le code",
+      close: "Fermer",
+      embedCodeLabel: "Code intégrable",
+      embedTip: "Collez le code ci-dessus dans le HTML de votre page web.",
+      noCode: "Aucun code d'intégration disponible",
+      codeCopied: "Code d'intégration copié",
+      copyFailed: "Échec de la copie, veuillez copier manuellement"
+    },
+    customMotion: {
+      title: "Mouvement de caméra personnalisé",
+      previewArea: "Aperçu",
+      loading: "Chargement...{progress}%",
+      loadingSuccess: "Chargé avec succès!",
+      loadingFailed: "Échec du chargement, Veuillez réessayer",
+      retryLoad: "Réessayer le chargement",
+      controlBar: "Barre de contrôle",
+      progressBar: "Barre de progression",
+      play: "Lecture",
+      pause: "Pause",
+      resetView: "Réinitialiser la vue",
+      reset: "Réinitialiser",
+      flightMode: "Basculer le mode vol",
+      orbit: "Orbite",
+      flight: "Vol",
+      flightModeHint: "Mode vol",
+      configArea: "Zone de configuration",
+      camera: "Caméra",
+      keyframes: "Images clés",
+      settings: "Paramètres",
+      currentCameraPosition: "Position actuelle de la caméra",
+      snapshot: "Enregistrer la position actuelle",
+      keyframeCount: "{count}/{max} images clés",
+      duration: "{duration}s",
+      openTrajectory: "Trajectoire ouverte",
+      closedLoop: "Boucle fermée",
+      keyframeList: "Liste d'images clés",
+      selectedKeyframe: "Image {index} actuellement sélectionnée",
+      clickKeyframe: "Cliquez sur l'image clé pour prévisualiser ou modifier",
+      scrollToSort: "La liste permet de défiler indépendamment, faites glisser pour réorganiser",
+      dragToSort: "Glissez pour réorganiser, utilisez les boutons à droite pour prévisualiser, mettre à jour et supprimer",
+      editing: "En cours d'édition",
+      previewing: "En prévisualisation",
+      returnToStart: "Retour au début",
+      toNextFrame: "À l'image suivante:",
+      seconds: "s",
+      preview: "Prévisualiser",
+      updatePosition: "Mettre à jour la position",
+      delete: "Supprimer",
+      noKeyframes: "Aucune image clé",
+      clickSnapshotHint: "Cliquez sur 'Enregistrer la position actuelle' pour ajouter des images clés",
+      motionSettings: "Paramètres de mouvement",
+      interpolation: "Interpolation",
+      linear: "Linéaire",
+      easeIn: "Ease In",
+      easeOut: "Ease Out",
+      easeInOut: "Ease In Out",
+      loopPlay: "Lecture en boucle",
+      closedLoopPlay: "Boucle fermée",
+      autoReturn: "Retour automatique au début",
+      totalDuration: "Durée totale",
+      stopPreview: "Arrêter la prévisualisation",
+      previewTrajectory: "Prévisualiser la trajectoire",
+      cancel: "Annuler",
+      confirm: "Confirmer",
+      noTrajectory: "Aucune trajectoire générée",
+      toastDefault: "Notification",
+      minKeyframesWarning: "Veuillez ajouter au moins 2 images clés",
+      maxKeyframesWarning: "Limite d'images clés atteinte ({max})",
+      unsavedChangesTitle: "Paramètres de mouvement modifiés",
+      unsavedChangesContent: "Les paramètres de mouvement ont changé depuis l'ouverture. Enregistrer les modifications ?",
+      discardChanges: "Ne pas enregistrer",
+      getCanvasFailed: "Impossible d'obtenir le canevas de rendu",
+      initRendererFailed: "Échec de l'initialisation du moteur de rendu : {message}",
+      defaultAnnotation: "Annotation par défaut",
+      keyframeAnnotation: "Image clé {index}"
+    },
+    createMesh: {
+      advancedOptions: "Options avancées",
+      basicInfo: "Informations de base",
+      taskName: "Nom de la tâche",
+      taskNamePlaceholder: "Par défaut: nom du fichier image",
+      modelDescription: "Description du modèle",
+      modelDescPlaceholder: "Optionnel, décrivez le sujet de l'image",
+      generateOptions: "Options de génération",
+      quickReconstruct: "Reconstruction rapide",
+      quickReconstructDesc: "Génération plus rapide, adaptée à l'aperçu rapide",
+      backgroundRemoval: "Suppression de l'arrière-plan",
+      backgroundRemovalDesc: "Séparer automatiquement le sujet",
+      multiViewReconstruct: "Reconstruction multi-vues",
+      multiViewReconstructDesc: "Générer plusieurs vues à partir d'une seule image",
+      instructions: "Instructions",
+      instructionTip: "Utilisez des images avec un arrière-plan propre et un sujet clair.",
+      readImageFailed: "Impossible de lire les dimensions de l'image",
+      onlySupportImage: "Seuls les formats JPG, PNG ou WEBP sont pris en charge",
+      imageTooSmall: "Image trop petite, recommandée ≥ 128x128 pixels",
+      readImageInfoFailed: "Impossible de lire les informations de l'image",
+      uploadInProgress: "Téléversement en cours,veuillez d'abord annuler",
+      selectImageFirst: "Veuillez d'abord sélectionner un fichier image",
+      uploadSuccess: "Téléversement réussi, génération du modèle démarrée",
+      uploadCanceled: "Téléversement annulé",
+      uploadFailed: "Échec du téléversement,veuillez réessayer"
+    },
+    uploadTutorial: {
+      title: "Guide de téléversement",
+      desc: "Apprenez comment prendre des photos pour de meilleurs résultats",
+      tipsTitle: "Conseils photo",
+      tip1Title: "Éclairage suffisant",
+      tip1Desc: "Assurez un bon éclairage, évitez le contre-jour",
+      tip2Title: "Angles multiples",
+      tip2Desc: "Photographiez le sujet sous différents angles",
+      tip3Title: "Prise stable",
+      tip3Desc: "Gardez l'appareil photo stable, évitez le flou",
+      tip4Title: "Arrière-plan simple",
+      tip4Desc: "Choisissez un arrière-plan simple pour mettre en valeur le sujet",
+      uploadPhotos: "Télécharger des photos",
+      viewExamples: "Voir des exemples"
+    },
+    tutorialGuide: {
+      title: "Guide d'utilisation",
+      videoPlaceholder: "La vidéo de démonstration est en préparation...",
+      mustComplete: "Veuillez d'abord terminer le guide",
+      actions: {
+        prev: "Précédent",
+        next: "Suivant",
+        start: "Commencer"
+      },
+      steps: {
+        step1: {
+          title: "Téléverser des médias",
+          description: "Téléversez la vidéo ou les images à reconstruire"
+        },
+        step2: {
+          title: "Renseigner les informations",
+          description: "Définissez le nom de la tâche et la description (optionnel)"
+        },
+        step3: {
+          title: "Configurer les options",
+          description: "Choisissez d'activer ou non la suppression de l'arrière-plan"
+        },
+        step4: {
+          title: "Générer le modèle",
+          description: "Consommez des points et lancez la génération 3D"
+        }
+      }
+    },
+    uploadProgress: {
+      title: "Progression du téléversement",
+      uploading: "Téléversement...",
+      processing: "Traitement...",
+      success: "Terminé",
+      failed: "Échoué",
+      cancel: "Annuler",
+      retry: "Réessayer",
+      uploadSpeed: "Vitesse de téléversement",
+      estimatedTime: "Temps restant estimé",
+      points: {
+        insufficient: "Points insuffisants"
+      },
+      pointsTooltip: {
+        current: "Points actuels : {points}",
+        consumed: "Consommé : -{points}",
+        remaining: "Points restants : {points}"
+      },
+      actions: {
+        advancedOptions: "Options avancées",
+        removeVideo: "Retirer la vidéo",
+        removeImage: "Retirer l'image",
+        removeAllImages: "Retirer toutes les images",
+        cancelUpload: "Annuler l'envoi",
+        startGenerate: "Lancer la génération"
+      },
+      meta: {
+        duration: "Durée {value}",
+        size: "Taille {value}"
+      },
+      fileStatus: {
+        uploading: "Téléversement... {percent}%",
+        pendingHint: "En attente. L'envoi commencera après avoir cliqué sur « Lancer la génération ».",
+        completed: "Envoi terminé",
+        cancelled: "Annulé",
+        failed: "Échec de l'envoi"
+      },
+      image: {
+        selectedCount: "{count} images sélectionnées",
+        expandAll: "Tout afficher",
+        collapse: "Réduire",
+        addMore: "Ajouter d'autres images"
+      },
+      queue: {
+        inProgress: "{count} tâches en cours"
+      },
+      type: {
+        videoTask: "Tâche vidéo",
+        imageTask: "Tâche image",
+        task: "Tâche"
+      },
+      status: {
+        pending: "En attente",
+        uploading: "En cours",
+        success: "Terminé",
+        failed: "Échoué",
+        cancelled: "Annulé"
+      },
+      videoErrors: {
+        playback: "Impossible de lire la vidéo",
+        decode: "Codec vidéo non pris en charge (peut-être H.265/HEVC)",
+        formatNotSupported: "Format vidéo non pris en charge",
+        network: "Échec du chargement de la vidéo, vérifiez le réseau",
+        aborted: "Chargement de la vidéo interrompu"
+      },
+      video: {
+        loading: "Chargement de la vidéo, veuillez patienter...",
+        timeout: "Délai de chargement de la vidéo dépassé",
+        blackScreenWarning: "La vidéo peut ne pas se lire correctement (codec), mais vous pouvez quand même générer le modèle"
+      }
+    },
+    fileUpload: {
+      compact: {
+        desktopHint: "Cliquez ou glissez pour recharger les fichiers",
+        mobileHint: "Touchez pour recharger"
+      },
+      mainText: "Cliquez pour téléverser ou glissez des vidéos/images ici",
+      subText: "Prend en charge les vidéos (mp4, mov, avi, mkv, webm) ou les images (jpg, png, jpeg)",
+      video: {
+        label: "Téléversement vidéo :",
+        formats: "Formats pris en charge : mp4, mov, avi, mkv, webm",
+        duration: "Minimum {min} s, maximum {max} min",
+        onlyOne: "Un seul fichier vidéo à la fois",
+        resolutionLimit: "Limite de résolution : jusqu'à 8K (7680x4320)"
+      },
+      image: {
+        label: "Téléversement image :",
+        formats: "Formats pris en charge : jpg, png, jpeg",
+        count: "Minimum {min} images, maximum {max} images",
+        resolutionLimit: "Limite de résolution : jusqu'à 8K (7680x4320)"
+      },
+      mobileSummary: "Vidéo : {videoMinSec}s~{videoMaxMin}min | Images : {imageMin}~{imageMax}",
+      mobileVideoSummary: "Vidéo : {videoMinSec}s~{videoMaxMin}min, MP4/MOV/AVI/MKV/WEBM",
+      mobileImageSummary: "Images : {imageMin}~{imageMax}, JPG/PNG/JPEG",
+      messages: {
+        mixedTypes: "Les fichiers téléversés ont des types incohérents, veuillez les sélectionner à nouveau"
+      }
+    },
+    emptyStateErrors: {
+      retry: "Recharger",
+      network: {
+        title: "Échec de la connexion réseau",
+        description: "Veuillez vérifier le réseau et réessayer"
+      },
+      server: {
+        title: "Erreur serveur",
+        description: "Le service est temporairement indisponible, veuillez réessayer plus tard"
+      },
+      unknown: {
+        title: "Échec du chargement",
+        description: "Veuillez réessayer plus tard"
+      }
+    },
+    emptyState: {
+      title: "Aucun contenu",
+      description: "Il n'y a rien ici, venez en créer un!",
+      createNow: "Créer maintenant"
+    },
+    createCard: {
+      title: "Créer un nouveau projet",
+      aiScan: "Scan IA",
+      mesh: "Mesh",
+      description: "Sélectionnez la méthode de création"
+    },
+    pointsLogsLite: {
+      title: "Détails des points",
+      date: "Date",
+      type: "Type",
+      amount: "Quantité",
+      balance: "Solde",
+      description: "Description",
+      recharge: "Recharge",
+      consumption: "Consommation",
+      refund: "Remboursement",
+      bonus: "Bonus",
+      noRecords: "Aucun enregistrement"
+    },
+    officialModel: {
+      title: "Modèles officiels",
+      viewModel: "Voir le modèle",
+      createProject: "Créer un projet"
+    },
+    modelCardLite: {
+      viewModel: "Voir le modèle",
+      createProject: "Créer un projet",
+      author: "Auteur",
+      views: "Vues",
+      badges: {
+        new: "Nouveau"
+      }
+    },
+    shareDialog: {
+      title: "Partager",
+      copyLink: "Copier le lien",
+      linkCopied: "Lien copié",
+      shareTo: "Partager sur",
+      embed: "Intégrer",
+      close: "Fermer",
+      copyFailed: "Échec de la copie, veuillez copier manuellement",
+      shareTitle: "Découvrez ce modèle 3D",
+      shareSummary: "Découvrez ce modèle 3D",
+      qqTitle: "Partage de modèle 3D",
+      wechatHint: "Veuillez utiliser WeChat pour scanner et partager",
+      platforms: {
+        wechat: "WeChat",
+        bilibili: "Bilibili",
+        twitter: "X",
+        qq: "QQ",
+        weibo: "Weibo",
+        linkedin: "LinkedIn"
+      }
+    },
+    exportDialog: {
+      title: "Exporter le modèle",
+      formatLabel: "Format d'export",
+      formatPlaceholder: "Sélectionner un format",
+      supportLabel: "Prise en charge :",
+      supportedTip: "PLY, SOG pris en charge",
+      unsupportedTip: "OBJ, FBX, GLTF non pris en charge pour le moment",
+      actions: {
+        close: "Fermer",
+        cancelExport: "Annuler l'export",
+        startExport: "Démarrer l'export"
+      },
+      status: {
+        preparing: "Préparation de l'export...",
+        exporting: "Export de {format}...",
+        completed: "Export terminé",
+        cancelled: "Export annulé",
+        failed: "Échec de l'export"
+      },
+      formats: {
+        ply: "PLY",
+        sog: "SOG",
+        sogUnsupported: "SOG (Non pris en charge)",
+        objUnsupported: "OBJ (Non pris en charge)",
+        fbxUnsupported: "FBX (Non pris en charge)",
+        gltfUnsupported: "GLTF (Non pris en charge)"
+      },
+      messages: {
+        missingTaskId: "ID de tâche manquant, export impossible",
+        formatNotSupported: "Ce format n'est pas pris en charge",
+        exportSuccess: "Modèle exporté avec succès",
+        exportCancelled: "Export annulé",
+        sessionExpired: "Session expirée, reconnectez-vous pour exporter",
+        exportFailed: "Échec de l'export, veuillez réessayer"
+      },
+      errors: {
+        tokenFailed: "Impossible d'obtenir le jeton de téléchargement"
+      }
+    },
+    upgradeSuccess: {
+      title: "Mise à niveau réussie",
+      description: "Vous avez réussi à passer à la version Pro",
+      features: "Avantages de la version Pro",
+      feature1: "Projets illimités",
+      feature2: "Traitement prioritaire",
+      feature3: "Export HD",
+      feature4: "Support exclusif",
+      continue: "Continuer",
+      goPro: "Voir les détails Pro"
+    },
+    socialLogin: {
+      continueWithGoogle: "Continuer avec Google",
+      continueWithApple: "Continuer avec Apple"
+    },
+    phoneAuthLite: {
+      title: "Connexion par téléphone",
+      subtitle: "Veuillez entrer votre numéro de téléphone",
+      phonePlaceholder: "Veuillez entrer le numéro de téléphone",
+      getCode: "Obtenir le code",
+      nextStep: "Suivant",
+      changePhone: "Changer de numéro"
+    },
+    contactUs: {
+      title: "Contactez-nous",
+      email: "E-mail",
+      emailPlaceholder: "votre@email.com",
+      message: "Message",
+      messagePlaceholder: "Veuillez entrer votre message...",
+      submit: "Soumettre",
+      success: "Soumis avec succès",
+      failed: "Échec de la soumission",
+      wechat: {
+        title: "Scanner pour ajouter WeChat",
+        subtitle: "Partenariats / Support avant-vente / Échange de solutions",
+        qrAlt: "QR code WeChat",
+        qrPlaceholder: "QR code indisponible",
+        wechatIdLabel: "ID WeChat",
+        copyWechatId: "Copier l’ID WeChat",
+        copySuccess: "ID WeChat copié",
+        copyFailed: "Échec de la copie, veuillez copier manuellement",
+        note: "Ajoutez une note \"MetaST\""
+      }
+    },
+    wechatQrLogin: {
+      title: "Connexion WeChat par QR",
+      qrAlt: "QR code de connexion WeChat",
+      loading: "Chargement du QR code...",
+      successRedirect: "Connexion réussie ! Redirection...",
+      refresh: "Rafraîchir le QR code",
+      unknownError: "Erreur inconnue",
+      status: {
+        scanToLogin: "Scannez avec WeChat pour vous connecter",
+        fetching: "Récupération du QR code...",
+        fetchFailed: "Échec de récupération du QR code : {msg}",
+        errorMessage: "Erreur : {message}",
+        loginExpired: "Session expirée, veuillez vous reconnecter",
+        tooFrequent: "Trop de requêtes, réessayez plus tard",
+        serverError: "Erreur serveur, réessayez plus tard",
+        networkError: "Erreur réseau, actualisez et réessayez",
+        scannedConfirm: "Scanné. Confirmez la connexion dans WeChat",
+        expired: "QR code expiré, veuillez rafraîchir",
+        cancelled: "Connexion annulée",
+        queryFailed: "Échec de vérification du statut de connexion"
+      }
+    },
+    projects: {
+      title: "Mes projets",
+      all: "Tous",
+      processing: "En cours",
+      completed: "Terminé",
+      failed: "Échoué",
+      empty: "Aucun projet",
+      emptyDesc: "Commencez à créer votre premier projet 3D!",
+      createFirst: "Créer le premier projet",
+      delete: "Supprimer",
+      deleteConfirm: "Voulez-vous vraiment supprimer ce projet?",
+      view: "Voir",
+      download: "Télécharger",
+      share: "Partager"
+    },
+    settings: {
+      title: "Paramètres",
+      account: "Compte",
+      security: "Sécurité",
+      notifications: "Notifications",
+      language: "Langue",
+      theme: "Thème",
+      dark: "Sombre",
+      light: "Clair",
+      system: "Système",
+      save: "Enregistrer",
+      saved: "Enregistré"
+    },
     developerLang: {
       "api": "API", "webhook": "Webhook", "apiKeys": "API Keys", "createApiKey": "Create API Key", "bonusTip": "Bonus upon creation", "securityTip": "Keep secure. Shown only once.", "name": "Name", "key": "Key", "created": "Created at", "rename": "Rename", "delete": "Delete", "noApiKeys": "No API Keys found.", "usageTitle": "Usage", "usageDesc": "API Usage", "totalUsage": "Total usage", "costTooltip": "Cost 1 credit", "costQuestion": "Cost per API call?", "leftCredits": "Remaining credits", "validity": "Permanent validity", "historyTitle": "Credit History", "webhooksTitle": "Webhooks", "addWebhook": "Add Webhook", "editWebhook": "Edit Webhook", "webhookDesc": "Listen to changes", "callbackUrl": "Callback URL", "noWebhooks": "No Webhooks found.", "create": "Create", "cancel": "Cancel", "enterName": "Enter Name", "gotIt": "Got it", "createSuccessModal": "Success", "copy": "Copy", "save": "Save", "add": "Add", "callbackPlaceholder": "Enter URL", "webhookUrlHelp": "URL", "secretHelp": "Secret", "secretMinLength": "Min 6 chars", "secretMaxLength": "Max 50 chars", "invalidDomain": "Invalid domain", "renameModalTitle": "Rename", "newName": "New Name", "enterNewName": "Enter new name", "confirm": "Confirm", "timeColumn": "Time", "reasonColumn": "Reason", "amountColumn": "Amount", "reasonRegister": "Register", "reasonConsume": "Consume", "reasonRefund": "Refund", "reasonRecharge": "Recharge", "reasonUnknown": "Unknown", "currencyUnit": "pts", "createSuccess": "Success", "copySuccess": "Success", "renameSuccess": "Success", "deleteApiKeyTitle": "Delete", "deleteApiKeyContent": "Are you sure?", "deleteSuccess": "Success", "editSuccess": "Success", "deleteWebhookTitle": "Delete", "deleteWebhookContent": "Are you sure?", "deleteWebhookSuccess": "Success"
     },
@@ -75,6 +539,7 @@ export default {
         "statusSlicing": "视频切片中",
         "statusColmap": "COLMAP 重建中",
         "status3dgs": "3DGS 训练中",
+        "statusLightning": "Lightning 快速重建中",
         "statusBgRemoval": "背景去除处理中",
         "statusPaused": "已暂停",
         "statusResuming": "恢复中",
@@ -131,6 +596,7 @@ export default {
     },
     "statusCodes": {
         "title": "状态码",
+        "code": "Code",
         "desc": "HTTP 状态码说明。",
         "meaning": "含义",
         "scDesc": "说明",
@@ -174,7 +640,9 @@ export default {
       logout: 'Déconnexion',
       logoutConfirm: 'Êtes-vous sûr de vouloir vous déconnecter ?',
       selectLanguage: 'Choisir la langue',
-      regularAccount: 'Compte Standard'
+      regularAccount: 'Compte Standard',
+      contactUsCta: 'Contactez-nous pour des crédits',
+      developer: 'Centre développeur'
     },
     sidebar: {
       webVersion: 'Web',
@@ -190,6 +658,8 @@ export default {
       tutorial: 'Tutoriel',
       settings: 'Paramètres',
       feedback: 'Retour',
+      invite: "Lien d'invitation",
+      developer: 'Centre développeur',
       downloadApp: 'Télécharger l\'App',
       joinCommunity: 'Rejoindre la Communauté'
     },
@@ -205,8 +675,57 @@ export default {
       gs3d: '3DGS',
       gs4d: '4DGS',
       search: 'Rechercher',
+      searchPlaceholder: 'Rechercher par nom d\'œuvre ou description',
+      searchEmptyTitle: 'Aucun résultat correspondant',
+      searchEmptyDesc: 'Essayez un mot-clé plus court ou d\'autres mots du nom/de la description',
       select: 'Sélectionner',
-      emptyText: 'Que diriez-vous de créer un projet maintenant ?'
+      emptyText: 'Que diriez-vous de créer un projet maintenant ?',
+      demo: {
+        meshTaskName: 'Reconstruction 3D de jardin extérieur',
+        meshTaskDesc: 'Scène de jardin extérieur avec fleurs, bancs et clôtures, reconstruction 3D en haute définition',
+      }
+    },
+    homeBatch: {
+      selectAll: 'Tout sélectionner',
+      selectedCount: '{count} sélectionné(s)',
+      pauseAction: 'Suspendre la sélection',
+      startAction: 'Démarrer la sélection',
+      exportAction: 'Exporter la sélection',
+      deleteAction: 'Supprimer la sélection',
+      exit: 'Quitter',
+      exportModalTitle: 'Export en lot',
+      exportFormatLabel: 'Format d\'export',
+      exportFormatPlaceholder: 'Veuillez choisir un format d\'export',
+      exportSupportLabel: 'Prise en charge :',
+      exportSupportOk: 'PLY et SOG disponibles',
+      exportSupportDisabled: 'OBJ, FBX et GLTF ne sont pas encore pris en charge',
+      exportStart: 'Démarrer l\'export',
+      exportingItem: 'Export en cours {current}/{total} : {name}',
+      exportFailed: 'Échec de l\'export : {taskId}',
+      formats: {
+        objNotSupported: 'OBJ (non pris en charge)',
+        fbxNotSupported: 'FBX (non pris en charge)',
+        gltfNotSupported: 'GLTF (non pris en charge)',
+      },
+      noPausableTasks: 'Aucune tâche à suspendre',
+      pauseConfirmTitle: 'Confirmer la pause en lot',
+      pauseConfirmContent: 'Suspendre les {count} tâches sélectionnées ?',
+      pauseSuccess: '{count} tâches suspendues avec succès',
+      noStartableTasks: 'Aucune tâche à démarrer',
+      startConfirmTitle: 'Confirmer le démarrage en lot',
+      startConfirmContent: 'Démarrer les {count} tâches sélectionnées ?',
+      startSuccess: '{count} tâches démarrées avec succès',
+      selectExportFirst: 'Veuillez d\'abord sélectionner des tâches à exporter',
+      exportPreparing: 'Préparation de l\'export...',
+      exportTokenFailed: 'Impossible d\'obtenir le jeton de téléchargement : {taskId}',
+      exportCancelled: 'Export annulé',
+      exportCompleted: 'Export terminé, réussite {success}/{total}',
+      exportSuccess: '{count} tâches exportées avec succès',
+      selectDeleteFirst: 'Veuillez d\'abord sélectionner des tâches à supprimer',
+      deleteConfirmTitle: 'Confirmer la suppression en lot',
+      deleteConfirmContent: 'Supprimer les {count} tâches sélectionnées ? Cette action est irréversible.',
+      confirmDelete: 'Confirmer la suppression',
+      deleteSuccess: '{count} tâches supprimées avec succès'
     },
     explore: {
       ai3dModels: 'Modèles 3D générés par IA',
@@ -218,7 +737,53 @@ export default {
       discordTitle: 'Rejoindre la communauté Discord',
       discordDesc: 'Discutez avec d\'autres utilisateurs MetaST et posez des questions aux développeurs',
       watchLater: 'Regarder plus tard',
-      share: 'Partager'
+      share: 'Partager',
+      untitledModel: 'Modèle sans titre',
+      noDescription: 'Aucune description',
+      unknown: 'Inconnu',
+      demo: {
+        meshModel1: {
+          title: 'Le Vagabond',
+          description: 'Le Vagabond'
+        }
+      },
+      examples: {
+        gardenCourtyard: {
+          title: 'Cour de jardin',
+          description: 'Reconstruction de pierres et de plantes en extérieur'
+        },
+        robotFigure: {
+          title: 'Figurine robot',
+          description: 'Modèle de personnage hard-surface très détaillé'
+        },
+        vintageCamera: {
+          title: 'Appareil photo vintage',
+          description: 'Scan d\'objet de bureau avec détails de texture métallique'
+        },
+        streetCorner: {
+          title: 'Coin de rue',
+          description: 'Scène urbaine avec enseignes et façades'
+        },
+        sportsCar: {
+          title: 'Voiture de sport',
+          description: 'Présentation de l\'extérieur et de l\'intérieur'
+        },
+        ancientVase: {
+          title: 'Vase ancien',
+          description: 'Objet de musée avec motifs sculptés'
+        }
+      }
+    },
+    exploreSection: {
+      title: 'Explorer les œuvres communautaires',
+      modelNames: {
+        whiteTiger: 'Sculpture de tigre blanc',
+        oldTrain: 'Ancien train',
+        castle: 'Ruines de château',
+        electricGuitar: 'Guitare électrique',
+        rockSpecimen: 'Échantillon de roche',
+        vintageCamera: 'Appareil photo vintage'
+      }
     },
     login: {
       welcome: 'Bienvenue sur MetaST Engine Web',
@@ -297,7 +862,16 @@ export default {
     },
     create: {
       title: 'Téléchargez vos photos ou vidéos pour générer votre modèle !',
-      subtitle: 'Conseil pro : Lors de la capture d\'objets ou de scènes, il est toujours recommandé de photographier sous différents angles'
+      subtitle: 'Conseil pro : Lors de la capture d\'objets ou de scènes, il est toujours recommandé de photographier sous différents angles',
+      imageUploadConsistencyTip: 'Pour les images : faites le tour de l’objet en le photographiant et évitez de le faire tourner. Utilisez de préférence le même appareil, la même focale, ainsi qu’un format et une résolution cohérents.',
+      help: {
+        button: 'Aide',
+        title: 'Mode d’emploi',
+        supportedFormats: 'Formats pris en charge :',
+        imageSpec: '• Images : {minImages}-{maxImages}, JPG/PNG',
+        videoSpec: '• Vidéo : 30 s à 3 min, MP4/MOV',
+        qualityTip: 'Utilisez des contenus nets et bien éclairés pour de meilleurs résultats.'
+      }
     },
     profile: {
       editAvatar: 'Modifier l\'avatar',
@@ -306,13 +880,23 @@ export default {
       editNickname: 'Modifier le surnom',
       accountStats: 'Statistiques du compte',
       phone: 'Téléphone',
+      email: 'E-mail',
+      username: 'Nom d\'utilisateur',
       lastLogin: 'Dernière connexion',
       accountStatus: 'Statut du compte',
       active: 'Actif',
+      lastActive: '{time} actif',
+      points: 'Points de calcul',
+      accountOverview: 'Aperçu du compte',
+      workCount: 'Œuvres',
+      favoriteCount: 'Favoris',
+      shareCount: 'Partages',
       accountSecurity: 'Sécurité du compte',
       personalDetails: 'Détails personnels',
       nickname: 'Surnom',
+      notSet: 'Non défini',
       accountSettings: 'Paramètres du compte',
+      notifications: 'Notifications',
       changePassword: 'Changer le mot de passe',
       enterNickname: 'Entrer le surnom',
       saveSuccess: 'Enregistré avec succès',
@@ -328,9 +912,47 @@ export default {
       oldPwdRequired: 'Veuillez entrer l\'ancien mot de passe',
       newPwdRequired: 'Veuillez entrer le nouveau mot de passe',
       pwdLength: 'Le mot de passe doit contenir au moins 6 caractères',
+      confirmPwdRequired: 'Veuillez confirmer le nouveau mot de passe',
+      pwdLengthRule: 'Le mot de passe doit contenir 8 à 16 caractères',
+      pwdComplexityRule: 'Le mot de passe doit contenir des majuscules, minuscules et chiffres',
       pwdNotMatch: 'Les mots de passe ne correspondent pas',
       pwdChanged: 'Mot de passe changé avec succès',
-      pwdChangeFailed: 'Échec du changement de mot de passe'
+      pwdChangeFailed: 'Échec du changement de mot de passe',
+      phoneRequired: 'Veuillez entrer un numéro de téléphone',
+      phoneInvalid: 'Veuillez entrer un numéro de téléphone valide',
+      emailRequired: 'Veuillez entrer une adresse e-mail',
+      emailInvalid: 'Veuillez entrer une adresse e-mail valide',
+      code6Required: 'Veuillez entrer le code de vérification à 6 chiffres',
+      bindPhone: 'Associer le téléphone',
+      bindEmail: 'Associer l\'e-mail',
+      bindPhoneTitle: 'Associer le numéro de téléphone',
+      bindEmailTitle: 'Associer l\'e-mail',
+      phoneBound: 'Téléphone associé',
+      emailBound: 'E-mail associé',
+      bound: 'Associé',
+      unbound: 'Non associé',
+      quickActions: 'Actions rapides',
+      editNicknameAction: 'Modifier le surnom',
+      changeAvatar: 'Changer l\'avatar',
+      pointsHistory: 'Historique des points',
+      resendCode: 'Renvoyer le code',
+      emailPlaceholder: 'Veuillez entrer votre adresse e-mail',
+      bindEmailNotAvailable: 'La liaison d\'e-mail n\'est pas encore disponible en phase de test',
+      bindEmailDemoOnly: 'La soumission de liaison d\'e-mail n\'est pas encore disponible. Ceci est une démonstration',
+      bindEmailSubmitNotAvailable: 'L\'API de liaison d\'e-mail n\'est pas encore disponible',
+      status: {
+        banned: 'Banni',
+        normal: 'Normal',
+        deactivating: 'Désactivation en cours',
+        deactivated: 'Désactivé',
+        unknown: 'Inconnu',
+      },
+      time: {
+        justNow: 'À l\'instant',
+        minutesAgo: 'il y a {n} min',
+        hoursAgo: 'il y a {n} h',
+        daysAgo: 'il y a {n} jour(s)',
+      },
     },
     feedbackLang: {
       contact: 'Contact',
@@ -350,8 +972,207 @@ export default {
       submitFail: 'Échec de la soumission',
       networkError: 'Erreur réseau'
     },
+    routes: {
+      login: 'Connexion',
+      home: 'Accueil',
+      projects: 'Projets',
+      explore: 'Explorer',
+      explore4d: 'Explorer 4D',
+      profile: 'Profil',
+      invite: "Lien d'invitation",
+      settings: 'Paramètres',
+      api: 'API',
+      developer: 'Centre développeur',
+      tutorial: 'Tutoriel',
+      feedback: 'Retour',
+      create: 'Créer',
+      createMeshScan: 'Scan Mesh',
+      create3dgsScan: 'Scan 3DGS',
+      shareLink: 'Lien de partage',
+      modelDetail: 'Détails du modèle',
+      officialModelDetail: 'Détails du modèle officiel',
+      aiModelDetail: 'Détails du modèle IA',
+      notFound: 'Page introuvable'
+    },
+    welcome: {
+      title: 'Bon retour 👋',
+      subtitle: 'Commencez à créer votre modèle 3D et donnez vie à vos idées'
+    },
+    auth: {
+      logoutSuccess: 'Déconnexion réussie',
+      logoutFailed: 'Échec de la déconnexion',
+      emailCodeSent: 'Code envoyé, veuillez vérifier votre e-mail',
+      phoneBindSuccess: 'Numéro de téléphone lié avec succès'
+    },
+    authErrors: {
+      emailFormat: 'Format d’e-mail invalide',
+      invalidCredentials: 'E-mail ou mot de passe incorrect',
+      tooManyRequests: 'Trop de requêtes, veuillez réessayer plus tard',
+      accountBanned: 'Le compte a été banni',
+      accountDeactivated: 'Le compte a été désactivé',
+      loginFailedGeneric: 'Échec de la connexion, veuillez vérifier votre e-mail et mot de passe',
+      codeInvalidOrExpired: 'Code invalide ou expiré',
+      emailAlreadyRegistered: 'E-mail déjà enregistré',
+      passwordComplexity: 'Le mot de passe doit comporter au moins 8 caractères et inclure des majuscules, minuscules et chiffres',
+      registerFailedGeneric: 'Échec de l’inscription, veuillez réessayer plus tard',
+      codeInvalid: 'Code de vérification invalide',
+      phoneLoginFailed: 'Échec de la connexion par téléphone'
+    },
+    errors: {
+      missingAuth: 'Informations d’authentification manquantes',
+      invalidParams: 'Paramètres invalides',
+      sessionExpired: 'Non connecté ou session expirée, veuillez vous reconnecter',
+      unauthorized: 'Non autorisé, veuillez vous reconnecter',
+      forbidden: 'Vous n’avez pas la permission d’effectuer cette action',
+      nicknameUpdateFailed: 'Échec de la mise à jour du surnom',
+      avatarUpdateFailed: 'Échec de la mise à jour de l’avatar',
+      requestError: 'Erreur de requête, veuillez vérifier votre saisie',
+      oldPasswordIncorrect: 'Ancien mot de passe incorrect',
+      userNotFound: 'Utilisateur introuvable',
+      phoneInvalid: 'Format de numéro de téléphone invalide',
+      sendCodeFailed: 'Échec de l’envoi du code',
+      sendEmailTooOften: 'Trop d’e-mails envoyés, veuillez réessayer plus tard',
+      sendEmailFailed: 'Échec de l’envoi du code, veuillez réessayer plus tard',
+      phoneAlreadyRegistered: 'Numéro de téléphone déjà enregistré',
+      phoneBindFailed: 'Échec de l’association du numéro de téléphone'
+    },
+    imageUpload: {
+      mainText: "Cliquez pour téléverser ou faites glisser une image dans cette zone",
+      subText: "Une seule image est prise en charge. Une nouvelle sélection remplacera le fichier actuel",
+      label: "Téléversement d'image :",
+      formats: 'Formats pris en charge : jpg, png, webp',
+      recommendedSize: 'Taille recommandée : au moins 512x512 pixels',
+      onlyOne: 'Une seule image par téléversement'
+    },
+    pointsLogs: {
+      title: 'Détails des points',
+      loading: 'Chargement...',
+      retry: 'Recharger',
+      balanceTitle: 'Solde des points',
+      totalEarnedMobile: 'Total +{total}',
+      recordCountMobile: '{count} enregistrements',
+      recentCount: '{count} derniers',
+      changeRecords: 'Historique des changements',
+      heroKicker: 'META·ST / LEDGER',
+      heroTitle: 'Historique des points',
+      heroDescription: 'Consultez chaque variation clairement et filtrez rapidement',
+      currentBalance: 'Solde actuel',
+      totalEarned: 'Total obtenu',
+      recordCount: "Nombre d'enregistrements",
+      displayScope: 'Plage affichée',
+      showingRecentOnly: 'Seuls les {count} derniers enregistrements sont affichés',
+      loadFailed: 'Échec du chargement des données. Veuillez réessayer plus tard',
+      date: 'Date',
+      type: 'Type',
+      amount: 'Quantité',
+      balance: 'Solde',
+      description: 'Description',
+      recharge: 'Recharge',
+      consumption: 'Consommation',
+      refund: 'Remboursement',
+      bonus: 'Bonus',
+      noRecords: 'Aucun enregistrement'
+    },
+    modelCard: {
+      viewModel: 'Voir le modèle',
+      createProject: 'Créer un projet',
+      author: 'Auteur',
+      views: 'Vues',
+      badges: {
+        new: 'Nouveau'
+      },
+      queueBadge: 'Dans la file · {count} tâches',
+      reviewRejected: 'Vérification refusée',
+      viewDetails: 'Voir les détails',
+      deleteConfirm: 'Supprimer ce modèle ?',
+      delete: 'Supprimer',
+      untitledTask: 'Tâche sans nom',
+      workDescription: 'Description',
+      noDescription: 'Aucune description',
+      workStats: "Données de l'œuvre",
+      techSpecs: 'Paramètres techniques',
+      unknownError: 'Erreur inconnue',
+      unknown: 'Inconnu',
+      reviewViolation: "Ce contenu contient des informations non conformes et n'a pas été approuvé",
+      stats: {
+        views: 'Vues',
+        downloads: 'Téléchargements',
+        shares: 'Partages'
+      },
+      fields: {
+        status: 'Statut',
+        startedAt: 'Heure de début',
+        finishedAt: 'Heure de fin',
+        errorReason: "Cause de l'erreur",
+        reviewResult: 'Résultat de vérification',
+        frameCount: "Nombre d'images"
+      },
+      status: {
+        received: 'Reçu',
+        slicing: 'Extraction des images',
+        reconstructingColmap: 'Reconstruction COLMAP',
+        reconstructing3dgs: 'Entraînement 3DGS',
+        reconstructingLightning: 'Reconstruction rapide',
+        processingBgRemoval: "Suppression de l'arrière-plan",
+        paused: 'En pause',
+        resuming: 'Reprise',
+        completed: 'Terminé',
+        failed: 'Échec',
+        processing: 'En cours'
+      },
+      actions: {
+        start: 'Démarrer',
+        starting: 'Démarrage...',
+        pause: 'Pause',
+        pausing: 'Mise en pause...'
+      },
+      messages: {
+        taskFailed: 'La tâche a échoué. Veuillez cliquer sur redémarrer',
+        reviewBlocked: "Cette tâche n'a pas passé la vérification et ne peut pas être affichée",
+        processing: 'La tâche est en cours et sera disponible une fois terminée',
+        resumeSuccess: 'Tâche redémarrée',
+        resumeFailed: 'Échec du redémarrage. Veuillez réessayer plus tard',
+        pauseSuccess: 'Tâche mise en pause',
+        pauseFailed: 'Échec de la mise en pause. Veuillez réessayer plus tard',
+        deleteSuccess: 'Modèle supprimé',
+        deleteFailed: 'Échec de la suppression. Veuillez réessayer plus tard'
+      }
+    },
+    phoneAuth: {
+      title: 'Connexion par téléphone',
+      subtitle: 'Veuillez saisir votre numéro de téléphone',
+      phonePlaceholder: 'Veuillez saisir votre numéro de téléphone',
+      getCode: 'Obtenir le code',
+      nextStep: 'Suivant',
+      changePhone: 'Changer de numéro',
+      backToEdit: 'Retour à la modification',
+      resendAfter: 'Renvoyer dans {seconds}s',
+      submitVerification: 'Vérifier',
+      requiredPhone: 'Veuillez saisir votre numéro de téléphone',
+      requestErrors: {
+        badRequest: 'Erreur de requête. Veuillez vérifier votre saisie',
+        unauthorized: 'Non autorisé. Veuillez vous reconnecter',
+        invalidCode: 'Code de vérification incorrect',
+        tooManyRequests: 'Trop de requêtes. Veuillez réessayer plus tard',
+        serverError: 'Erreur du serveur. Veuillez réessayer plus tard'
+      },
+      invalidPhoneByRegion: {
+        cn: 'Veuillez saisir un numéro de mobile valide de Chine continentale',
+        us: 'Veuillez saisir un numéro de téléphone valide des États-Unis',
+        uk: 'Veuillez saisir un numéro de téléphone valide du Royaume-Uni',
+        jp: 'Veuillez saisir un numéro de téléphone valide du Japon',
+        de: 'Veuillez saisir un numéro de téléphone valide d’Allemagne',
+        fr: 'Veuillez saisir un numéro de téléphone valide de France',
+        ru: 'Veuillez saisir un numéro de téléphone valide de Russie',
+        es: 'Veuillez saisir un numéro de téléphone valide d’Espagne'
+      }
+    },
     common: {
       confirm: 'Confirmer',
-      cancel: 'Annuler'
+      close: 'Fermer',
+      cancel: 'Annuler',
+      loading: 'Chargement',
+      pro: 'PRO',
+      comingSoon: 'Bientôt disponible'
     }
   };

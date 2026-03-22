@@ -1,4 +1,468 @@
 export default {
+    avatarCropper: {
+      title: "画像をトリミング",
+      okText: "確認",
+      cancelText: "キャンセル",
+      flipHorizontal: "水平反転",
+      flipVertically: "垂直反転",
+      rotateRight: "右に90°回転",
+      rotateLeft: "左に90°回転",
+      originalImage: "元画像",
+      quality: "品質",
+      reset: "リセット"
+    },
+    embedCode: {
+      title: "埋め込みコード",
+      copyCode: "コードをコピー",
+      close: "閉じる",
+      embedCodeLabel: "ウェブサイト埋め込みコード",
+      embedTip: "上記のコードをウェブサイトのHTMLに貼り付けてください。",
+      noCode: "埋め込みコードがありません",
+      codeCopied: "埋め込みコードをコピーしました",
+      copyFailed: "コピーに失敗しました。手動でコピーしてください"
+    },
+    customMotion: {
+      title: "カスタムカメラアニメーション",
+      previewArea: "プレビューエリア",
+      loading: "読み込み中...{progress}%",
+      loadingSuccess: "読み込み成功！",
+      loadingFailed: "読み込み失敗。再試行してください",
+      retryLoad: "再読み込み",
+      controlBar: "コントロールバー",
+      progressBar: "プログレスバー",
+      play: "再生",
+      pause: "一時停止",
+      resetView: "ビューをリセット",
+      reset: "リセット",
+      flightMode: "飛行モード切替",
+      orbit: "軌道",
+      flight: "飛行",
+      flightModeHint: "飛行モード",
+      configArea: "設定エリア",
+      camera: "カメラ",
+      keyframes: "キーフレーム",
+      settings: "設定",
+      currentCameraPosition: "現在のカメラ位置",
+      snapshot: "現在位置を保存",
+      keyframeCount: "{count}/{max} キーフレーム",
+      duration: "{duration}秒",
+      openTrajectory: "オープントラjectory",
+      closedLoop: "クローズドループ",
+      keyframeList: "キーフレームリスト",
+      selectedKeyframe: "現在選択されているフレーム {index}",
+      clickKeyframe: "キーフレームをクリックしてプレビューまたは編集",
+      scrollToSort: "リストは独立してスクロール可能、ドラッグで並べ替え",
+      dragToSort: "ドラッグで並べ替え、右のボタンでプレビュー、更新、削除",
+      editing: "編集中",
+      previewing: "プレビュー中",
+      returnToStart: "開始点に戻る",
+      toNextFrame: "次のフレームへ:",
+      seconds: "秒",
+      preview: "プレビュー",
+      updatePosition: "位置を更新",
+      delete: "削除",
+      noKeyframes: "キーフレームがありません",
+      clickSnapshotHint: "「現在位置を保存」をクリックしてキーフレームを追加",
+      motionSettings: "アニメーション設定",
+      interpolation: "補間方法",
+      linear: "リニア",
+      easeIn: "イーズイン",
+      easeOut: "イーズアウト",
+      easeInOut: "イーズインアウト",
+      loopPlay: "ループ再生",
+      closedLoopPlay: "クローズドループ再生",
+      autoReturn: "開始点に自動戻る",
+      totalDuration: "合計時間",
+      stopPreview: "プレビューを停止",
+      previewTrajectory: "軌道をプレビュー",
+      cancel: "キャンセル",
+      confirm: "確認",
+      noTrajectory: "軌道が生成されていません",
+      toastDefault: "操作通知",
+      minKeyframesWarning: "少なくとも2つのキーフレームを追加してください",
+      maxKeyframesWarning: "キーフレーム数が上限に達しました ({max})",
+      unsavedChangesTitle: "カメラモーション設定が変更されました",
+      unsavedChangesContent: "開いた後にカメラモーション設定が変更されました。変更を保存しますか？",
+      discardChanges: "保存しない",
+      getCanvasFailed: "レンダーキャンバスの取得に失敗しました",
+      initRendererFailed: "レンダラーの初期化に失敗しました: {message}",
+      defaultAnnotation: "デフォルト注釈",
+      keyframeAnnotation: "キーフレーム {index}"
+    },
+    createMesh: {
+      advancedOptions: "高度なオプション",
+      basicInfo: "基本情報",
+      taskName: "タスク名",
+      taskNamePlaceholder: "デフォルト: 画像ファイル名",
+      modelDescription: "モデル説明",
+      modelDescPlaceholder: "任意、画像内の被写体を説明",
+      generateOptions: "生成オプション",
+      quickReconstruct: "クイック再構成",
+      quickReconstructDesc: "より高速な生成、クイックプレビューに最適",
+      backgroundRemoval: "背景削除",
+      backgroundRemovalDesc: "被写体を自動的に分離",
+      multiViewReconstruct: "マルチビュー再構成",
+      multiViewReconstructDesc: "単一画像から複数ビューを生成",
+      instructions: "説明",
+      instructionTip: "背景がシンプル で被写体が明確な画像を使用してください。",
+      readImageFailed: "画像の寸法を読み取れませんでした",
+      onlySupportImage: "JPG、PNG、またはWEBPのみサポート",
+      imageTooSmall: "画像が小さすぎます、128x128ピクセル以上を推奨",
+      readImageInfoFailed: "画像情報を読み取れませんでした",
+      uploadInProgress: "アップロード中、まずキャンセルしてください",
+      selectImageFirst: "まず画像ファイルを選択してください",
+      uploadSuccess: "アップロード成功、モデル生成を開始しました",
+      uploadCanceled: "アップロードがキャンセルされました",
+      uploadFailed: "アップロード失敗。再試行してください"
+    },
+    uploadTutorial: {
+      title: "アップロードチュートリアル",
+      desc: "ベストな結果を得るための写真の撮り方を学ぶ",
+      tipsTitle: "撮影のヒント",
+      tip1Title: "十分な明るさ",
+      tip1Desc: "良い照明を確保し、逆光を避けてください",
+      tip2Title: "複数の角度",
+      tip2Desc: "被写体を様々な角度から撮影、360度をカバー",
+      tip3Title: "安定した撮影",
+      tip3Desc: "カメラを安定させ、ブレを避ける",
+      tip4Title: "シンプルな背景",
+      tip4Desc: "シンプルな背景を選び、被写体を際立たせる",
+      uploadPhotos: "写真をアップロード",
+      viewExamples: "例を見る"
+    },
+    tutorialGuide: {
+      title: "使い方ガイド",
+      videoPlaceholder: "デモ動画を準備中です...",
+      mustComplete: "先にガイドを完了してください",
+      actions: {
+        prev: "前へ",
+        next: "次へ",
+        start: "開始"
+      },
+      steps: {
+        step1: {
+          title: "動画/画像をアップロード",
+          description: "再構築する動画または画像素材をアップロードします"
+        },
+        step2: {
+          title: "基本情報を入力",
+          description: "タスク名とモデル説明（任意）を設定します"
+        },
+        step3: {
+          title: "生成オプションを設定",
+          description: "背景除去を有効にするか選択します"
+        },
+        step4: {
+          title: "生成開始",
+          description: "ポイントを消費してAI 3Dモデル生成を開始します"
+        }
+      }
+    },
+    uploadProgress: {
+      title: "アップロード進捗",
+      uploading: "アップロード中...",
+      processing: "処理中...",
+      success: "完了",
+      failed: "失敗",
+      cancel: "キャンセル",
+      retry: "再試行",
+      uploadSpeed: "アップロード速度",
+      estimatedTime: "残り時間",
+      points: {
+        insufficient: "算力点が不足しています"
+      },
+      pointsTooltip: {
+        current: "現在の算力点: {points}",
+        consumed: "今回消費: -{points}",
+        remaining: "残り算力点: {points}"
+      },
+      actions: {
+        advancedOptions: "詳細オプション",
+        removeVideo: "動画を削除",
+        removeImage: "画像を削除",
+        removeAllImages: "画像をすべて削除",
+        cancelUpload: "アップロードをキャンセル",
+        startGenerate: "モデル生成を開始"
+      },
+      meta: {
+        duration: "長さ {value}",
+        size: "サイズ {value}"
+      },
+      fileStatus: {
+        uploading: "アップロード中... {percent}%",
+        pendingHint: "待機中。「モデル生成を開始」をクリックするとアップロードします",
+        completed: "アップロード完了",
+        cancelled: "キャンセル済み",
+        failed: "アップロード失敗"
+      },
+      image: {
+        selectedCount: "画像を{count}枚選択",
+        expandAll: "すべて表示",
+        collapse: "折りたたむ",
+        addMore: "画像を追加"
+      },
+      queue: {
+        inProgress: "{count}件のタスクが進行中"
+      },
+      type: {
+        videoTask: "動画タスク",
+        imageTask: "画像タスク",
+        task: "タスク"
+      },
+      status: {
+        pending: "待機中",
+        uploading: "アップロード中",
+        success: "完了",
+        failed: "失敗",
+        cancelled: "キャンセル"
+      },
+      videoErrors: {
+        playback: "動画を再生できません",
+        decode: "動画コーデック非対応（H.265/HEVC の可能性）",
+        formatNotSupported: "動画形式が非対応です",
+        network: "動画の読み込みに失敗しました。ネットワークを確認してください",
+        aborted: "動画の読み込みが中断されました"
+      },
+      video: {
+        loading: "動画を読み込み中です。しばらくお待ちください...",
+        timeout: "動画の読み込みがタイムアウトしました",
+        blackScreenWarning: "動画が正常に再生できない可能性があります（コーデック）。モデル生成は可能です"
+      }
+    },
+    fileUpload: {
+      compact: {
+        desktopHint: "クリックまたはドラッグして再アップロード",
+        mobileHint: "タップして再アップロード"
+      },
+      mainText: "クリックしてアップロード、または動画/画像をここにドラッグ",
+      subText: "動画（mp4, mov, avi, mkv, webm）または画像（jpg, png, jpeg）に対応",
+      video: {
+        label: "動画アップロード：",
+        formats: "対応形式：mp4, mov, avi, mkv, webm",
+        duration: "最短 {min} 秒、最長 {max} 分",
+        onlyOne: "1回のアップロードで動画は1本まで",
+        resolutionLimit: "解像度上限：8K（7680x4320）以下"
+      },
+      image: {
+        label: "画像アップロード：",
+        formats: "対応形式：jpg, png, jpeg",
+        count: "最少 {min} 枚、最多 {max} 枚",
+        resolutionLimit: "解像度上限：8K（7680x4320）以下"
+      },
+      mobileSummary: "動画：{videoMinSec}秒~{videoMaxMin}分 | 画像：{imageMin}~{imageMax}枚",
+      mobileVideoSummary: "動画：{videoMinSec}秒~{videoMaxMin}分、MP4/MOV/AVI/MKV/WEBM",
+      mobileImageSummary: "画像：{imageMin}~{imageMax}枚、JPG/PNG/JPEG",
+      messages: {
+        mixedTypes: "アップロードしたファイルの種類が一致しません。選び直してください"
+      }
+    },
+    emptyStateErrors: {
+      retry: "再読み込み",
+      network: {
+        title: "ネットワーク接続に失敗しました",
+        description: "ネットワークを確認して再試行してください"
+      },
+      server: {
+        title: "サーバーエラー",
+        description: "サービスは一時的に利用できません。しばらくしてから再試行してください"
+      },
+      unknown: {
+        title: "読み込み失敗",
+        description: "しばらくしてから再試行してください"
+      }
+    },
+    emptyState: {
+      title: "コンテンツなし",
+      description: "まだ何もありません。作成してみましょう！",
+      createNow: "今すぐ作成"
+    },
+    createCard: {
+      title: "新規プロジェクト作成",
+      aiScan: "AIスキャン",
+      mesh: "メッシュ",
+      description: "作成方法を選択"
+    },
+    pointsLogsLite: {
+      title: "ポイント詳細",
+      date: "日付",
+      type: "タイプ",
+      amount: "量",
+      balance: "残高",
+      description: "説明",
+      recharge: "チャージ",
+      consumption: "消費",
+      refund: "返金",
+      bonus: "ボーナス",
+      noRecords: "記録なし"
+    },
+    officialModel: {
+      title: "公式モデル",
+      viewModel: "モデルを見る",
+      createProject: "プロジェクト作成"
+    },
+    modelCardLite: {
+      viewModel: "モデルを見る",
+      createProject: "プロジェクト作成",
+      author: "作者",
+      views: "閲覧数",
+      badges: {
+        new: "新規"
+      }
+    },
+    shareDialog: {
+      title: "共有",
+      copyLink: "リンクをコピー",
+      linkCopied: "リンクをコピーしました",
+      shareTo: "共有先",
+      embed: "埋め込み",
+      close: "閉じる",
+      copyFailed: "コピーに失敗しました。手動でコピーしてください",
+      shareTitle: "この3Dモデルを見てください",
+      shareSummary: "この3Dモデルを見てください",
+      qqTitle: "3Dモデル共有",
+      wechatHint: "WeChatでスキャンして共有してください",
+      platforms: {
+        wechat: "WeChat",
+        bilibili: "Bilibili",
+        twitter: "X",
+        qq: "QQ",
+        weibo: "Weibo",
+        linkedin: "LinkedIn"
+      }
+    },
+    exportDialog: {
+      title: "モデルをエクスポート",
+      formatLabel: "エクスポート形式",
+      formatPlaceholder: "形式を選択",
+      supportLabel: "対応：",
+      supportedTip: "PLY、SOG はエクスポート可能",
+      unsupportedTip: "OBJ、FBX、GLTF は未対応",
+      actions: {
+        close: "閉じる",
+        cancelExport: "エクスポートをキャンセル",
+        startExport: "エクスポート開始"
+      },
+      status: {
+        preparing: "エクスポートを準備中...",
+        exporting: "{format} をエクスポート中...",
+        completed: "エクスポート完了",
+        cancelled: "エクスポートをキャンセルしました",
+        failed: "エクスポート失敗"
+      },
+      formats: {
+        ply: "PLY",
+        sog: "SOG",
+        sogUnsupported: "SOG（未対応）",
+        objUnsupported: "OBJ（未対応）",
+        fbxUnsupported: "FBX（未対応）",
+        gltfUnsupported: "GLTF（未対応）"
+      },
+      messages: {
+        missingTaskId: "タスクIDがありません。エクスポートできません",
+        formatNotSupported: "この形式はエクスポート未対応です",
+        exportSuccess: "モデルのエクスポートに成功しました",
+        exportCancelled: "エクスポートをキャンセルしました",
+        sessionExpired: "セッションが期限切れです。再ログインしてエクスポートしてください",
+        exportFailed: "エクスポートに失敗しました。再試行してください"
+      },
+      errors: {
+        tokenFailed: "ダウンロードトークンの取得に失敗しました"
+      }
+    },
+    upgradeSuccess: {
+      title: "アップグレード成功",
+      description: "Proバージョンへのアップグレードが完了しました",
+      features: "Proバージョンの特権",
+      feature1: "プロジェクト無制限",
+      feature2: "優先処理",
+      feature3: "HDエクスポート",
+      feature4: "専用サポート",
+      continue: "続ける",
+      goPro: "Pro詳細を見る"
+    },
+    socialLogin: {
+      continueWithGoogle: "Googleで続ける",
+      continueWithApple: "Appleで続ける"
+    },
+    phoneAuthLite: {
+      title: "電話番号ログイン",
+      subtitle: "電話番号を入力してください",
+      phonePlaceholder: "電話番号を入力",
+      getCode: "認証コードを取得",
+      nextStep: "次へ",
+      changePhone: "電話番号を変更"
+    },
+    contactUs: {
+      title: "お問い合わせ",
+      email: "メール",
+      emailPlaceholder: "your@email.com",
+      message: "メッセージ",
+      messagePlaceholder: "メッセージを入力...",
+      submit: "送信",
+      success: "送信成功",
+      failed: "送信失敗",
+      wechat: {
+        title: "WeChatを追加",
+        subtitle: "提携 / プリセールス支援 / 方案相談",
+        qrAlt: "WeChat QRコード",
+        qrPlaceholder: "QRコードは未提供です",
+        wechatIdLabel: "WeChat ID",
+        copyWechatId: "WeChat IDをコピー",
+        copySuccess: "WeChat IDをコピーしました",
+        copyFailed: "コピーに失敗しました。手動でコピーしてください",
+        note: "追加時に「MetaST」とメモしてください"
+      }
+    },
+    wechatQrLogin: {
+      title: "WeChat QRログイン",
+      qrAlt: "WeChatログインQRコード",
+      loading: "QRコードを読み込み中...",
+      successRedirect: "ログイン成功。リダイレクト中...",
+      refresh: "QRコードを更新",
+      unknownError: "不明なエラー",
+      status: {
+        scanToLogin: "WeChatでQRコードをスキャンしてください",
+        fetching: "QRコードを取得中...",
+        fetchFailed: "QRコードの取得に失敗しました: {msg}",
+        errorMessage: "エラー: {message}",
+        loginExpired: "ログイン期限切れ。再度ログインしてください",
+        tooFrequent: "リクエストが多すぎます。しばらくしてから再試行してください",
+        serverError: "サーバーエラー。しばらくしてから再試行してください",
+        networkError: "ネットワークエラー。更新して再試行してください",
+        scannedConfirm: "スキャン済み。WeChatでログインを確認してください",
+        expired: "QRコードが期限切れです。更新してください",
+        cancelled: "ログインをキャンセルしました",
+        queryFailed: "ログイン状態の確認に失敗しました"
+      }
+    },
+    projects: {
+      title: "マイプロジェクト",
+      all: "すべて",
+      processing: "処理中",
+      completed: "完了",
+      failed: "失敗",
+      empty: "プロジェクトなし",
+      emptyDesc: "最初の3Dプロジェクトを作成しましょう！",
+      createFirst: "最初のプロジェクトを作成",
+      delete: "削除",
+      deleteConfirm: "このプロジェクトを削除しますか？",
+      view: "見る",
+      download: "ダウンロード",
+      share: "共有"
+    },
+    settings: {
+      title: "設定",
+      account: "アカウント",
+      security: "セキュリティ",
+      notifications: "通知",
+      language: "言語",
+      theme: "テーマ",
+      dark: "ダーク",
+      light: "ライト",
+      system: "システム",
+      save: "保存",
+      saved: "保存済み"
+    },
     developerLang: {
       "api": "API", "webhook": "Webhook", "apiKeys": "API Keys", "createApiKey": "Create API Key", "bonusTip": "Bonus upon creation", "securityTip": "Keep secure. Shown only once.", "name": "Name", "key": "Key", "created": "Created at", "rename": "Rename", "delete": "Delete", "noApiKeys": "No API Keys found.", "usageTitle": "Usage", "usageDesc": "API Usage", "totalUsage": "Total usage", "costTooltip": "Cost 1 credit", "costQuestion": "Cost per API call?", "leftCredits": "Remaining credits", "validity": "Permanent validity", "historyTitle": "Credit History", "webhooksTitle": "Webhooks", "addWebhook": "Add Webhook", "editWebhook": "Edit Webhook", "webhookDesc": "Listen to changes", "callbackUrl": "Callback URL", "noWebhooks": "No Webhooks found.", "create": "Create", "cancel": "Cancel", "enterName": "Enter Name", "gotIt": "Got it", "createSuccessModal": "Success", "copy": "Copy", "save": "Save", "add": "Add", "callbackPlaceholder": "Enter URL", "webhookUrlHelp": "URL", "secretHelp": "Secret", "secretMinLength": "Min 6 chars", "secretMaxLength": "Max 50 chars", "invalidDomain": "Invalid domain", "renameModalTitle": "Rename", "newName": "New Name", "enterNewName": "Enter new name", "confirm": "Confirm", "timeColumn": "Time", "reasonColumn": "Reason", "amountColumn": "Amount", "reasonRegister": "Register", "reasonConsume": "Consume", "reasonRefund": "Refund", "reasonRecharge": "Recharge", "reasonUnknown": "Unknown", "currencyUnit": "pts", "createSuccess": "Success", "copySuccess": "Success", "renameSuccess": "Success", "deleteApiKeyTitle": "Delete", "deleteApiKeyContent": "Are you sure?", "deleteSuccess": "Success", "editSuccess": "Success", "deleteWebhookTitle": "Delete", "deleteWebhookContent": "Are you sure?", "deleteWebhookSuccess": "Success"
     },
@@ -75,6 +539,7 @@ export default {
         "statusSlicing": "视频切片中",
         "statusColmap": "COLMAP 重建中",
         "status3dgs": "3DGS 训练中",
+        "statusLightning": "Lightning 快速重建中",
         "statusBgRemoval": "背景去除处理中",
         "statusPaused": "已暂停",
         "statusResuming": "恢复中",
@@ -131,6 +596,7 @@ export default {
     },
     "statusCodes": {
         "title": "状态码",
+        "code": "コード",
         "desc": "HTTP 状态码说明。",
         "meaning": "含义",
         "scDesc": "说明",
@@ -174,7 +640,11 @@ export default {
       logout: 'ログアウト',
       logoutConfirm: 'ログアウトしてもよろしいですか？',
       selectLanguage: '言語を選択',
-      regularAccount: '通常アカウント'
+      regularAccount: '通常アカウント',
+      profile: 'プロフィール',
+      invite: '招待リンク',
+      contactUsCta: '算力点について問い合わせ',
+      developer: '開発者センター'
     },
     sidebar: {
       webVersion: 'Web',
@@ -190,6 +660,9 @@ export default {
       tutorial: 'チュートリアル',
       settings: '設定',
       feedback: 'フィードバック',
+      profile: 'プロフィール',
+      invite: '招待リンク',
+      developer: '開発者センター',
       downloadApp: 'アプリをダウンロード',
       joinCommunity: 'コミュニティに参加'
     },
@@ -205,8 +678,57 @@ export default {
       gs3d: '3DGS',
       gs4d: '4DGS',
       search: '検索',
+      searchPlaceholder: '作品名または説明で検索',
+      searchEmptyTitle: '一致する結果がありません',
+      searchEmptyDesc: 'より短いキーワードや、作品名/説明の別の語句で試してください',
       select: '選択',
-      emptyText: '今すぐプロジェクトを作成しませんか？'
+      emptyText: '今すぐプロジェクトを作成しませんか？',
+      demo: {
+        meshTaskName: '屋外庭園の3D再構築',
+        meshTaskDesc: '花、ベンチ、フェンスを含む屋外庭園シーンの高精細3D再構築',
+      }
+    },
+    homeBatch: {
+      selectAll: 'すべて選択',
+      selectedCount: '{count} 件を選択中',
+      pauseAction: '選択を一時停止',
+      startAction: '選択を開始',
+      exportAction: '選択をエクスポート',
+      deleteAction: '選択を削除',
+      exit: '終了',
+      exportModalTitle: '一括エクスポート',
+      exportFormatLabel: 'エクスポート形式',
+      exportFormatPlaceholder: 'エクスポート形式を選択してください',
+      exportSupportLabel: '対応状況：',
+      exportSupportOk: 'PLY と SOG はエクスポート可能',
+      exportSupportDisabled: 'OBJ、FBX、GLTF は現在未対応',
+      exportStart: 'エクスポート開始',
+      exportingItem: '{current}/{total} をエクスポート中: {name}',
+      exportFailed: 'エクスポート失敗: {taskId}',
+      formats: {
+        objNotSupported: 'OBJ（未対応）',
+        fbxNotSupported: 'FBX（未対応）',
+        gltfNotSupported: 'GLTF（未対応）',
+      },
+      noPausableTasks: '一時停止できるタスクがありません',
+      pauseConfirmTitle: '一括停止を確認',
+      pauseConfirmContent: '選択した {count} 件のタスクを一時停止しますか？',
+      pauseSuccess: '{count} 件のタスクを一時停止しました',
+      noStartableTasks: '開始できるタスクがありません',
+      startConfirmTitle: '一括開始を確認',
+      startConfirmContent: '選択した {count} 件のタスクを開始しますか？',
+      startSuccess: '{count} 件のタスクを開始しました',
+      selectExportFirst: '先にエクスポートするタスクを選択してください',
+      exportPreparing: 'エクスポートを準備中...',
+      exportTokenFailed: 'ダウンロードトークンの取得に失敗しました: {taskId}',
+      exportCancelled: 'エクスポートをキャンセルしました',
+      exportCompleted: 'エクスポート完了。成功 {success}/{total}',
+      exportSuccess: '{count} 件のタスクをエクスポートしました',
+      selectDeleteFirst: '先に削除するタスクを選択してください',
+      deleteConfirmTitle: '一括削除を確認',
+      deleteConfirmContent: '選択した {count} 件のタスクを削除しますか？この操作は元に戻せません。',
+      confirmDelete: '削除を確認',
+      deleteSuccess: '{count} 件のタスクを削除しました'
     },
     explore: {
       ai3dModels: 'AI生成3Dモデル',
@@ -218,7 +740,53 @@ export default {
       discordTitle: 'Discordコミュニティに参加',
       discordDesc: '他のMetaSTユーザーとチャットし、開発者に質問する',
       watchLater: '後で見る',
-      share: '共有'
+      share: '共有',
+      untitledModel: '無題のモデル',
+      noDescription: '説明なし',
+      unknown: '不明',
+      demo: {
+        meshModel1: {
+          title: 'ワンダラー号',
+          description: 'ワンダラー号'
+        }
+      },
+      examples: {
+        gardenCourtyard: {
+          title: 'ガーデンコート',
+          description: '屋外の石材と植物の再構築'
+        },
+        robotFigure: {
+          title: 'ロボットフィギュア',
+          description: '高精細なハードサーフェスキャラクターモデル'
+        },
+        vintageCamera: {
+          title: 'ヴィンテージカメラ',
+          description: '金属質感のディテールを含むデスク上オブジェクトのスキャン'
+        },
+        streetCorner: {
+          title: '街角',
+          description: '看板や店舗のある都市シーン'
+        },
+        sportsCar: {
+          title: 'スポーツカー',
+          description: '外装と内装の見た目を紹介'
+        },
+        ancientVase: {
+          title: '古代の壺',
+          description: '彫刻模様のある博物館の収蔵品'
+        }
+      }
+    },
+    exploreSection: {
+      title: 'コミュニティ作品を探索',
+      modelNames: {
+        whiteTiger: '白虎の彫刻',
+        oldTrain: '古い電車',
+        castle: '城の跡',
+        electricGuitar: 'エレキギター',
+        rockSpecimen: '岩石標本',
+        vintageCamera: 'ヴィンテージカメラ'
+      }
     },
     login: {
       welcome: 'MetaST Engine Webへようこそ',
@@ -297,7 +865,16 @@ export default {
     },
     create: {
       title: '写真や動画をアップロードしてモデルを生成しましょう！',
-      subtitle: 'プロのヒント：物体やシーンを撮影する際は、常に異なる角度から撮影するのが良い習慣です'
+      subtitle: 'プロのヒント：物体やシーンを撮影する際は、常に異なる角度から撮影するのが良い習慣です',
+      imageUploadConsistencyTip: '画像アップロードでは、物体の周りを移動して撮影し、物体を回転させないでください。できるだけ同じデバイスで撮影し、同じ焦点距離・同一フォーマット・同一解像度にそろえてください。',
+      help: {
+        button: '説明',
+        title: '使い方',
+        supportedFormats: '対応形式：',
+        imageSpec: '• 画像：{minImages}-{maxImages}枚、JPG/PNG',
+        videoSpec: '• 動画：30秒から3分、MP4/MOV',
+        qualityTip: '明るく鮮明な素材を使うと、より良い結果が得られます。'
+      }
     },
     profile: {
       editAvatar: 'アバターを編集',
@@ -306,13 +883,23 @@ export default {
       editNickname: 'ニックネームを編集',
       accountStats: 'アカウント統計',
       phone: '電話',
+      email: 'メール',
+      username: 'ユーザー名',
       lastLogin: '最終ログイン',
       accountStatus: 'アカウントステータス',
       active: 'アクティブ',
+      lastActive: '{time} にアクティブ',
+      points: '算力ポイント',
+      accountOverview: 'アカウント概要',
+      workCount: '作品数',
+      favoriteCount: 'お気に入り数',
+      shareCount: '共有数',
       accountSecurity: 'アカウントセキュリティ',
       personalDetails: '個人情報',
       nickname: 'ニックネーム',
+      notSet: '未設定',
       accountSettings: 'アカウント設定',
+      notifications: '通知',
       changePassword: 'パスワードを変更',
       enterNickname: 'ニックネームを入力',
       saveSuccess: '保存されました',
@@ -328,9 +915,47 @@ export default {
       oldPwdRequired: '古いパスワードを入力してください',
       newPwdRequired: '新しいパスワードを入力してください',
       pwdLength: 'パスワードは少なくとも6文字である必要があります',
+      confirmPwdRequired: '新しいパスワードを確認してください',
+      pwdLengthRule: 'パスワードは8〜16文字で入力してください',
+      pwdComplexityRule: 'パスワードには大文字・小文字・数字を含めてください',
       pwdNotMatch: 'パスワードが一致しません',
       pwdChanged: 'パスワードが変更されました',
-      pwdChangeFailed: 'パスワードの変更に失敗しました'
+      pwdChangeFailed: 'パスワードの変更に失敗しました',
+      phoneRequired: '電話番号を入力してください',
+      phoneInvalid: '有効な電話番号を入力してください',
+      emailRequired: 'メールアドレスを入力してください',
+      emailInvalid: '有効なメールアドレスを入力してください',
+      code6Required: '6桁の認証コードを入力してください',
+      bindPhone: '電話番号を連携',
+      bindEmail: 'メールを連携',
+      bindPhoneTitle: '電話番号を連携',
+      bindEmailTitle: 'メールを連携',
+      phoneBound: '電話番号連携済み',
+      emailBound: 'メール連携済み',
+      bound: '連携済み',
+      unbound: '未連携',
+      quickActions: 'クイック操作',
+      editNicknameAction: 'ニックネーム変更',
+      changeAvatar: 'アバター変更',
+      pointsHistory: 'ポイント履歴',
+      resendCode: '認証コードを再送信',
+      emailPlaceholder: 'メールアドレスを入力してください',
+      bindEmailNotAvailable: 'メール連携機能はテスト段階のため未公開です',
+      bindEmailDemoOnly: 'メール連携の送信APIは未公開です。現在はフロー表示のみです',
+      bindEmailSubmitNotAvailable: 'メール連携APIが未公開のため、現在は送信できません',
+      status: {
+        banned: '停止中',
+        normal: '正常',
+        deactivating: '退会処理中',
+        deactivated: '退会済み',
+        unknown: '不明',
+      },
+      time: {
+        justNow: 'たった今',
+        minutesAgo: '{n}分前',
+        hoursAgo: '{n}時間前',
+        daysAgo: '{n}日前',
+      },
     },
     feedbackLang: {
       contact: '連絡先',
@@ -350,8 +975,207 @@ export default {
       submitFail: '送信に失敗しました',
       networkError: 'ネットワークエラー'
     },
+    routes: {
+      login: 'ログイン',
+      home: 'ホーム',
+      projects: 'プロジェクト',
+      explore: '探索',
+      explore4d: '4D探索',
+      profile: 'プロフィール',
+      invite: '招待リンク',
+      settings: '設定',
+      api: 'API',
+      developer: '開発者センター',
+      tutorial: 'チュートリアル',
+      feedback: 'フィードバック',
+      create: '作成',
+      createMeshScan: 'メッシュスキャン',
+      create3dgsScan: '3DGSスキャン',
+      shareLink: '共有リンク',
+      modelDetail: 'モデル詳細',
+      officialModelDetail: '公式モデル詳細',
+      aiModelDetail: 'AIモデル詳細',
+      notFound: 'ページが見つかりません'
+    },
+    welcome: {
+      title: 'お帰りなさい 👋',
+      subtitle: '3Dモデル作成を始めて、アイデアを形にしよう'
+    },
+    auth: {
+      logoutSuccess: 'ログアウトしました',
+      logoutFailed: 'ログアウトに失敗しました',
+      emailCodeSent: '認証コードを送信しました。メールを確認してください',
+      phoneBindSuccess: '電話番号の連携に成功しました'
+    },
+    authErrors: {
+      emailFormat: 'メール形式が正しくありません',
+      invalidCredentials: 'メールアドレスまたはパスワードが正しくありません',
+      tooManyRequests: 'リクエストが多すぎます。しばらくしてから再試行してください',
+      accountBanned: 'アカウントが停止されています',
+      accountDeactivated: 'アカウントが無効化されています',
+      loginFailedGeneric: 'ログインに失敗しました。メールとパスワードを確認してください',
+      codeInvalidOrExpired: '認証コードが無効または期限切れです',
+      emailAlreadyRegistered: 'このメールアドレスは既に登録されています',
+      passwordComplexity: 'パスワードは8文字以上で、大文字・小文字・数字を含めてください',
+      registerFailedGeneric: '登録に失敗しました。後でもう一度お試しください',
+      codeInvalid: '認証コードが正しくありません',
+      phoneLoginFailed: '電話番号ログインに失敗しました'
+    },
+    errors: {
+      missingAuth: '認証情報がありません',
+      invalidParams: 'パラメータが不正です',
+      sessionExpired: '未ログイン、またはセッションが期限切れです。再度ログインしてください',
+      unauthorized: '未認証です。再度ログインしてください',
+      forbidden: 'この操作を行う権限がありません',
+      nicknameUpdateFailed: 'ニックネームの更新に失敗しました',
+      avatarUpdateFailed: 'アバターの更新に失敗しました',
+      requestError: 'リクエストエラー。入力内容を確認してください',
+      oldPasswordIncorrect: '現在のパスワードが正しくありません',
+      userNotFound: 'ユーザーが見つかりません',
+      phoneInvalid: '電話番号の形式が正しくありません',
+      sendCodeFailed: '認証コードの送信に失敗しました',
+      sendEmailTooOften: 'メール送信が多すぎます。しばらくしてから再試行してください',
+      sendEmailFailed: '認証コードの送信に失敗しました。後でもう一度お試しください',
+      phoneAlreadyRegistered: 'この電話番号は既に登録されています',
+      phoneBindFailed: '電話番号の連携に失敗しました'
+    },
+    imageUpload: {
+      mainText: 'クリックしてアップロードするか、この領域に画像をドラッグしてください',
+      subText: '1枚の画像ファイルのみ対応しています。再選択すると現在のファイルを上書きします',
+      label: '画像アップロード：',
+      formats: '対応形式：jpg, png, webp',
+      recommendedSize: '推奨サイズ：512x512 ピクセル以上',
+      onlyOne: '1回のアップロードで画像は1枚のみ対応'
+    },
+    pointsLogs: {
+      title: 'ポイント詳細',
+      loading: '読み込み中...',
+      retry: '再読み込み',
+      balanceTitle: 'ポイント残高',
+      totalEarnedMobile: '累計 +{total}',
+      recordCountMobile: '{count} 件の記録',
+      recentCount: '最近 {count} 件',
+      changeRecords: '変動履歴',
+      heroKicker: 'META·ST / LEDGER',
+      heroTitle: 'ポイント履歴',
+      heroDescription: 'すべての変動を分かりやすく確認し、すばやく絞り込めます',
+      currentBalance: '現在の残高',
+      totalEarned: '累計獲得',
+      recordCount: '記録数',
+      displayScope: '表示範囲',
+      showingRecentOnly: '最新 {count} 件の記録のみ表示しています',
+      loadFailed: 'データの読み込みに失敗しました。しばらくしてからもう一度お試しください',
+      date: '日付',
+      type: '種類',
+      amount: '数量',
+      balance: '残高',
+      description: '説明',
+      recharge: 'チャージ',
+      consumption: '消費',
+      refund: '返金',
+      bonus: 'ボーナス',
+      noRecords: '記録がありません'
+    },
+    modelCard: {
+      viewModel: 'モデルを見る',
+      createProject: 'プロジェクトを作成',
+      author: '作者',
+      views: '閲覧数',
+      badges: {
+        new: '新規'
+      },
+      queueBadge: 'キュー中 · {count} 件のタスク',
+      reviewRejected: '審査不通過',
+      viewDetails: '詳細を見る',
+      deleteConfirm: 'このモデルを削除しますか？',
+      delete: '削除',
+      untitledTask: '無題のタスク',
+      workDescription: '作品説明',
+      noDescription: '説明なし',
+      workStats: '作品データ',
+      techSpecs: '技術情報',
+      unknownError: '不明なエラー',
+      unknown: '不明',
+      reviewViolation: 'この内容には違反情報が含まれているため、審査に通過しませんでした',
+      stats: {
+        views: '閲覧数',
+        downloads: 'ダウンロード数',
+        shares: '共有数'
+      },
+      fields: {
+        status: 'ステータス',
+        startedAt: '開始時間',
+        finishedAt: '終了時間',
+        errorReason: 'エラー原因',
+        reviewResult: '審査結果',
+        frameCount: 'フレーム数'
+      },
+      status: {
+        received: '受信済み',
+        slicing: '動画フレーム抽出中',
+        reconstructingColmap: 'COLMAP 再構築中',
+        reconstructing3dgs: '3DGS 学習中',
+        reconstructingLightning: '高速再構築中',
+        processingBgRemoval: '背景除去中',
+        paused: '一時停止済み',
+        resuming: '再開中',
+        completed: '完了',
+        failed: '失敗',
+        processing: '処理中'
+      },
+      actions: {
+        start: '開始',
+        starting: '開始中...',
+        pause: '一時停止',
+        pausing: '一時停止中...'
+      },
+      messages: {
+        taskFailed: 'タスクに失敗しました。再開をクリックしてください',
+        reviewBlocked: 'このタスクは審査に通過していないため表示できません',
+        processing: 'タスクを処理中です。完了後に表示できます',
+        resumeSuccess: 'タスクを再開しました',
+        resumeFailed: '再開に失敗しました。しばらくしてからもう一度お試しください',
+        pauseSuccess: 'タスクを一時停止しました',
+        pauseFailed: '一時停止に失敗しました。しばらくしてからもう一度お試しください',
+        deleteSuccess: 'モデルを削除しました',
+        deleteFailed: '削除に失敗しました。しばらくしてからもう一度お試しください'
+      }
+    },
+    phoneAuth: {
+      title: '電話ログイン',
+      subtitle: '電話番号を入力してください',
+      phonePlaceholder: '電話番号を入力してください',
+      getCode: '認証コードを取得',
+      nextStep: '次へ',
+      changePhone: '電話番号を変更',
+      backToEdit: '修正に戻る',
+      resendAfter: '{seconds}s 後に再送',
+      submitVerification: '認証する',
+      requiredPhone: '電話番号を入力してください',
+      requestErrors: {
+        badRequest: 'リクエストエラーです。入力内容を確認してください',
+        unauthorized: '認証されていません。再度ログインしてください',
+        invalidCode: '認証コードが正しくありません',
+        tooManyRequests: 'リクエストが多すぎます。しばらくしてからお試しください',
+        serverError: 'サーバーエラーです。しばらくしてからお試しください'
+      },
+      invalidPhoneByRegion: {
+        cn: '有効な中国本土の携帯番号を入力してください',
+        us: '有効な米国の電話番号を入力してください',
+        uk: '有効な英国の電話番号を入力してください',
+        jp: '有効な日本の電話番号を入力してください',
+        de: '有効なドイツの電話番号を入力してください',
+        fr: '有効なフランスの電話番号を入力してください',
+        ru: '有効なロシアの電話番号を入力してください',
+        es: '有効なスペインの電話番号を入力してください'
+      }
+    },
     common: {
       confirm: '確認',
-      cancel: 'キャンセル'
+      close: '閉じる',
+      cancel: 'キャンセル',
+      loading: '読み込み中',
+      pro: 'PRO',
+      comingSoon: '近日公開'
     }
   };

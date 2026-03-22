@@ -11,7 +11,7 @@
       >
         <a-form-item
           name="phone"
-          :label="t('login.phone') || '手机号'"
+          :label="t('login.phone')"
           class="form-group"
         >
           <a-input
@@ -63,7 +63,7 @@
         :disabled="!isPhoneValid"
         @click="sendVerificationCode"
       >
-        {{ t('login.getCode') || '获取验证码' }}
+        {{ t('login.getCode') }}
       </a-button>
     </div>
 
@@ -72,7 +72,7 @@
       <!-- 手机号信息展示 -->
       <div class="phone-info">
         <span class="info-value">{{ selectedAreaCode }} {{ phoneForm.phone }}</span>
-        <a class="back-btn" @click="backToPhoneStep">{{ t('login.back') || '返回修改' }}</a>
+        <a class="back-btn" @click="backToPhoneStep">{{ t('phoneAuth.backToEdit') }}</a>
       </div>
 
       <!-- 验证码输入框 -->
@@ -94,8 +94,8 @@
           "
           @click.prevent="countdown <= 0 && resendVerificationCode()"
         >
-          <span v-if="countdown > 0">{{ countdown }}s {{ t('login.resend') || '后重发' }}</span>
-          <span v-else>{{ t('login.resendCode') || '重新发送验证码' }}</span>
+          <span v-if="countdown > 0">{{ t('phoneAuth.resendAfter', { seconds: countdown }) }}</span>
+          <span v-else>{{ t('login.resendCode') }}</span>
         </a>
       </div>
 
@@ -107,7 +107,7 @@
         :disabled="!verificationCode"
         @click="handlePhoneAuth"
       >
-        {{ t('login.submit') || '提交验证' }}
+        {{ t('phoneAuth.submitVerification') }}
       </a-button>
     </div>
   </div>
@@ -160,15 +160,15 @@ const resolveRequestErrorMessage = (err: any, defaultMessage: string) => {
 
   switch (err?.statusCode) {
     case 400:
-      return '请求错误，请检查输入'
+      return t('phoneAuth.requestErrors.badRequest')
     case 401:
-      return '未授权，请重新登录'
+      return t('phoneAuth.requestErrors.unauthorized')
     case 402:
-      return '验证码错误'
+      return t('phoneAuth.requestErrors.invalidCode')
     case 429:
-      return '请求过于频繁，请稍后再试'
+      return t('phoneAuth.requestErrors.tooManyRequests')
     case 500:
-      return '服务器错误，请稍后重试'
+      return t('phoneAuth.requestErrors.serverError')
     default:
       return defaultMessage
   }
@@ -193,14 +193,14 @@ const phonePatterns = {
 
 // 手机号验证错误消息映射
 const phoneErrorMessages = {
-  '+86': '请输入有效的中国大陆手机号',
-  '+1': '请输入有效的美国手机号',
-  '+44': '请输入有效的英国手机号',
-  '+81': '请输入有效的日本手机号',
-  '+49': '请输入有效的德国手机号',
-  '+33': '请输入有效的法国手机号',
-  '+7': '请输入有效的俄罗斯手机号',
-  '+34': '请输入有效的西班牙手机号'
+  '+86': 'phoneAuth.invalidPhoneByRegion.cn',
+  '+1': 'phoneAuth.invalidPhoneByRegion.us',
+  '+44': 'phoneAuth.invalidPhoneByRegion.uk',
+  '+81': 'phoneAuth.invalidPhoneByRegion.jp',
+  '+49': 'phoneAuth.invalidPhoneByRegion.de',
+  '+33': 'phoneAuth.invalidPhoneByRegion.fr',
+  '+7': 'phoneAuth.invalidPhoneByRegion.ru',
+  '+34': 'phoneAuth.invalidPhoneByRegion.es'
 }
 
 // 计算属性：检查手机号是否有效
@@ -212,13 +212,14 @@ const isPhoneValid = computed(() => {
 // 表单验证规则（仅用于手机号验证）
 const phoneRules = ref({
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { required: true, message: t('phoneAuth.requiredPhone'), trigger: 'blur' },
     {
       validator: (_rule: any, value: string) => {
         if (!value) return Promise.resolve()
         const pattern = phonePatterns[selectedAreaCode.value as keyof typeof phonePatterns]
         if (!pattern || !pattern.test(value)) {
-          const msg = t('login.invalidPhone') || phoneErrorMessages[selectedAreaCode.value as keyof typeof phoneErrorMessages] || '请输入有效的手机号'
+          const key = phoneErrorMessages[selectedAreaCode.value as keyof typeof phoneErrorMessages]
+          const msg = t(key || 'login.invalidPhone')
           return Promise.reject(new Error(msg))
         }
         return Promise.resolve()
@@ -269,7 +270,7 @@ const sendVerificationCode = async () => {
   try {
     await phoneFormRef.value.validate()
     if (!isPhoneValid.value) {
-      message.error(t('login.invalidPhone') || '请输入有效的手机号')
+      message.error(t('login.invalidPhone'))
       return
     }
 
@@ -288,13 +289,13 @@ const sendVerificationCode = async () => {
       }
     }, 1000)
 
-    message.success(t('login.codeSentSuccess') || '验证码已发送')
+    message.success(t('login.codeSentSuccess'))
 
   } catch (error: any) {
     currentStep.value = 'phone'
     clearInterval(timer.value)
     countdown.value = 0
-    message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed') || '手机号验证失败，请检查输入'))
+    message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed')))
     return
   }finally {
     isLoading.value = false
@@ -325,10 +326,10 @@ const resendVerificationCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
-    message.success(t('login.codeSentSuccess') || '验证码已发送')
+    message.success(t('login.codeSentSuccess'))
     
   } catch (error: any) {
-    message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed') || '手机号验证失败，请检查输入'))
+    message.error(resolveRequestErrorMessage(error, t('login.phoneValidateFailed')))
   } finally {
     isLoading.value = false
   }
@@ -343,7 +344,7 @@ const handlePhoneAuth = async () => {
   }
 
   if (!verificationCode.value || verificationCode.value.length !== 6) {
-    message.error(t('login.enter6DigitCode') || '请输入6位验证码')
+    message.error(t('login.enter6DigitCode'))
     return
   }
 

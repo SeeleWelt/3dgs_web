@@ -1,4 +1,457 @@
 export default {
+    avatarCropper: {
+      title: "Recortar imagen",
+      okText: "Confirmar",
+      cancelText: "Cancelar",
+      flipHorizontal: "Voltear horizontal",
+      flipVertically: "Voltear vertical",
+      rotateRight: "Girar derecha 90°",
+      rotateLeft: "Girar izquierda 90°",
+      originalImage: "Original",
+      quality: "Calidad",
+      reset: "Restablecer"
+    },
+    embedCode: {
+      title: "Código de inserción",
+      copyCode: "Copiar código",
+      close: "Cerrar",
+      embedCodeLabel: "Código insertable",
+      embedTip: "Pegue el código anterior en el HTML de su página web.",
+      noCode: "No hay código de inserción disponible",
+      codeCopied: "Código de inserción copiado",
+      copyFailed: "Error al copiar, por favor copie manualmente"
+    },
+    customMotion: {
+      title: "Movimiento de cámara personalizado",
+      previewArea: "Área de vista previa",
+      loading: "Cargando...{progress}%",
+      loadingSuccess: "¡Cargado exitosamente!",
+      loadingFailed: "Error al cargar, por favor intente de nuevo",
+      retryLoad: "Reintentar carga",
+      controlBar: "Barra de control",
+      progressBar: "Barra de progreso",
+      play: "Reproducir",
+      pause: "Pausar",
+      resetView: "Restablecer vista",
+      reset: "Restablecer",
+      flightMode: "Cambiar modo vuelo",
+      orbit: "Órbita",
+      flight: "Vuelo",
+      flightModeHint: "Modo vuelo",
+      configArea: "Área de configuración",
+      camera: "Cámara",
+      keyframes: "Fotogramas clave",
+      settings: "Configuración",
+      currentCameraPosition: "Posición actual de la cámara",
+      snapshot: "Guardar posición actual",
+      keyframeCount: "{count}/{max} fotogramas clave",
+      duration: "{duration}s",
+      openTrajectory: "Trayectoria abierta",
+      closedLoop: "Bucle cerrado",
+      keyframeList: "Lista de fotogramas clave",
+      selectedKeyframe: "Fotograma {index} seleccionado actualmente",
+      clickKeyframe: "Haga clic en el fotograma clave para previsualizar o editar",
+      scrollToSort: "La lista permite desplazamiento independiente, arrastre para reordenar",
+      dragToSort: "Arrastre para reordenar, use los botones de la derecha para previsualizar, actualizar y eliminar",
+      editing: "Editando",
+      previewing: "Previsualizando",
+      returnToStart: "Volver al inicio",
+      toNextFrame: "Al siguiente fotograma:",
+      seconds: "s",
+      preview: "Previsualizar",
+      updatePosition: "Actualizar posición",
+      delete: "Eliminar",
+      noKeyframes: "Sin fotogramas clave",
+      clickSnapshotHint: "Haga clic en 'Guardar posición actual' para agregar fotogramas clave",
+      motionSettings: "Configuración de movimiento",
+      interpolation: "Interpolación",
+      linear: "Lineal",
+      easeIn: "Acelerar",
+      easeOut: "Desacelerar",
+      easeInOut: "Acelerar-Desacelerar",
+      loopPlay: "Reproducción en bucle",
+      closedLoopPlay: "Bucle cerrado",
+      autoReturn: "Volver automáticamente al inicio",
+      totalDuration: "Duración total",
+      stopPreview: "Detener previsualización",
+      previewTrajectory: "Previsualizar trayectoria",
+      cancel: "Cancelar",
+      confirm: "Confirmar",
+      noTrajectory: "No hay trayectoria generada",
+      toastDefault: "Aviso",
+      minKeyframesWarning: "Añade al menos 2 fotogramas clave",
+      maxKeyframesWarning: "Se alcanzó el límite de fotogramas clave ({max})",
+      unsavedChangesTitle: "La configuración de movimiento ha cambiado",
+      unsavedChangesContent: "La configuración de movimiento cambió desde que se abrió. ¿Guardar los cambios?",
+      discardChanges: "No guardar",
+      getCanvasFailed: "No se pudo obtener el lienzo de renderizado",
+      initRendererFailed: "No se pudo inicializar el renderizador: {message}",
+      defaultAnnotation: "Anotación predeterminada",
+      keyframeAnnotation: "Fotograma clave {index}"
+    },
+    createMesh: {
+      advancedOptions: "Opciones avanzadas",
+      basicInfo: "Información básica",
+      taskName: "Nombre de la tarea",
+      taskNamePlaceholder: "Por defecto: nombre del archivo de imagen",
+      modelDescription: "Descripción del modelo",
+      modelDescPlaceholder: "Opcional, describa el sujeto en la imagen",
+      generateOptions: "Opciones de generación",
+      quickReconstruct: "Reconstrucción rápida",
+      quickReconstructDesc: "Generación más rápida, adecuada para previsualización rápida",
+      backgroundRemoval: "Eliminación de fondo",
+      backgroundRemovalDesc: "Separar automáticamente el sujeto",
+      multiViewReconstruct: "Reconstrucción multivista",
+      multiViewReconstructDesc: "Generar múltiples vistas desde una sola imagen",
+      instructions: "Instrucciones",
+      instructionTip: "Use imágenes con fondo limpio y sujeto claro para mejores resultados.",
+      readImageFailed: "No se pudieron leer las dimensiones de la imagen",
+      onlySupportImage: "Solo se admiten imágenes JPG, PNG o WEBP",
+      imageTooSmall: "Imagen muy pequeña, se recomienda ≥ 128x128 píxeles",
+      readImageInfoFailed: "No se pudo leer la información de la imagen",
+      uploadInProgress: "Carga en progreso, por favor cancele primero",
+      selectImageFirst: "Por favor seleccione un archivo de imagen primero",
+      uploadSuccess: "Carga exitosa, comenzó la generación del modelo",
+      uploadCanceled: "Carga cancelada",
+      uploadFailed: "Error al cargar, por favor intente de nuevo"
+    },
+    uploadTutorial: {
+      title: "Tutorial de carga",
+      desc: "Aprenda cómo tomar fotos para mejores resultados",
+      tipsTitle: "Consejos de fotografía",
+      tip1Title: "Iluminación adecuada",
+      tip1Desc: "Asegure buena iluminación, evite contraluz",
+      tip2Title: "Múltiples ángulos",
+      tip2Desc: "Fotografie el sujeto desde diferentes ángulos, cubra 360 grados",
+      tip3Title: "Disparo estable",
+      tip3Desc: "Mantenga la cámara estable, evite borrosidad",
+      tip4Title: "Fondo limpio",
+      tip4Desc: "Elija un fondo simple para resaltar el sujeto",
+      uploadPhotos: "Subir fotos",
+      viewExamples: "Ver ejemplos"
+    },
+    tutorialGuide: {
+      title: "Guía de uso",
+      videoPlaceholder: "El video de demostración está en preparación...",
+      mustComplete: "Primero completa la guía",
+      actions: {
+        prev: "Anterior",
+        next: "Siguiente",
+        start: "Comenzar"
+      },
+      steps: {
+        step1: {
+          title: "Subir video/imágenes",
+          description: "Sube el video o las imágenes para el modelado"
+        },
+        step2: {
+          title: "Completar información básica",
+          description: "Define el nombre de la tarea y la descripción (opcional)"
+        },
+        step3: {
+          title: "Configurar opciones",
+          description: "Elige si deseas activar la eliminación de fondo"
+        },
+        step4: {
+          title: "Iniciar generación",
+          description: "Consume puntos e inicia la generación 3D con IA"
+        }
+      }
+    },
+    uploadProgress: {
+      title: "Progreso de carga",
+      uploading: "Subiendo...",
+      processing: "Procesando...",
+      success: "Completado",
+      failed: "Fallido",
+      cancel: "Cancelar",
+      retry: "Reintentar",
+      uploadSpeed: "Velocidad de carga",
+      estimatedTime: "Tiempo restante estimado",
+      points: {
+        insufficient: "Puntos insuficientes"
+      },
+      pointsTooltip: {
+        current: "Puntos actuales: {points}",
+        consumed: "Consumo: -{points}",
+        remaining: "Puntos restantes: {points}"
+      },
+      actions: {
+        advancedOptions: "Opciones avanzadas",
+        removeVideo: "Eliminar video",
+        removeImage: "Eliminar imagen",
+        removeAllImages: "Eliminar todas las imágenes",
+        cancelUpload: "Cancelar carga",
+        startGenerate: "Iniciar generación"
+      },
+      meta: {
+        duration: "Duración {value}",
+        size: "Tamaño {value}"
+      },
+      fileStatus: {
+        uploading: "Cargando... {percent}%",
+        pendingHint: "Pendiente. La carga comenzará al hacer clic en «Iniciar generación».",
+        completed: "Carga completada",
+        cancelled: "Cancelado",
+        failed: "Error de carga"
+      },
+      image: {
+        selectedCount: "{count} imágenes seleccionadas",
+        expandAll: "Mostrar todo",
+        collapse: "Contraer",
+        addMore: "Agregar más imágenes"
+      },
+      queue: {
+        inProgress: "{count} tareas en curso"
+      },
+      type: {
+        videoTask: "Tarea de video",
+        imageTask: "Tarea de imágenes",
+        task: "Tarea"
+      },
+      status: {
+        pending: "Pendiente",
+        uploading: "Cargando",
+        success: "Completado",
+        failed: "Fallido",
+        cancelled: "Cancelado"
+      },
+      videoErrors: {
+        playback: "No se puede reproducir el video",
+        decode: "Códec de video no compatible (posible H.265/HEVC)",
+        formatNotSupported: "Formato de video no compatible",
+        network: "Error al cargar el video, verifica la red",
+        aborted: "Se interrumpió la carga del video"
+      },
+      video: {
+        loading: "Cargando video, espera...",
+        timeout: "Tiempo de espera al cargar el video",
+        blackScreenWarning: "Es posible que el video no se reproduzca bien (códec), pero puedes generar el modelo"
+      }
+    },
+    fileUpload: {
+      compact: {
+        desktopHint: "Haz clic o arrastra para volver a subir archivos",
+        mobileHint: "Toca para volver a subir"
+      },
+      mainText: "Haz clic para subir o arrastra videos/imágenes a esta área",
+      subText: "Soporta video (mp4, mov, avi, mkv, webm) o imágenes (jpg, png, jpeg)",
+      video: {
+        label: "Carga de video:",
+        formats: "Formatos compatibles: mp4, mov, avi, mkv, webm",
+        duration: "Mínimo {min} s, máximo {max} min",
+        onlyOne: "Solo se admite 1 video por carga",
+        resolutionLimit: "Límite de resolución: hasta 8K (7680x4320)"
+      },
+      image: {
+        label: "Carga de imágenes:",
+        formats: "Formatos compatibles: jpg, png, jpeg",
+        count: "Mínimo {min} imágenes, máximo {max} imágenes",
+        resolutionLimit: "Límite de resolución: hasta 8K (7680x4320)"
+      },
+      mobileSummary: "Video: {videoMinSec}s~{videoMaxMin}min | Imágenes: {imageMin}~{imageMax}",
+      mobileVideoSummary: "Video: {videoMinSec}s~{videoMaxMin}min, MP4/MOV/AVI/MKV/WEBM",
+      mobileImageSummary: "Imágenes: {imageMin}~{imageMax}, JPG/PNG/JPEG",
+      messages: {
+        mixedTypes: "Los archivos cargados tienen tipos inconsistentes, selecciónalos de nuevo"
+      }
+    },
+    emptyStateErrors: {
+      retry: "Recargar",
+      network: {
+        title: "Falló la conexión de red",
+        description: "Revisa la red e inténtalo de nuevo"
+      },
+      server: {
+        title: "Error del servidor",
+        description: "El servicio no está disponible temporalmente, inténtalo más tarde"
+      },
+      unknown: {
+        title: "Error al cargar",
+        description: "Inténtalo de nuevo más tarde"
+      }
+    },
+    emptyState: {
+      title: "Sin contenido",
+      description: "No hay nada aquí todavía, ¡ven y crea uno!",
+      createNow: "Crear ahora"
+    },
+    createCard: {
+      title: "Crear nuevo proyecto",
+      aiScan: "Escaneo IA",
+      mesh: "Malla",
+      description: "Seleccione método de creación"
+    },
+    pointsLogsLite: {
+      title: "Detalles de puntos",
+      date: "Fecha",
+      type: "Tipo",
+      amount: "Cantidad",
+      balance: "Saldo",
+      description: "Descripción",
+      recharge: "Recarga",
+      consumption: "Consumo",
+      refund: "Reembolso",
+      bonus: "Bonificación",
+      noRecords: "Sin registros"
+    },
+    officialModel: {
+      title: "Modelos oficiales",
+      viewModel: "Ver modelo",
+      createProject: "Crear proyecto"
+    },
+    modelCardLite: {
+      viewModel: "Ver modelo",
+      createProject: "Crear proyecto",
+      author: "Autor",
+      views: "Vistas",
+      badges: {
+        new: "Nuevo"
+      }
+    },
+    shareDialog: {
+      title: "Compartir",
+      copyLink: "Copiar enlace",
+      linkCopied: "Enlace copiado",
+      shareTo: "Compartir en",
+      embed: "Insertar",
+      close: "Cerrar",
+      copyFailed: "Error al copiar, hazlo manualmente",
+      shareTitle: "Mira este modelo 3D",
+      shareSummary: "Mira este modelo 3D",
+      qqTitle: "Compartir modelo 3D",
+      wechatHint: "Usa WeChat para escanear y compartir",
+      platforms: {
+        wechat: "WeChat",
+        bilibili: "Bilibili",
+        twitter: "X",
+        qq: "QQ",
+        weibo: "Weibo",
+        linkedin: "LinkedIn"
+      }
+    },
+    exportDialog: {
+      title: "Exportar modelo",
+      formatLabel: "Formato de exportación",
+      formatPlaceholder: "Selecciona un formato",
+      supportLabel: "Compatibilidad:",
+      supportedTip: "PLY y SOG compatibles",
+      unsupportedTip: "OBJ, FBX y GLTF aún no compatibles",
+      actions: {
+        close: "Cerrar",
+        cancelExport: "Cancelar exportación",
+        startExport: "Iniciar exportación"
+      },
+      status: {
+        preparing: "Preparando exportación...",
+        exporting: "Exportando {format}...",
+        completed: "Exportación completa",
+        cancelled: "Exportación cancelada",
+        failed: "Error de exportación"
+      },
+      formats: {
+        ply: "PLY",
+        sog: "SOG",
+        sogUnsupported: "SOG (No compatible)",
+        objUnsupported: "OBJ (No compatible)",
+        fbxUnsupported: "FBX (No compatible)",
+        gltfUnsupported: "GLTF (No compatible)"
+      },
+      messages: {
+        missingTaskId: "Falta el ID de tarea, no se puede exportar",
+        formatNotSupported: "Este formato no es compatible para exportar",
+        exportSuccess: "Modelo exportado con éxito",
+        exportCancelled: "Exportación cancelada",
+        sessionExpired: "La sesión expiró, inicia sesión de nuevo para exportar",
+        exportFailed: "Error al exportar, intenta de nuevo"
+      },
+      errors: {
+        tokenFailed: "No se pudo obtener el token de descarga"
+      }
+    },
+    upgradeSuccess: {
+      title: "Actualización exitosa",
+      description: "Ha actualizado exitosamente a la versión Pro",
+      features: "Beneficios de versión Pro",
+      feature1: "Proyectos ilimitados",
+      feature2: "Procesamiento prioritario",
+      feature3: "Exportación HD",
+      feature4: "Soporte exclusivo",
+      continue: "Continuar",
+      goPro: "Ver detalles de Pro"
+    },
+    socialLogin: {
+      continueWithGoogle: "Continuar con Google",
+      continueWithApple: "Continuar con Apple"
+    },
+    phoneAuthLite: {
+      title: "Inicio de sesión telefónico",
+      subtitle: "Por favor ingrese su número de teléfono",
+      phonePlaceholder: "Ingrese número de teléfono",
+      getCode: "Obtener código",
+      nextStep: "Siguiente",
+      changePhone: "Cambiar número"
+    },
+    contactUs: {
+      title: "Contáctenos",
+      email: "Correo electrónico",
+      emailPlaceholder: "tu@email.com",
+      message: "Mensaje",
+      messagePlaceholder: "Ingrese su mensaje...",
+      submit: "Enviar",
+      success: "Enviado exitosamente",
+      failed: "Error al enviar"
+    },
+    wechatQrLogin: {
+      title: "Inicio de sesión WeChat (QR)",
+      qrAlt: "Código QR de inicio de sesión de WeChat",
+      loading: "Cargando código QR...",
+      successRedirect: "Inicio de sesión correcto. Redirigiendo...",
+      refresh: "Actualizar código QR",
+      unknownError: "Error desconocido",
+      status: {
+        scanToLogin: "Escanea el código QR con WeChat",
+        fetching: "Obteniendo código QR...",
+        fetchFailed: "No se pudo obtener el código QR: {msg}",
+        errorMessage: "Error: {message}",
+        loginExpired: "La sesión expiró, vuelve a iniciar sesión",
+        tooFrequent: "Demasiadas solicitudes, inténtalo más tarde",
+        serverError: "Error del servidor, inténtalo más tarde",
+        networkError: "Error de red, actualiza e inténtalo de nuevo",
+        scannedConfirm: "Escaneado. Confirma el inicio de sesión en WeChat",
+        expired: "El código QR expiró, actualízalo",
+        cancelled: "Inicio de sesión cancelado",
+        queryFailed: "No se pudo consultar el estado de inicio de sesión"
+      }
+    },
+    projects: {
+      title: "Mis proyectos",
+      all: "Todos",
+      processing: "Procesando",
+      completed: "Completado",
+      failed: "Fallido",
+      empty: "Sin proyectos",
+      emptyDesc: "¡Comience a crear su primer proyecto 3D!",
+      createFirst: "Crear primer proyecto",
+      delete: "Eliminar",
+      deleteConfirm: "¿Está seguro de que desea eliminar este proyecto?",
+      view: "Ver",
+      download: "Descargar",
+      share: "Compartir"
+    },
+    settings: {
+      title: "Configuración",
+      account: "Cuenta",
+      security: "Seguridad",
+      notifications: "Notificaciones",
+      language: "Idioma",
+      theme: "Tema",
+      dark: "Oscuro",
+      light: "Claro",
+      system: "Sistema",
+      save: "Guardar",
+      saved: "Guardado"
+    },
     developerLang: {
       "api": "API", "webhook": "Webhook", "apiKeys": "API Keys", "createApiKey": "Create API Key", "bonusTip": "Bonus upon creation", "securityTip": "Keep secure. Shown only once.", "name": "Name", "key": "Key", "created": "Created at", "rename": "Rename", "delete": "Delete", "noApiKeys": "No API Keys found.", "usageTitle": "Usage", "usageDesc": "API Usage", "totalUsage": "Total usage", "costTooltip": "Cost 1 credit", "costQuestion": "Cost per API call?", "leftCredits": "Remaining credits", "validity": "Permanent validity", "historyTitle": "Credit History", "webhooksTitle": "Webhooks", "addWebhook": "Add Webhook", "editWebhook": "Edit Webhook", "webhookDesc": "Listen to changes", "callbackUrl": "Callback URL", "noWebhooks": "No Webhooks found.", "create": "Create", "cancel": "Cancel", "enterName": "Enter Name", "gotIt": "Got it", "createSuccessModal": "Success", "copy": "Copy", "save": "Save", "add": "Add", "callbackPlaceholder": "Enter URL", "webhookUrlHelp": "URL", "secretHelp": "Secret", "secretMinLength": "Min 6 chars", "secretMaxLength": "Max 50 chars", "invalidDomain": "Invalid domain", "renameModalTitle": "Rename", "newName": "New Name", "enterNewName": "Enter new name", "confirm": "Confirm", "timeColumn": "Time", "reasonColumn": "Reason", "amountColumn": "Amount", "reasonRegister": "Register", "reasonConsume": "Consume", "reasonRefund": "Refund", "reasonRecharge": "Recharge", "reasonUnknown": "Unknown", "currencyUnit": "pts", "createSuccess": "Success", "copySuccess": "Success", "renameSuccess": "Success", "deleteApiKeyTitle": "Delete", "deleteApiKeyContent": "Are you sure?", "deleteSuccess": "Success", "editSuccess": "Success", "deleteWebhookTitle": "Delete", "deleteWebhookContent": "Are you sure?", "deleteWebhookSuccess": "Success"
     },
@@ -75,6 +528,7 @@ export default {
         "statusSlicing": "视频切片中",
         "statusColmap": "COLMAP 重建中",
         "status3dgs": "3DGS 训练中",
+        "statusLightning": "Lightning 快速重建中",
         "statusBgRemoval": "背景去除处理中",
         "statusPaused": "已暂停",
         "statusResuming": "恢复中",
@@ -131,6 +585,7 @@ export default {
     },
     "statusCodes": {
         "title": "状态码",
+        "code": "Código",
         "desc": "HTTP 状态码说明。",
         "meaning": "含义",
         "scDesc": "说明",
@@ -174,7 +629,11 @@ export default {
       logout: 'Cerrar sesión',
       logoutConfirm: '¿Está seguro de que desea cerrar sesión?',
       selectLanguage: 'Seleccionar idioma',
-      regularAccount: 'Cuenta Estándar'
+      regularAccount: 'Cuenta Estándar',
+      profile: 'Perfil',
+      invite: 'Enlace de invitación',
+      contactUsCta: 'Contactar por puntos',
+      developer: 'Centro de desarrolladores'
     },
     sidebar: {
       webVersion: 'Web',
@@ -190,6 +649,9 @@ export default {
       tutorial: 'Tutorial',
       settings: 'Configuración',
       feedback: 'Feedback',
+      profile: 'Perfil',
+      invite: 'Enlace de invitación',
+      developer: 'Centro de desarrolladores',
       downloadApp: 'Descargar App',
       joinCommunity: 'Unirse a la Comunidad'
     },
@@ -205,8 +667,57 @@ export default {
       gs3d: '3DGS',
       gs4d: '4DGS',
       search: 'Buscar',
+      searchPlaceholder: 'Buscar por nombre de obra o descripción',
+      searchEmptyTitle: 'No se encontraron resultados',
+      searchEmptyDesc: 'Prueba con una palabra clave más corta u otras palabras del nombre/descripción',
       select: 'Seleccionar',
-      emptyText: '¿Qué tal si creamos un proyecto ahora?'
+      emptyText: '¿Qué tal si creamos un proyecto ahora?',
+      demo: {
+        meshTaskName: 'Reconstrucción 3D de jardín exterior',
+        meshTaskDesc: 'Escena de jardín exterior con flores, bancos y cercas, reconstrucción 3D en alta definición',
+      }
+    },
+    homeBatch: {
+      selectAll: 'Seleccionar todo',
+      selectedCount: '{count} seleccionado(s)',
+      pauseAction: 'Pausar selección',
+      startAction: 'Iniciar selección',
+      exportAction: 'Exportar selección',
+      deleteAction: 'Eliminar selección',
+      exit: 'Salir',
+      exportModalTitle: 'Exportación por lotes',
+      exportFormatLabel: 'Formato de exportación',
+      exportFormatPlaceholder: 'Selecciona un formato de exportación',
+      exportSupportLabel: 'Compatibilidad:',
+      exportSupportOk: 'PLY y SOG disponibles',
+      exportSupportDisabled: 'OBJ, FBX y GLTF aún no son compatibles',
+      exportStart: 'Iniciar exportación',
+      exportingItem: 'Exportando {current}/{total}: {name}',
+      exportFailed: 'Error de exportación: {taskId}',
+      formats: {
+        objNotSupported: 'OBJ (Aún no compatible)',
+        fbxNotSupported: 'FBX (Aún no compatible)',
+        gltfNotSupported: 'GLTF (Aún no compatible)',
+      },
+      noPausableTasks: 'No hay tareas para pausar',
+      pauseConfirmTitle: 'Confirmar pausa por lotes',
+      pauseConfirmContent: '¿Pausar las {count} tareas seleccionadas?',
+      pauseSuccess: 'Se pausaron correctamente {count} tareas',
+      noStartableTasks: 'No hay tareas para iniciar',
+      startConfirmTitle: 'Confirmar inicio por lotes',
+      startConfirmContent: '¿Iniciar las {count} tareas seleccionadas?',
+      startSuccess: 'Se iniciaron correctamente {count} tareas',
+      selectExportFirst: 'Primero selecciona tareas para exportar',
+      exportPreparing: 'Preparando exportación...',
+      exportTokenFailed: 'No se pudo obtener el token de descarga: {taskId}',
+      exportCancelled: 'Exportación cancelada',
+      exportCompleted: 'Exportación completa, éxito {success}/{total}',
+      exportSuccess: 'Se exportaron correctamente {count} tareas',
+      selectDeleteFirst: 'Primero selecciona tareas para eliminar',
+      deleteConfirmTitle: 'Confirmar eliminación por lotes',
+      deleteConfirmContent: '¿Eliminar las {count} tareas seleccionadas? Esta acción no se puede deshacer.',
+      confirmDelete: 'Confirmar eliminación',
+      deleteSuccess: 'Se eliminaron correctamente {count} tareas'
     },
     explore: {
       ai3dModels: 'Modelos 3D generados por IA',
@@ -218,7 +729,53 @@ export default {
       discordTitle: 'Unirse a la comunidad Discord',
       discordDesc: 'Chatea con otros usuarios de MetaST y haz preguntas a los desarrolladores',
       watchLater: 'Ver más tarde',
-      share: 'Compartir'
+      share: 'Compartir',
+      untitledModel: 'Modelo sin título',
+      noDescription: 'Sin descripción',
+      unknown: 'Desconocido',
+      demo: {
+        meshModel1: {
+          title: 'Vagabundo',
+          description: 'Vagabundo'
+        }
+      },
+      examples: {
+        gardenCourtyard: {
+          title: 'Patio de jardín',
+          description: 'Reconstrucción de piedra y plantas al aire libre'
+        },
+        robotFigure: {
+          title: 'Figura de robot',
+          description: 'Modelo de personaje hard-surface de alto detalle'
+        },
+        vintageCamera: {
+          title: 'Cámara vintage',
+          description: 'Escaneo de objeto de escritorio con detalles de textura metálica'
+        },
+        streetCorner: {
+          title: 'Esquina de calle',
+          description: 'Escena urbana con letreros y fachadas'
+        },
+        sportsCar: {
+          title: 'Auto deportivo',
+          description: 'Vista del exterior e interior'
+        },
+        ancientVase: {
+          title: 'Jarrón antiguo',
+          description: 'Artefacto de museo con patrones tallados'
+        }
+      }
+    },
+    exploreSection: {
+      title: 'Explorar trabajos de la comunidad',
+      modelNames: {
+        whiteTiger: 'Escultura de tigre blanco',
+        oldTrain: 'Tren antiguo',
+        castle: 'Ruinas de castillo',
+        electricGuitar: "Guitarra eléctrica",
+        rockSpecimen: 'Muestra de roca',
+        vintageCamera: 'Cámara vintage'
+      }
     },
     login: {
       welcome: 'Bienvenido a MetaST Engine Web',
@@ -297,7 +854,16 @@ export default {
     },
     create: {
       title: '¡Sube tus fotos o videos para generar tu modelo!',
-      subtitle: 'Consejo profesional: Al capturar objetos o escenas, siempre es una buena práctica fotografiar desde diferentes ángulos'
+      subtitle: 'Consejo profesional: Al capturar objetos o escenas, siempre es una buena práctica fotografiar desde diferentes ángulos',
+      imageUploadConsistencyTip: 'Para imágenes: camina alrededor del objeto al tomar fotos y evita girarlo. Procura usar el mismo dispositivo, la misma distancia focal y un formato y resolución consistentes.',
+      help: {
+        button: 'Ayuda',
+        title: 'Instrucciones',
+        supportedFormats: 'Formatos compatibles:',
+        imageSpec: '• Imágenes: {minImages}-{maxImages}, JPG/PNG',
+        videoSpec: '• Video: 30 s a 3 min, MP4/MOV',
+        qualityTip: 'Usa material nítido y con buena iluminación para mejores resultados.'
+      }
     },
     profile: {
       editAvatar: 'Editar avatar',
@@ -306,13 +872,23 @@ export default {
       editNickname: 'Editar apodo',
       accountStats: 'Estadísticas de la cuenta',
       phone: 'Teléfono',
+      email: 'Correo electrónico',
+      username: 'Nombre de usuario',
       lastLogin: 'Último inicio de sesión',
       accountStatus: 'Estado de la cuenta',
       active: 'Activo',
+      lastActive: '{time} activo',
+      points: 'Créditos',
+      accountOverview: 'Resumen de la cuenta',
+      workCount: 'Obras',
+      favoriteCount: 'Favoritos',
+      shareCount: 'Compartidos',
       accountSecurity: 'Seguridad de la cuenta',
       personalDetails: 'Detalles personales',
       nickname: 'Apodo',
+      notSet: 'Sin configurar',
       accountSettings: 'Configuración de la cuenta',
+      notifications: 'Notificaciones',
       changePassword: 'Cambiar contraseña',
       enterNickname: 'Ingresar apodo',
       saveSuccess: 'Guardado exitosamente',
@@ -328,9 +904,47 @@ export default {
       oldPwdRequired: 'Por favor ingresa la contraseña anterior',
       newPwdRequired: 'Por favor ingresa la nueva contraseña',
       pwdLength: 'La contraseña debe tener al menos 6 caracteres',
+      confirmPwdRequired: 'Por favor confirma la nueva contraseña',
+      pwdLengthRule: 'La contraseña debe tener entre 8 y 16 caracteres',
+      pwdComplexityRule: 'La contraseña debe incluir mayúsculas, minúsculas y números',
       pwdNotMatch: 'Las contraseñas no coinciden',
       pwdChanged: 'Contraseña cambiada exitosamente',
-      pwdChangeFailed: 'Error al cambiar la contraseña'
+      pwdChangeFailed: 'Error al cambiar la contraseña',
+      phoneRequired: 'Por favor ingresa un número de teléfono',
+      phoneInvalid: 'Por favor ingresa un número de teléfono válido',
+      emailRequired: 'Por favor ingresa un correo electrónico',
+      emailInvalid: 'Por favor ingresa un correo electrónico válido',
+      code6Required: 'Por favor ingresa el código de 6 dígitos',
+      bindPhone: 'Vincular teléfono',
+      bindEmail: 'Vincular correo',
+      bindPhoneTitle: 'Vincular número de teléfono',
+      bindEmailTitle: 'Vincular correo electrónico',
+      phoneBound: 'Teléfono vinculado',
+      emailBound: 'Correo vinculado',
+      bound: 'Vinculado',
+      unbound: 'Sin vincular',
+      quickActions: 'Acciones rápidas',
+      editNicknameAction: 'Editar apodo',
+      changeAvatar: 'Cambiar avatar',
+      pointsHistory: 'Historial de créditos',
+      resendCode: 'Reenviar código',
+      emailPlaceholder: 'Ingresa tu correo electrónico',
+      bindEmailNotAvailable: 'La vinculación de correo aún no está disponible durante la fase de prueba',
+      bindEmailDemoOnly: 'El envío para vincular correo aún no está disponible. Actualmente es una demostración del flujo',
+      bindEmailSubmitNotAvailable: 'La API de vinculación de correo aún no está disponible',
+      status: {
+        banned: 'Bloqueado',
+        normal: 'Normal',
+        deactivating: 'Desactivando',
+        deactivated: 'Desactivado',
+        unknown: 'Desconocido',
+      },
+      time: {
+        justNow: 'Justo ahora',
+        minutesAgo: 'hace {n} min',
+        hoursAgo: 'hace {n} h',
+        daysAgo: 'hace {n} día(s)',
+      },
     },
     feedbackLang: {
       contact: 'Contacto',
@@ -350,8 +964,207 @@ export default {
       submitFail: 'Error al enviar',
       networkError: 'Error de red'
     },
+    routes: {
+      login: 'Iniciar sesión',
+      home: 'Inicio',
+      projects: 'Proyectos',
+      explore: 'Explorar',
+      explore4d: 'Explorar 4D',
+      profile: 'Perfil',
+      invite: 'Enlace de invitación',
+      settings: 'Configuración',
+      api: 'API',
+      developer: 'Centro de desarrolladores',
+      tutorial: 'Tutorial',
+      feedback: 'Feedback',
+      create: 'Crear',
+      createMeshScan: 'Escaneo de malla',
+      create3dgsScan: 'Escaneo 3DGS',
+      shareLink: 'Enlace para compartir',
+      modelDetail: 'Detalles del modelo',
+      officialModelDetail: 'Detalles del modelo oficial',
+      aiModelDetail: 'Detalles del modelo AI',
+      notFound: 'Página no encontrada'
+    },
+    welcome: {
+      title: 'Bienvenido de nuevo 👋',
+      subtitle: 'Comienza a crear tu modelo 3D y da vida a tus ideas'
+    },
+    auth: {
+      logoutSuccess: 'Sesión cerrada con éxito',
+      logoutFailed: 'Error al cerrar sesión',
+      emailCodeSent: 'Código enviado, revisa tu correo',
+      phoneBindSuccess: 'Teléfono vinculado con éxito'
+    },
+    authErrors: {
+      emailFormat: 'Formato de correo inválido',
+      invalidCredentials: 'Correo o contraseña incorrectos',
+      tooManyRequests: 'Demasiadas solicitudes, inténtalo más tarde',
+      accountBanned: 'La cuenta ha sido bloqueada',
+      accountDeactivated: 'La cuenta ha sido desactivada',
+      loginFailedGeneric: 'Error al iniciar sesión, revisa tu correo y contraseña',
+      codeInvalidOrExpired: 'El código es inválido o expiró',
+      emailAlreadyRegistered: 'El correo ya está registrado',
+      passwordComplexity: 'La contraseña debe tener al menos 8 caracteres e incluir mayúsculas, minúsculas y números',
+      registerFailedGeneric: 'Error al registrarse, inténtalo más tarde',
+      codeInvalid: 'Código de verificación inválido',
+      phoneLoginFailed: 'Error al iniciar sesión con teléfono'
+    },
+    errors: {
+      missingAuth: 'Falta información de autenticación',
+      invalidParams: 'Parámetros inválidos',
+      sessionExpired: 'No has iniciado sesión o la sesión expiró, inicia sesión de nuevo',
+      unauthorized: 'No autorizado, inicia sesión de nuevo',
+      forbidden: 'No tienes permiso para realizar esta acción',
+      nicknameUpdateFailed: 'No se pudo actualizar el apodo',
+      avatarUpdateFailed: 'No se pudo actualizar el avatar',
+      requestError: 'Error en la solicitud, revisa tu entrada',
+      oldPasswordIncorrect: 'La contraseña anterior es incorrecta',
+      userNotFound: 'Usuario no encontrado',
+      phoneInvalid: 'Formato de teléfono inválido',
+      sendCodeFailed: 'No se pudo enviar el código de verificación',
+      sendEmailTooOften: 'Demasiados envíos de correo, inténtalo más tarde',
+      sendEmailFailed: 'No se pudo enviar el código, inténtalo más tarde',
+      phoneAlreadyRegistered: 'El teléfono ya está registrado',
+      phoneBindFailed: 'No se pudo vincular el teléfono'
+    },
+    imageUpload: {
+      mainText: 'Haz clic para subir o arrastra una imagen a esta zona',
+      subText: 'Solo se admite un archivo de imagen. Si eliges otro, reemplazará el actual',
+      label: 'Subida de imagen:',
+      formats: 'Formatos compatibles: jpg, png, webp',
+      recommendedSize: 'Tamaño recomendado: al menos 512x512 píxeles',
+      onlyOne: 'Solo se admite 1 imagen por subida'
+    },
+    pointsLogs: {
+      title: 'Detalles de puntos',
+      loading: 'Cargando...',
+      retry: 'Recargar',
+      balanceTitle: 'Saldo de puntos',
+      totalEarnedMobile: 'Total +{total}',
+      recordCountMobile: '{count} registros',
+      recentCount: 'Últimos {count}',
+      changeRecords: 'Historial de cambios',
+      heroKicker: 'META·ST / LEDGER',
+      heroTitle: 'Registro de puntos',
+      heroDescription: 'Consulta cada cambio con claridad y filtra rápidamente',
+      currentBalance: 'Saldo actual',
+      totalEarned: 'Total obtenido',
+      recordCount: 'Cantidad de registros',
+      displayScope: 'Rango mostrado',
+      showingRecentOnly: 'Solo se muestran los últimos {count} registros',
+      loadFailed: 'No se pudieron cargar los datos. Inténtalo de nuevo más tarde',
+      date: 'Fecha',
+      type: 'Tipo',
+      amount: 'Cantidad',
+      balance: 'Saldo',
+      description: 'Descripción',
+      recharge: 'Recarga',
+      consumption: 'Consumo',
+      refund: 'Reembolso',
+      bonus: 'Bonificación',
+      noRecords: 'No hay registros'
+    },
+    modelCard: {
+      viewModel: 'Ver modelo',
+      createProject: 'Crear proyecto',
+      author: 'Autor',
+      views: 'Vistas',
+      badges: {
+        new: 'Nuevo'
+      },
+      queueBadge: 'En cola · {count} tareas',
+      reviewRejected: 'Revisión rechazada',
+      viewDetails: 'Ver detalles',
+      deleteConfirm: '¿Eliminar este modelo?',
+      delete: 'Eliminar',
+      untitledTask: 'Tarea sin nombre',
+      workDescription: 'Descripción',
+      noDescription: 'Sin descripción',
+      workStats: 'Datos de la obra',
+      techSpecs: 'Parámetros técnicos',
+      unknownError: 'Error desconocido',
+      unknown: 'Desconocido',
+      reviewViolation: 'Este contenido contiene información no permitida y no superó la revisión',
+      stats: {
+        views: 'Vistas',
+        downloads: 'Descargas',
+        shares: 'Compartidos'
+      },
+      fields: {
+        status: 'Estado',
+        startedAt: 'Hora de inicio',
+        finishedAt: 'Hora de finalización',
+        errorReason: 'Motivo del error',
+        reviewResult: 'Resultado de la revisión',
+        frameCount: 'Cantidad de fotogramas'
+      },
+      status: {
+        received: 'Recibido',
+        slicing: 'Extrayendo fotogramas',
+        reconstructingColmap: 'Reconstruyendo con COLMAP',
+        reconstructing3dgs: 'Entrenando 3DGS',
+        reconstructingLightning: 'Reconstrucción rápida',
+        processingBgRemoval: 'Eliminando fondo',
+        paused: 'Pausado',
+        resuming: 'Reanudando',
+        completed: 'Completado',
+        failed: 'Fallido',
+        processing: 'Procesando'
+      },
+      actions: {
+        start: 'Iniciar',
+        starting: 'Iniciando...',
+        pause: 'Pausar',
+        pausing: 'Pausando...'
+      },
+      messages: {
+        taskFailed: 'La tarea falló. Haz clic en reiniciar',
+        reviewBlocked: 'Esta tarea no pasó la revisión y no se puede ver',
+        processing: 'La tarea se está procesando y estará disponible al finalizar',
+        resumeSuccess: 'La tarea se reinició',
+        resumeFailed: 'No se pudo reiniciar. Inténtalo más tarde',
+        pauseSuccess: 'La tarea se pausó',
+        pauseFailed: 'No se pudo pausar. Inténtalo más tarde',
+        deleteSuccess: 'Modelo eliminado',
+        deleteFailed: 'No se pudo eliminar. Inténtalo más tarde'
+      }
+    },
+    phoneAuth: {
+      title: 'Inicio de sesión por teléfono',
+      subtitle: 'Introduce tu número de teléfono',
+      phonePlaceholder: 'Introduce tu número de teléfono',
+      getCode: 'Obtener código',
+      nextStep: 'Siguiente',
+      changePhone: 'Cambiar número',
+      backToEdit: 'Volver a editar',
+      resendAfter: 'Reenviar en {seconds}s',
+      submitVerification: 'Verificar',
+      requiredPhone: 'Introduce tu número de teléfono',
+      requestErrors: {
+        badRequest: 'Error de solicitud. Revisa tu entrada',
+        unauthorized: 'No autorizado. Vuelve a iniciar sesión',
+        invalidCode: 'Código de verificación incorrecto',
+        tooManyRequests: 'Demasiadas solicitudes. Inténtalo más tarde',
+        serverError: 'Error del servidor. Inténtalo más tarde'
+      },
+      invalidPhoneByRegion: {
+        cn: 'Introduce un número válido de China continental',
+        us: 'Introduce un número válido de Estados Unidos',
+        uk: 'Introduce un número válido del Reino Unido',
+        jp: 'Introduce un número válido de Japón',
+        de: 'Introduce un número válido de Alemania',
+        fr: 'Introduce un número válido de Francia',
+        ru: 'Introduce un número válido de Rusia',
+        es: 'Introduce un número válido de España'
+      }
+    },
     common: {
       confirm: 'Confirmar',
-      cancel: 'Cancelar'
+      close: 'Cerrar',
+      cancel: 'Cancelar',
+      loading: 'Cargando',
+      pro: 'PRO',
+      comingSoon: 'Próximamente'
     }
   };

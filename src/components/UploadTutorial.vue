@@ -4,7 +4,7 @@
       <div class="tutorial-modal" @click.stop>
         <!-- Header -->
         <div class="tutorial-header">
-          <h2 class="tutorial-title">使用教程</h2>
+          <h2 class="tutorial-title">{{ t('tutorialGuide.title') }}</h2>
           <button class="close-btn" @click="handleClose">
             <CloseOutlined />
           </button>
@@ -17,7 +17,7 @@
           <div class="video-container">
             <div class="video-placeholder">
               <VideoCameraOutlined class="video-icon" />
-              <p class="video-text">演示视频正在制作中...</p>
+              <p class="video-text">{{ t('tutorialGuide.videoPlaceholder') }}</p>
             </div>
           </div>
 
@@ -43,13 +43,13 @@
           <div></div>
           <div class="footer-actions">
             <a-button v-if="currentStep > 0" class="step-btn" @click="prevStep">
-              上一步
+              {{ t('tutorialGuide.actions.prev') }}
             </a-button>
             <a-button v-if="currentStep < tutorialSteps.length - 1" type="primary" class="step-btn" @click="nextStep">
-              下一步
+              {{ t('tutorialGuide.actions.next') }}
             </a-button>
             <a-button v-else type="primary" @click="handleClose">
-              开始使用
+              {{ t('tutorialGuide.actions.start') }}
             </a-button>
           </div>
         </div>
@@ -71,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { CloseOutlined, PlayCircleOutlined, QuestionCircleOutlined, VideoCameraOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue';
 
@@ -84,6 +85,7 @@ const emit = defineEmits<{
 }>()
 
 const show = ref(false)
+const { t } = useI18n()
 const videoRef = ref<HTMLVideoElement | null>(null)
 const hasPlayed = ref(false)
 const currentStep = ref(0)
@@ -92,23 +94,23 @@ const showFloatingBtn = ref(true)
 // Tutorial steps - each step has title, description and video URL
 const tutorialSteps = [
   {
-    title: '上传视频/图片',
-    description: '上传需要建模的视频或图片素材',
+    title: t('tutorialGuide.steps.step1.title'),
+    description: t('tutorialGuide.steps.step1.description'),
     video: 'https://example.com/tutorial/step1.mp4'
   },
   {
-    title: '填写基本信息',
-    description: '设置任务名称和模型描述（可选）',
+    title: t('tutorialGuide.steps.step2.title'),
+    description: t('tutorialGuide.steps.step2.description'),
     video: 'https://example.com/tutorial/step2.mp4'
   },
   {
-    title: '配置生成选项',
-    description: '选择是否开启背景移除功能',
+    title: t('tutorialGuide.steps.step3.title'),
+    description: t('tutorialGuide.steps.step3.description'),
     video: 'https://example.com/tutorial/step3.mp4'
   },
   {
-    title: '开始生成',
-    description: '消耗算力点，开始AI 3D模型生成',
+    title: t('tutorialGuide.steps.step4.title'),
+    description: t('tutorialGuide.steps.step4.description'),
     video: 'https://example.com/tutorial/step4.mp4'
   }
 ]
@@ -129,7 +131,7 @@ const handleClose = () => {
   const hasSeenTutorial = localStorage.getItem('has_seen_tutorial')
   if(!hasSeenTutorial && currentStep.value !== tutorialSteps.length-1)
   {
-    message.info("请先完成引导流程")
+    message.info(t('tutorialGuide.mustComplete'))
     return;
   }
   show.value = false
@@ -418,12 +420,11 @@ defineExpose({ openTutorial })
 
 @media (max-width: 640px) {
   .tutorial-overlay {
-    padding: 8px;
+    padding: 12px;
   }
 
   .tutorial-modal {
-    max-height: 100vh;
-    border-radius: 12px;
+    max-height: 92vh;
   }
 
   .tutorial-header {
@@ -435,7 +436,7 @@ defineExpose({ openTutorial })
   }
 
   .video-container {
-    min-height: 160px;
+    min-height: 180px;
   }
 
   .tutorial-footer {
@@ -447,12 +448,7 @@ defineExpose({ openTutorial })
 
   .footer-actions {
     width: 100%;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .footer-actions :deep(.ant-btn) {
-    width: 100%;
+    justify-content: space-between;
   }
 
   .floating-help-btn {

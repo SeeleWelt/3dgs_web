@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouterView } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import MainView from '../views/MainView.vue'
+import i18n from '../i18n'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -9,38 +10,38 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { public: true, title: '登录' }
+      meta: { public: true, titleKey: 'routes.login' }
     },
     {
       path: '/',
       name: 'main',
       component: MainView,
 
-      meta: { requiresAuth: true, title: '首页' },
+      meta: { requiresAuth: true, titleKey: 'routes.home' },
       children: [
         {
           path: '',
           name: 'home',
           component: () => import('../views/HomeView.vue'),
-          meta: { title: '首页' }
+          meta: { titleKey: 'routes.home' }
         },
         {
           path: 'projects',
           name: 'projects',
           component: () => import('../views/ProjectsView.vue'),
-          meta: { title: '项目' }
+          meta: { titleKey: 'routes.projects' }
         },
         {
           path: 'explore',
           name: 'explore',
           component: () => import('../views/ExploreView.vue'),
-          meta: { title: '探索' }
+          meta: { titleKey: 'routes.explore' }
         },
         {
           path: 'explore4d',
           name: 'explore4d',
           component: () => import('../views/Explore4DView.vue'),
-          meta: { title: '4D探索' }
+          meta: { titleKey: 'routes.explore4d' }
         },
         {
           path: 'tools',
@@ -50,31 +51,31 @@ const router = createRouter({
               path: 'profile',
               name: 'profile',
               component: () => import('../views/ProfileView.vue'),
-              meta: { title: '个人资料' }
+              meta: { titleKey: 'routes.profile' }
             }
             ,{
               path: 'invite',
               name: 'invite',
               component: () => import('../views/InviteLinkView.vue'),
-              meta: { title: '邀请链接' }
+              meta: { titleKey: 'routes.invite' }
             }
             ,{
               path: 'settings',
               name: 'settings',
               component: () => import('../views/SettingsView.vue'),
-              meta: { title: '设置' }
+              meta: { titleKey: 'routes.settings' }
             }
             ,
             {
               path: 'api',
               name: 'api',
               component: () => import('../views/ApiView.vue'),
-              meta: { title: 'API' }
+              meta: { titleKey: 'routes.api' }
             },
             {
               path: 'developer',
               name: 'developer',
-              meta: { title: '开发者中心' },
+              meta: { titleKey: 'routes.developer' },
               component: () => import('../views/DeveloperView.vue')
             }
             ,
@@ -82,13 +83,13 @@ const router = createRouter({
               path: 'tutorial',
               name: 'tutorial',
               component: () => import('../views/TutorialView.vue'),
-              meta: { title: '教程' }
+              meta: { titleKey: 'routes.tutorial' }
             }
             ,{
               path: 'feedback',
               name: 'feedback',
               component: () => import('../views/FeedbackView.vue'),
-              meta: { title: '反馈' }
+              meta: { titleKey: 'routes.feedback' }
             }
           ]
         }
@@ -97,7 +98,7 @@ const router = createRouter({
     {
       path: '/create',
       component: RouterView,
-      meta: { requiresAuth: true, title: '创建' },
+      meta: { requiresAuth: true, titleKey: 'routes.create' },
       children: [
         {
           path: '',
@@ -107,13 +108,13 @@ const router = createRouter({
           path: 'mesh-scan',
           name: 'create-mesh-scan',
           component: () => import('../views/CreateMeshProjectView.vue'),
-          meta: { title: 'Mesh扫描' }
+          meta: { titleKey: 'routes.createMeshScan' }
         },
         {
           path: '3dgs-scan',
           name: 'create-3dgs-scan',
           component: () => import('../views/CreateProjectView.vue'),
-          meta: { title: '3DGS扫描' }
+          meta: { titleKey: 'routes.create3dgsScan' }
         }
       ]
     },
@@ -121,35 +122,35 @@ const router = createRouter({
       path: '/share/link/:taskId',
       name: 'ShareLinkRenderTask',
       component: () => import('../views/ShareLinkRenderTask.vue'),
-      meta: { requiresAuth: false, title: '分享链接' },
+      meta: { requiresAuth: false, titleKey: 'routes.shareLink' },
       props: true
     },
     {
       path: '/model/:taskId',
       name: 'model-detail',
       component: () => import('../views/RenderTask.vue'),
-      meta: { requiresAuth: true, title: '模型详情' },
+      meta: { requiresAuth: true, titleKey: 'routes.modelDetail' },
       props: true
     },
     {
       path: '/officialModel/:taskId',
       name: 'official-model-detail',
       component: () => import('../views/OfficialRenderTask.vue'),
-      meta: { requiresAuth: true, title: '官方模型详情' },
+      meta: { requiresAuth: true, titleKey: 'routes.officialModelDetail' },
       props: true
     },
     {
       path: '/AiModel/:taskId',
       name: 'ai-model-detail',
       component: () => import('../views/AiModel.vue'),
-      meta: { requiresAuth: true, title: 'AI模型详情' },
+      meta: { requiresAuth: true, titleKey: 'routes.aiModelDetail' },
       props: true
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
-      meta: { public: true, title: '页面不存在' }
+      meta: { public: true, titleKey: 'routes.notFound' }
     }
   ]
 })
@@ -160,12 +161,9 @@ router.beforeEach((to, from, next) => {
   window.scrollTo(0, 0)
 
   // 设置页面标题
-  const pageTitle = to.meta.title as string
-  if (pageTitle) {
-    document.title = ` MetaST -${pageTitle}`
-  } else {
-    document.title = 'MetaST'
-  }
+  const titleKey = to.meta.titleKey as string | undefined
+  const pageTitle = titleKey ? String(i18n.global.t(titleKey)) : ''
+  document.title = pageTitle ? `MetaST - ${pageTitle}` : 'MetaST'
 
   const token = localStorage.getItem('token')
   const isAuthenticated = !!token

@@ -1,6 +1,6 @@
 <template>
   <div class="explore-section">
-    <div class="section-title">探索社区作品</div>
+    <div class="section-title">{{ $t('exploreSection.title') }}</div>
     <div class="scroll-container">
       <ModelCard
         v-for="model in models"
@@ -16,7 +16,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ModelCard from './ModelCard.vue'
+
+const { t } = useI18n()
 
 interface ModelData {
   id: string
@@ -29,42 +32,42 @@ interface ModelData {
 const models = ref<ModelData[]>([
   {
     id: '1',
-    title: '白虎雕塑',
+    title: t('exploreSection.modelNames.whiteTiger'),
     author: 'ric',
     emoji: '🐅',
     isNew: true
   },
   {
     id: '2',
-    title: '老式火车',
+    title: t('exploreSection.modelNames.oldTrain'),
     author: 'remi',
     emoji: '🚂',
     isNew: true
   },
   {
     id: '3',
-    title: '古堡遗迹',
+    title: t('exploreSection.modelNames.castle'),
     author: 'Axseru',
     emoji: '🏰',
     isNew: true
   },
   {
     id: '4',
-    title: '电吉他',
+    title: t('exploreSection.modelNames.electricGuitar'),
     author: 'emovere',
     emoji: '🎸',
     isNew: false
   },
   {
     id: '5',
-    title: '岩石标本',
+    title: t('exploreSection.modelNames.rockSpecimen'),
     author: 'kirpartilhado',
     emoji: '🪨',
     isNew: false
   },
   {
     id: '6',
-    title: '复古相机',
+    title: t('exploreSection.modelNames.vintageCamera'),
     author: '854fwtmpn8',
     emoji: '📷',
     isNew: false

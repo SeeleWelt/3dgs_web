@@ -1,7 +1,7 @@
 ﻿<template>
   <a-modal
     v-model:open="visible"
-    title="算力点记录"
+    :title="t('pointsLogs.title')"
     :footer="null"
     :width="680"
     class="points-logs-modal"
@@ -12,7 +12,7 @@
         <!-- 加载状态 -->
         <div v-if="isLoading" class="loading-state">
           <a-spin size="large" />
-          <span class="loading-text">加载中...</span>
+          <span class="loading-text">{{ t('pointsLogs.loading') }}</span>
         </div>
 
         <!-- 错误状态 -->
@@ -21,7 +21,7 @@
             <CloseCircleFilled />
           </div>
           <p class="error-text">{{ fetchError }}</p>
-          <button class="retry-btn" @click="handleRetry">重新加载</button>
+          <button class="retry-btn" @click="handleRetry">{{ t('pointsLogs.retry') }}</button>
         </div>
 
         <!-- 内容区域 -->
@@ -30,29 +30,29 @@
             <div class="m-ledger">
               <div class="m-balance-card">
                 <div class="m-balance-top">
-                  <div class="m-balance-title">算力点余额</div>
+                  <div class="m-balance-title">{{ t('pointsLogs.balanceTitle') }}</div>
                   <div class="m-balance-value">{{ currentPoints }}</div>
                 </div>
                 <div class="m-balance-sub">
                   <div class="m-pill total">
                     <GiftOutlined />
-                    <span>累计 +{{ totalPoints }}</span>
+                    <span>{{ t('pointsLogs.totalEarnedMobile', { total: totalPoints }) }}</span>
                   </div>
                   <div class="m-pill count">
                     <UnorderedListOutlined />
-                    <span>{{ logs.length }} 条记录</span>
+                    <span>{{ t('pointsLogs.recordCountMobile', { count: logs.length }) }}</span>
                   </div>
                   <div class="m-pill scope">
                     <ClockCircleOutlined />
-                    <span>最近 {{ Math.min(displayCount, logs.length) }} 条</span>
+                    <span>{{ t('pointsLogs.recentCount', { count: Math.min(displayCount, logs.length) }) }}</span>
                   </div>
                 </div>
               </div>
 
               <div class="m-toolbar">
                 <div class="m-toolbar-top">
-                  <div class="m-toolbar-title">变动记录</div>
-                  <div class="m-toolbar-meta">最近 {{ Math.min(displayCount, logs.length) }} 条</div>
+                  <div class="m-toolbar-title">{{ t('pointsLogs.changeRecords') }}</div>
+                  <div class="m-toolbar-meta">{{ t('pointsLogs.recentCount', { count: Math.min(displayCount, logs.length) }) }}</div>
                 </div>
               </div>
 
@@ -78,7 +78,7 @@
                 </div>
               </div>
 
-              <a-empty v-else description="暂无算力点记录" class="empty-state" />
+              <a-empty v-else :description="t('pointsLogs.noRecords')" class="empty-state" />
             </div>
           </template>
 
@@ -86,12 +86,12 @@
             <header class="ledger-hero">
               <div class="hero-top">
                 <div class="hero-text">
-                  <span class="hero-kicker">META·ST / LEDGER</span>
-                  <h3>算力点流水</h3>
-                  <p>清晰查看每一笔变动，支持快速筛选</p>
+                  <span class="hero-kicker">{{ t('pointsLogs.heroKicker') }}</span>
+                  <h3>{{ t('pointsLogs.heroTitle') }}</h3>
+                  <p>{{ t('pointsLogs.heroDescription') }}</p>
                 </div>
                 <div class="hero-balance">
-                  <span class="balance-label">当前余额</span>
+                  <span class="balance-label">{{ t('pointsLogs.currentBalance') }}</span>
                   <span class="balance-value">{{ currentPoints }}</span>
                 </div>
               </div>
@@ -102,7 +102,7 @@
                     <GiftOutlined />
                   </div>
                   <div class="tile-text">
-                    <span>累计获得</span>
+                    <span>{{ t('pointsLogs.totalEarned') }}</span>
                     <strong>+{{ totalPoints }}</strong>
                   </div>
                 </div>
@@ -111,7 +111,7 @@
                     <UnorderedListOutlined />
                   </div>
                   <div class="tile-text">
-                    <span>记录数量</span>
+                    <span>{{ t('pointsLogs.recordCount') }}</span>
                     <strong>{{ logs.length }}</strong>
                   </div>
                 </div>
@@ -120,8 +120,8 @@
                     <ClockCircleOutlined />
                   </div>
                   <div class="tile-text">
-                    <span>展示范围</span>
-                    <strong>最近 {{ Math.min(displayCount, logs.length) }} 条</strong>
+                    <span>{{ t('pointsLogs.displayScope') }}</span>
+                    <strong>{{ t('pointsLogs.recentCount', { count: Math.min(displayCount, logs.length) }) }}</strong>
                   </div>
                 </div>
               </section>
@@ -129,8 +129,8 @@
 
             <div class="ledger-toolbar">
               <div class="toolbar-left">
-                <span class="ledger-title">变动记录</span>
-                <span class="ledger-badge">最近 {{ Math.min(displayCount, logs.length) }} 条</span>
+                <span class="ledger-title">{{ t('pointsLogs.changeRecords') }}</span>
+                <span class="ledger-badge">{{ t('pointsLogs.recentCount', { count: Math.min(displayCount, logs.length) }) }}</span>
               </div>
             </div>
 
@@ -157,10 +157,10 @@
               </div>
             </div>
 
-            <a-empty v-else description="暂无算力点记录" class="empty-state" />
+            <a-empty v-else :description="t('pointsLogs.noRecords')" class="empty-state" />
 
             <div v-if="logs.length > 0" class="limit-hint">
-              仅显示最近 {{ Math.min(displayCount, logs.length) }} 条记录
+              {{ t('pointsLogs.showingRecentOnly', { count: Math.min(displayCount, logs.length) }) }}
             </div>
           </template>
         </template>
@@ -171,6 +171,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePointsStore } from '@/stores/points'
 import { ClockCircleOutlined, CloseCircleFilled, GiftOutlined, UnorderedListOutlined } from '@ant-design/icons-vue'
 
@@ -179,6 +180,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 const emit = defineEmits<{
   'update:open': [value: boolean]
 }>()
@@ -270,7 +272,7 @@ const fetchData = async () => {
     )
   } catch (error) {
     const err = error as Error
-    fetchError.value = err.message || '加载数据失败，请稍后重试'
+    fetchError.value = err.message || t('pointsLogs.loadFailed')
     console.log(fetchError.value)
   } finally {
     isLoading.value = false

@@ -8,13 +8,15 @@
         class="model-preview"
         draggable="false"
       />
-      <div v-if="isPreviewLoading" class="loading-overlay" aria-label="loading">
+      <div v-if="isPreviewLoading" class="loading-overlay" :aria-label="t('common.loading')">
         <span class="loading-spinner"></span>
       </div>
-      <span v-if="model.isNew && isCompleted" class="new-badge">New</span>
+      <span v-if="model.isNew && isCompleted" class="new-badge">{{ t('modelCard.badges.new') }}</span>
 
       <span v-if="isBlocked" class="status-corner" :class="statusClass">{{ statusText }}</span>
-      <span v-if="isReceived && queueLength > 0" class="queue-badge">队列中 · {{ queueLength }}个任务</span>
+      <span v-if="isReceived && queueLength > 0" class="queue-badge">
+        {{ t('modelCard.queueBadge', { count: queueLength }) }}
+      </span>
 
       <!-- Checkbox for management mode -->
       <div v-if="showCheckbox" class="card-checkbox" @click.stop>
@@ -27,12 +29,12 @@
 
       <div v-if="showOverlay" class="status-overlay">
         <div class="status-content">
-          <div v-if="isProcessing" class="dot-loader" aria-label="loading">
+          <div v-if="isProcessing" class="dot-loader" :aria-label="t('common.loading')">
             <span></span>
             <span></span>
             <span></span>
           </div>
-          <p v-else-if="model.nsfwBlocked" class="mask-text">审核不通过</p>
+          <p v-else-if="model.nsfwBlocked" class="mask-text">{{ t('modelCard.reviewRejected') }}</p>
         </div>
       </div>
     </div>
@@ -66,7 +68,7 @@
           </a-button>
         </a-tooltip> -->
 
-        <a-tooltip title="查看详情">
+        <a-tooltip :title="t('modelCard.viewDetails')">
           <a-button type="text" size="small" @click="openDetailsDrawer">
             <template #icon>
               <InfoCircleOutlined />
@@ -75,9 +77,9 @@
         </a-tooltip>
 
         <a-popconfirm
-          title="确认删除该模型吗？"
-          ok-text="删除"
-          cancel-text="取消"
+          :title="t('modelCard.deleteConfirm')"
+          :ok-text="t('modelCard.delete')"
+          :cancel-text="t('common.cancel')"
           :disabled="!canDelete || isDeleting"
           @confirm="handleDelete"
         >
@@ -106,19 +108,19 @@
       <div class="details-panel">
         <div class="details-header">
           <div class="details-header-left">
-            <h3 class="details-title">{{ model.taskName || '未命名任务' }}</h3>
+            <h3 class="details-title">{{ model.taskName || t('modelCard.untitledTask') }}</h3>
           </div>
-          <button class="details-close" @click="closeDetailsDrawer">✕</button>
+          <button class="details-close" type="button" :aria-label="t('common.close')" @click="closeDetailsDrawer">x</button>
         </div>
 
         <div class="details-body">
           <section class="details-section">
-            <h4 class="section-title">作品描述</h4>
-            <p class="section-description">{{ model.objectDescription || '无描述' }}</p>
+            <h4 class="section-title">{{ t('modelCard.workDescription') }}</h4>
+            <p class="section-description">{{ model.objectDescription || t('modelCard.noDescription') }}</p>
           </section>
 
           <section class="details-section">
-            <h4 class="section-title">作品数据</h4>
+            <h4 class="section-title">{{ t('modelCard.workStats') }}</h4>
             <div class="stats-grid">
               <div
                 v-for="item in statItems"
@@ -134,7 +136,7 @@
           </section>
 
           <section class="details-section">
-            <h4 class="section-title">技术参数</h4>
+            <h4 class="section-title">{{ t('modelCard.techSpecs') }}</h4>
             <div class="param-grid">
               <div
                 v-for="item in techItems"
@@ -161,6 +163,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import { Button as AButton } from 'ant-design-vue'
 import {
@@ -180,6 +183,8 @@ import {
 } from '@ant-design/icons-vue'
 import API from '@/utils/api'
 import { ApiServer } from '@/utils/taskService'
+
+const { t } = useI18n()
 
 interface Model {
   taskId?: string
@@ -234,21 +239,22 @@ const processingStatusList = [
 ]
 
 const statusTextMap: Record<string, string> = {
-  received: '已接收',
-  slicing: '视频切帧中',
-  reconstructing_colmap: 'COLMAP 重建中',
-  reconstructing_3dgs: '3DGS 训练中',
-  reconstructing_lightning: '快速重建中',
-  processing_bg_removal: '背景去除中',
-  paused: '已暂停',
-  resuming: '恢复中',
-  completed: '已完成',
-  failed: '已失败',
+  received: 'modelCard.status.received',
+  slicing: 'modelCard.status.slicing',
+  reconstructing_colmap: 'modelCard.status.reconstructingColmap',
+  reconstructing_3dgs: 'modelCard.status.reconstructing3dgs',
+  reconstructing_lightning: 'modelCard.status.reconstructingLightning',
+  processing_bg_removal: 'modelCard.status.processingBgRemoval',
+  paused: 'modelCard.status.paused',
+  resuming: 'modelCard.status.resuming',
+  completed: 'modelCard.status.completed',
+  failed: 'modelCard.status.failed',
 }
 
 const statusText = computed(() => {
-  if (props.model.nsfwBlocked) return '审核不通过'
-  return statusTextMap[props.model.status || ''] || '处理中'
+  if (props.model.nsfwBlocked) return t('modelCard.reviewRejected')
+  const key = statusTextMap[props.model.status || '']
+  return key ? t(key) : t('modelCard.status.processing')
 })
 
 const isCompleted = computed(() => props.model.status === 'completed' && !props.model.nsfwBlocked)
@@ -269,9 +275,9 @@ const canDelete = computed(() => !!props.model.taskId)
 
 const pauseResumeLabel = computed(() => {
   if (isPaused.value || isFailed.value) {
-    return isResuming.value ? '开始中...' : '开始'
+    return isResuming.value ? t('modelCard.actions.starting') : t('modelCard.actions.start')
   }
-  return isPausing.value ? '暂停中...' : '暂停'
+  return isPausing.value ? t('modelCard.actions.pausing') : t('modelCard.actions.pause')
 })
 
 const statusClass = computed(() => {
@@ -355,16 +361,15 @@ const formatDateTime = (value: string | undefined) => {
 }
 
 const statItems = computed(() => [
-  { label: '查看数', value: displayValue(props.model.viewCount, '0'), icon: EyeOutlined, bgColor: 'rgba(24, 144, 255, 0.10)' },
-  // { label: '点赞数', value: displayValue(props.model.likeCount, '0'), icon: HeartOutlined, bgColor: 'rgba(250, 140, 22, 0.12)' },
-  { label: '下载量', value: displayValue(props.model.downloadCount, '0'), icon: DownloadOutlined, bgColor: 'rgba(82, 196, 26, 0.12)' },
-  { label: '转发量', value: displayValue(props.model.shareCount, '0'), icon: ShareAltOutlined, bgColor: 'rgba(212, 136, 6, 0.12)' },
+  { label: t('modelCard.stats.views'), value: displayValue(props.model.viewCount, '0'), icon: EyeOutlined, bgColor: 'rgba(24, 144, 255, 0.10)' },
+  { label: t('modelCard.stats.downloads'), value: displayValue(props.model.downloadCount, '0'), icon: DownloadOutlined, bgColor: 'rgba(82, 196, 26, 0.12)' },
+  { label: t('modelCard.stats.shares'), value: displayValue(props.model.shareCount, '0'), icon: ShareAltOutlined, bgColor: 'rgba(212, 136, 6, 0.12)' },
 ])
 
 const techItems = computed(() => {
   const items = [
     {
-      label: '状态',
+      label: t('modelCard.fields.status'),
       value: statusText.value,
       icon: CheckCircleOutlined,
       emphasis: true,
@@ -382,7 +387,7 @@ const techItems = computed(() => {
     //   iconBg: 'rgba(250, 140, 22, 0.15)',
     // },
     {
-      label: '开始时间',
+      label: t('modelCard.fields.startedAt'),
       value: formatDateTime(props.model.createdAt),
       icon: ClockCircleOutlined,
       emphasis: false,
@@ -391,7 +396,7 @@ const techItems = computed(() => {
       iconBg: 'rgba(114, 46, 209, 0.15)',
     },
     {
-      label: '结束时间',
+      label: t('modelCard.fields.finishedAt'),
       value: formatDateTime(props.model.endAt),
       icon: CheckCircleOutlined,
       emphasis: false,
@@ -400,8 +405,8 @@ const techItems = computed(() => {
       iconBg: 'rgba(19, 168, 168, 0.15)',
     },
     {
-      label: '错误原因',
-      value: displayValue(props.model.error, '未知错误'),
+      label: t('modelCard.fields.errorReason'),
+      value: displayValue(props.model.error, t('modelCard.unknownError')),
       icon: WarningOutlined,
       emphasis: true,
       visible: isFailed.value,
@@ -409,8 +414,8 @@ const techItems = computed(() => {
       iconBg: 'rgba(207, 19, 34, 0.15)',
     },
     {
-      label: '审核结果',
-      value: '内容包含违规信息，审核不通过',
+      label: t('modelCard.fields.reviewResult'),
+      value: t('modelCard.reviewViolation'),
       icon: WarningOutlined,
       emphasis: true,
       visible: !!props.model.nsfwBlocked,
@@ -418,8 +423,8 @@ const techItems = computed(() => {
       iconBg: 'rgba(212, 136, 6, 0.15)',
     },
     {
-      label: '帧数',
-      value: displayValue(props.model.fps, '未知'),
+      label: t('modelCard.fields.frameCount'),
+      value: displayValue(props.model.fps, t('modelCard.unknown')),
       icon: VideoCameraOutlined,
       emphasis: false,
       visible: true,
@@ -452,16 +457,16 @@ const handleCardClick = () => {
   }
 
   if (isFailed.value) {
-    message.info('任务失败，请点击“重新开始”')
+    message.info(t('modelCard.messages.taskFailed'))
     return
   }
 
   if (props.model.nsfwBlocked) {
-    message.warning('该任务审核未通过，无法查看')
+    message.warning(t('modelCard.messages.reviewBlocked'))
     return
   }
 
-  message.info('任务处理中，完成后可查看')
+  message.info(t('modelCard.messages.processing'))
 }
 
 const handleResume = async () => {
@@ -477,11 +482,11 @@ const handleResume = async () => {
         task_id: props.model.taskId,
       },
     }, token)
-    message.success('任务已重新开始')
+    message.success(t('modelCard.messages.resumeSuccess'))
     emit('resume-success', props.model.taskId)
     emit('task-action-success')
   } catch (error: any) {
-    message.error(error?.message || '重新开始失败，请稍后重试')
+    message.error(error?.message || t('modelCard.messages.resumeFailed'))
   } finally {
     isResuming.value = false
   }
@@ -500,10 +505,10 @@ const handlePause = async () => {
         task_id: props.model.taskId,
       },
     }, token)
-    message.success('任务已暂停')
+    message.success(t('modelCard.messages.pauseSuccess'))
     emit('task-action-success')
   } catch (error: any) {
-    message.error(error?.message || '暂停失败，请稍后重试')
+    message.error(error?.message || t('modelCard.messages.pauseFailed'))
   } finally {
     isPausing.value = false
   }
@@ -531,11 +536,11 @@ const handleDelete = async () => {
         task_id: props.model.taskId,
       },
     }, token)
-    message.success('模型已删除')
+    message.success(t('modelCard.messages.deleteSuccess'))
     emit('task-deleted', props.model.taskId)
     emit('task-action-success')
   } catch (error: any) {
-    message.error(error?.message || '删除失败，请稍后重试')
+    message.error(error?.message || t('modelCard.messages.deleteFailed'))
   } finally {
     isDeleting.value = false
   }

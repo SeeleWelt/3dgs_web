@@ -1,11 +1,14 @@
 <template>
   <div class="welcome">
-    <h1>欢迎回来 👋</h1>
-    <p>开始创建你的 3D 模型，让创意变为现实</p>
+    <h1>{{ t('welcome.title') }}</h1>
+    <p>{{ t('welcome.subtitle') }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <style scoped>

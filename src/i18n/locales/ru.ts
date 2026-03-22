@@ -1,4 +1,457 @@
 export default {
+    avatarCropper: {
+      title: "Обрезать изображение",
+      okText: "Подтвердить",
+      cancelText: "Отмена",
+      flipHorizontal: "Отразить горизонтально",
+      flipVertically: "Отразить вертикально",
+      rotateRight: "Повернуть вправо 90°",
+      rotateLeft: "Повернуть влево 90°",
+      originalImage: "Оригинал",
+      quality: "Качество",
+      reset: "Сбросить"
+    },
+    embedCode: {
+      title: "Код для вставки",
+      copyCode: "Копировать код",
+      close: "Закрыть",
+      embedCodeLabel: "Код для вставки на сайт",
+      embedTip: "Вставьте этот код в HTML вашего сайта.",
+      noCode: "Нет доступного кода для вставки",
+      codeCopied: "Код для вставки скопирован",
+      copyFailed: "Не удалось скопировать, скопируйте вручную"
+    },
+    customMotion: {
+      title: "Пользовательское движение камеры",
+      previewArea: "Область предпросмотра",
+      loading: "Загрузка...{progress}%",
+      loadingSuccess: "Успешно загружено!",
+      loadingFailed: "Ошибка загрузки, пожалуйста, повторите",
+      retryLoad: "Повторить загрузку",
+      controlBar: "Панель управления",
+      progressBar: "Прогресс",
+      play: "Воспроизвести",
+      pause: "Пауза",
+      resetView: "Сбросить вид",
+      reset: "Сброс",
+      flightMode: "Переключить режим полёта",
+      orbit: "Орбита",
+      flight: "Полёт",
+      flightModeHint: "Режим полёта",
+      configArea: "Область настроек",
+      camera: "Камера",
+      keyframes: "Ключевые кадры",
+      settings: "Настройки",
+      currentCameraPosition: "Текущее положение камеры",
+      snapshot: "Сохранить текущее положение",
+      keyframeCount: "{count}/{max} ключевых кадров",
+      duration: "{duration}с",
+      openTrajectory: "Открытая траектория",
+      closedLoop: "Зацикленная",
+      keyframeList: "Список ключевых кадров",
+      selectedKeyframe: "Выбран кадр {index}",
+      clickKeyframe: "Нажмите на ключевой кадр для предпросмотра или редактирования",
+      scrollToSort: "Список поддерживает независимую прокрутку, перетащите для сортировки",
+      dragToSort: "Перетащите для сортировки, используйте кнопки справа для предпросмотра, обновления и удаления",
+      editing: "Редактирование",
+      previewing: "Предпросмотр",
+      returnToStart: "Вернуться к началу",
+      toNextFrame: "К следующему кадру:",
+      seconds: "с",
+      preview: "Предпросмотр",
+      updatePosition: "Обновить положение",
+      delete: "Удалить",
+      noKeyframes: "Нет ключевых кадров",
+      clickSnapshotHint: "Нажмите 'Сохранить текущее положение' чтобы добавить ключевые кадры",
+      motionSettings: "Настройки движения",
+      interpolation: "Интерполяция",
+      linear: "Линейная",
+      easeIn: "Ускорение",
+      easeOut: "Замедление",
+      easeInOut: "Ускорение-замедление",
+      loopPlay: "Зацикленное воспроизведение",
+      closedLoopPlay: "Зацикленная траектория",
+      autoReturn: "Автоматический возврат в начало",
+      totalDuration: "Общая длительность",
+      stopPreview: "Остановить предпросмотр",
+      previewTrajectory: "Предпросмотр траектории",
+      cancel: "Отмена",
+      confirm: "Подтвердить",
+      noTrajectory: "Траектория не сгенерирована",
+      toastDefault: "Подсказка",
+      minKeyframesWarning: "Пожалуйста, добавьте как минимум 2 ключевых кадра",
+      maxKeyframesWarning: "Достигнут предел ключевых кадров ({max})",
+      unsavedChangesTitle: "Параметры движения изменены",
+      unsavedChangesContent: "Параметры движения камеры изменились после открытия. Сохранить изменения?",
+      discardChanges: "Не сохранять",
+      getCanvasFailed: "Не удалось получить холст рендера",
+      initRendererFailed: "Не удалось инициализировать рендерер: {message}",
+      defaultAnnotation: "Аннотация по умолчанию",
+      keyframeAnnotation: "Ключевой кадр {index}"
+    },
+    createMesh: {
+      advancedOptions: "Дополнительные параметры",
+      basicInfo: "Основная информация",
+      taskName: "Название задачи",
+      taskNamePlaceholder: "По умолчанию: имя файла изображения",
+      modelDescription: "Описание модели",
+      modelDescPlaceholder: "Необязательно, опишите объект на изображении",
+      generateOptions: "Параметры генерации",
+      quickReconstruct: "Быстрая реконструкция",
+      quickReconstructDesc: "Более быстрая генерация, подходит для быстрого просмотра",
+      backgroundRemoval: "Удаление фона",
+      backgroundRemovalDesc: "Автоматическое разделение объекта",
+      multiViewReconstruct: "Мультивид реконструкция",
+      multiViewReconstructDesc: "Создание нескольких видов из одного изображения",
+      instructions: "Инструкции",
+      instructionTip: "Используйте изображения с чистым фоном и чётким объектом.",
+      readImageFailed: "Не удалось прочитать размеры изображения",
+      onlySupportImage: "Поддерживаются только JPG, PNG или WEBP",
+      imageTooSmall: "Изображение слишком маленькое, рекомендуется ≥ 128x128 пикселей",
+      readImageInfoFailed: "Не удалось прочитать информацию об изображении",
+      uploadInProgress: "Загрузка выполняется, сначала отмените",
+      selectImageFirst: "Пожалуйста, сначала выберите файл изображения",
+      uploadSuccess: "Загрузка успешна, началась генерация модели",
+      uploadCanceled: "Загрузка отменена",
+      uploadFailed: "Ошибка загрузки, пожалуйста, повторите"
+    },
+    uploadTutorial: {
+      title: "Руководство по загрузке",
+      desc: "Узнайте, как правильно делать фотографии для лучших результатов",
+      tipsTitle: "Советы по съёмке",
+      tip1Title: "Достаточное освещение",
+      tip1Desc: "Обеспечьте хорошее освещение, избегайте контрового света",
+      tip2Title: "Несколько углов",
+      tip2Desc: "Снимайте объект с разных углов, охватите 360 градусов",
+      tip3Title: "Стабильная съёмка",
+      tip3Desc: "Держите камеру стабильно, избегайте смазывания",
+      tip4Title: "Простой фон",
+      tip4Desc: "Выберите простой фон, чтобы выделить объект",
+      uploadPhotos: "Загрузить фотографии",
+      viewExamples: "Посмотреть примеры"
+    },
+    tutorialGuide: {
+      title: "Инструкция",
+      videoPlaceholder: "Демо-видео готовится...",
+      mustComplete: "Сначала завершите руководство",
+      actions: {
+        prev: "Назад",
+        next: "Далее",
+        start: "Начать"
+      },
+      steps: {
+        step1: {
+          title: "Загрузить видео/изображения",
+          description: "Загрузите видео или изображения для реконструкции"
+        },
+        step2: {
+          title: "Заполнить базовую информацию",
+          description: "Укажите название задачи и описание модели (опционально)"
+        },
+        step3: {
+          title: "Настроить параметры генерации",
+          description: "Выберите, включать ли удаление фона"
+        },
+        step4: {
+          title: "Начать генерацию",
+          description: "Потратьте поинты и запустите AI 3D-генерацию"
+        }
+      }
+    },
+    uploadProgress: {
+      title: "Прогресс загрузки",
+      uploading: "Загрузка...",
+      processing: "Обработка...",
+      success: "Готово",
+      failed: "Ошибка",
+      cancel: "Отмена",
+      retry: "Повторить",
+      uploadSpeed: "Скорость загрузки",
+      estimatedTime: "Оставшееся время",
+      points: {
+        insufficient: "Недостаточно поинтов"
+      },
+      pointsTooltip: {
+        current: "Текущие поинты: {points}",
+        consumed: "Расход: -{points}",
+        remaining: "Осталось поинтов: {points}"
+      },
+      actions: {
+        advancedOptions: "Доп. параметры",
+        removeVideo: "Удалить видео",
+        removeImage: "Удалить изображение",
+        removeAllImages: "Удалить все изображения",
+        cancelUpload: "Отменить загрузку",
+        startGenerate: "Начать генерацию"
+      },
+      meta: {
+        duration: "Длительность {value}",
+        size: "Размер {value}"
+      },
+      fileStatus: {
+        uploading: "Загрузка... {percent}%",
+        pendingHint: "Ожидание. Загрузка начнется после нажатия «Начать генерацию».",
+        completed: "Загрузка завершена",
+        cancelled: "Отменено",
+        failed: "Ошибка загрузки"
+      },
+      image: {
+        selectedCount: "Выбрано изображений: {count}",
+        expandAll: "Показать все",
+        collapse: "Свернуть",
+        addMore: "Добавить еще изображения"
+      },
+      queue: {
+        inProgress: "В работе задач: {count}"
+      },
+      type: {
+        videoTask: "Видео-задача",
+        imageTask: "Задача изображений",
+        task: "Задача"
+      },
+      status: {
+        pending: "Ожидание",
+        uploading: "Загружается",
+        success: "Готово",
+        failed: "Ошибка",
+        cancelled: "Отменено"
+      },
+      videoErrors: {
+        playback: "Видео не воспроизводится",
+        decode: "Кодек видео не поддерживается (возможно H.265/HEVC)",
+        formatNotSupported: "Формат видео не поддерживается",
+        network: "Ошибка загрузки видео, проверьте сеть",
+        aborted: "Загрузка видео прервана"
+      },
+      video: {
+        loading: "Загрузка видео, подождите...",
+        timeout: "Истекло время загрузки видео",
+        blackScreenWarning: "Видео может не воспроизводиться (кодек), но модель можно сгенерировать"
+      }
+    },
+    fileUpload: {
+      compact: {
+        desktopHint: "Нажмите или перетащите для повторной загрузки файлов",
+        mobileHint: "Нажмите для повторной загрузки"
+      },
+      mainText: "Нажмите для загрузки или перетащите видео/изображения в эту область",
+      subText: "Поддерживаются видео (mp4, mov, avi, mkv, webm) и изображения (jpg, png, jpeg)",
+      video: {
+        label: "Загрузка видео:",
+        formats: "Поддерживаемые форматы: mp4, mov, avi, mkv, webm",
+        duration: "Минимум {min} сек., максимум {max} мин.",
+        onlyOne: "Только 1 видео за одну загрузку",
+        resolutionLimit: "Ограничение разрешения: до 8K (7680x4320)"
+      },
+      image: {
+        label: "Загрузка изображений:",
+        formats: "Поддерживаемые форматы: jpg, png, jpeg",
+        count: "Минимум {min} изображений, максимум {max}",
+        resolutionLimit: "Ограничение разрешения: до 8K (7680x4320)"
+      },
+      mobileSummary: "Видео: {videoMinSec}с~{videoMaxMin}мин | Изображения: {imageMin}~{imageMax}",
+      mobileVideoSummary: "Видео: {videoMinSec}с~{videoMaxMin}мин, MP4/MOV/AVI/MKV/WEBM",
+      mobileImageSummary: "Изображения: {imageMin}~{imageMax}, JPG/PNG/JPEG",
+      messages: {
+        mixedTypes: "Типы загруженных файлов не совпадают, выберите заново"
+      }
+    },
+    emptyStateErrors: {
+      retry: "Перезагрузить",
+      network: {
+        title: "Сбой сетевого подключения",
+        description: "Проверьте сеть и попробуйте снова"
+      },
+      server: {
+        title: "Ошибка сервера",
+        description: "Сервис временно недоступен, попробуйте позже"
+      },
+      unknown: {
+        title: "Не удалось загрузить",
+        description: "Попробуйте позже"
+      }
+    },
+    emptyState: {
+      title: "Нет содержимого",
+      description: "Здесь пока ничего нет, давайте создадим!",
+      createNow: "Создать сейчас"
+    },
+    createCard: {
+      title: "Создать новый проект",
+      aiScan: "AI сканирование",
+      mesh: "Меш",
+      description: "Выберите способ создания"
+    },
+    pointsLogsLite: {
+      title: "Детали баллов",
+      date: "Дата",
+      type: "Тип",
+      amount: "Количество",
+      balance: "Баланс",
+      description: "Описание",
+      recharge: "Пополнение",
+      consumption: "Расход",
+      refund: "Возврат",
+      bonus: "Бонус",
+      noRecords: "Нет записей"
+    },
+    officialModel: {
+      title: "Официальные модели",
+      viewModel: "Посмотреть модель",
+      createProject: "Создать проект"
+    },
+    modelCardLite: {
+      viewModel: "Посмотреть модель",
+      createProject: "Создать проект",
+      author: "Автор",
+      views: "Просмотры",
+      badges: {
+        new: "Новое"
+      }
+    },
+    shareDialog: {
+      title: "Поделиться",
+      copyLink: "Копировать ссылку",
+      linkCopied: "Ссылка скопирована",
+      shareTo: "Поделиться в",
+      embed: "Вставить",
+      close: "Закрыть",
+      copyFailed: "Копирование не удалось, скопируйте вручную",
+      shareTitle: "Посмотрите эту 3D-модель",
+      shareSummary: "Посмотрите эту 3D-модель",
+      qqTitle: "Поделиться 3D-моделью",
+      wechatHint: "Используйте WeChat для сканирования и отправки",
+      platforms: {
+        wechat: "WeChat",
+        bilibili: "Bilibili",
+        twitter: "X",
+        qq: "QQ",
+        weibo: "Weibo",
+        linkedin: "LinkedIn"
+      }
+    },
+    exportDialog: {
+      title: "Экспорт модели",
+      formatLabel: "Формат экспорта",
+      formatPlaceholder: "Выберите формат",
+      supportLabel: "Поддержка:",
+      supportedTip: "PLY, SOG поддерживаются",
+      unsupportedTip: "OBJ, FBX, GLTF пока не поддерживаются",
+      actions: {
+        close: "Закрыть",
+        cancelExport: "Отменить экспорт",
+        startExport: "Начать экспорт"
+      },
+      status: {
+        preparing: "Подготовка экспорта...",
+        exporting: "Экспорт {format}...",
+        completed: "Экспорт завершен",
+        cancelled: "Экспорт отменен",
+        failed: "Ошибка экспорта"
+      },
+      formats: {
+        ply: "PLY",
+        sog: "SOG",
+        sogUnsupported: "SOG (не поддерживается)",
+        objUnsupported: "OBJ (не поддерживается)",
+        fbxUnsupported: "FBX (не поддерживается)",
+        gltfUnsupported: "GLTF (не поддерживается)"
+      },
+      messages: {
+        missingTaskId: "Отсутствует ID задачи, экспорт невозможен",
+        formatNotSupported: "Этот формат не поддерживается для экспорта",
+        exportSuccess: "Модель успешно экспортирована",
+        exportCancelled: "Экспорт отменен",
+        sessionExpired: "Сессия истекла, войдите снова для экспорта",
+        exportFailed: "Экспорт не удался, попробуйте еще раз"
+      },
+      errors: {
+        tokenFailed: "Не удалось получить токен загрузки"
+      }
+    },
+    upgradeSuccess: {
+      title: "Успешное обновление",
+      description: "Вы успешно обновились до версии Pro",
+      features: "Преимущества Pro версии",
+      feature1: "Безлимитные проекты",
+      feature2: "Приоритетная обработка",
+      feature3: "HD экспорт",
+      feature4: "Персональная поддержка",
+      continue: "Продолжить",
+      goPro: "Подробнее о Pro"
+    },
+    socialLogin: {
+      continueWithGoogle: "Продолжить с Google",
+      continueWithApple: "Продолжить с Apple"
+    },
+    phoneAuthLite: {
+      title: "Вход по телефону",
+      subtitle: "Пожалуйста, введите ваш номер телефона",
+      phonePlaceholder: "Введите номер телефона",
+      getCode: "Получить код",
+      nextStep: "Далее",
+      changePhone: "Изменить номер"
+    },
+    contactUs: {
+      title: "Связаться с нами",
+      email: "Эл. почта",
+      emailPlaceholder: "ваша@почта.com",
+      message: "Сообщение",
+      messagePlaceholder: "Введите ваше сообщение...",
+      submit: "Отправить",
+      success: "Успешно отправлено",
+      failed: "Ошибка отправки"
+    },
+    wechatQrLogin: {
+      title: "Вход через QR WeChat",
+      qrAlt: "QR-код для входа WeChat",
+      loading: "Загрузка QR-кода...",
+      successRedirect: "Вход выполнен! Переадресация...",
+      refresh: "Обновить QR-код",
+      unknownError: "Неизвестная ошибка",
+      status: {
+        scanToLogin: "Отсканируйте QR-код в WeChat",
+        fetching: "Получение QR-кода...",
+        fetchFailed: "Не удалось получить QR-код: {msg}",
+        errorMessage: "Ошибка: {message}",
+        loginExpired: "Сессия истекла, войдите снова",
+        tooFrequent: "Слишком много запросов, попробуйте позже",
+        serverError: "Ошибка сервера, попробуйте позже",
+        networkError: "Ошибка сети, обновите страницу и попробуйте снова",
+        scannedConfirm: "QR-код отсканирован. Подтвердите вход в WeChat",
+        expired: "QR-код истек, обновите",
+        cancelled: "Вход отменен",
+        queryFailed: "Не удалось проверить статус входа"
+      }
+    },
+    projects: {
+      title: "Мои проекты",
+      all: "Все",
+      processing: "В обработке",
+      completed: "Завершено",
+      failed: "Ошибка",
+      empty: "Нет проектов",
+      emptyDesc: "Начните создавать ваш первый 3D проект!",
+      createFirst: "Создать первый проект",
+      delete: "Удалить",
+      deleteConfirm: "Вы уверены, что хотите удалить этот проект?",
+      view: "Просмотр",
+      download: "Скачать",
+      share: "Поделиться"
+    },
+    settings: {
+      title: "Настройки",
+      account: "Аккаунт",
+      security: "Безопасность",
+      notifications: "Уведомления",
+      language: "Язык",
+      theme: "Тема",
+      dark: "Тёмная",
+      light: "Светлая",
+      system: "Системная",
+      save: "Сохранить",
+      saved: "Сохранено"
+    },
     developerLang: {
       "api": "API", "webhook": "Webhook", "apiKeys": "API Keys", "createApiKey": "Create API Key", "bonusTip": "Bonus upon creation", "securityTip": "Keep secure. Shown only once.", "name": "Name", "key": "Key", "created": "Created at", "rename": "Rename", "delete": "Delete", "noApiKeys": "No API Keys found.", "usageTitle": "Usage", "usageDesc": "API Usage", "totalUsage": "Total usage", "costTooltip": "Cost 1 credit", "costQuestion": "Cost per API call?", "leftCredits": "Remaining credits", "validity": "Permanent validity", "historyTitle": "Credit History", "webhooksTitle": "Webhooks", "addWebhook": "Add Webhook", "editWebhook": "Edit Webhook", "webhookDesc": "Listen to changes", "callbackUrl": "Callback URL", "noWebhooks": "No Webhooks found.", "create": "Create", "cancel": "Cancel", "enterName": "Enter Name", "gotIt": "Got it", "createSuccessModal": "Success", "copy": "Copy", "save": "Save", "add": "Add", "callbackPlaceholder": "Enter URL", "webhookUrlHelp": "URL", "secretHelp": "Secret", "secretMinLength": "Min 6 chars", "secretMaxLength": "Max 50 chars", "invalidDomain": "Invalid domain", "renameModalTitle": "Rename", "newName": "New Name", "enterNewName": "Enter new name", "confirm": "Confirm", "timeColumn": "Time", "reasonColumn": "Reason", "amountColumn": "Amount", "reasonRegister": "Register", "reasonConsume": "Consume", "reasonRefund": "Refund", "reasonRecharge": "Recharge", "reasonUnknown": "Unknown", "currencyUnit": "pts", "createSuccess": "Success", "copySuccess": "Success", "renameSuccess": "Success", "deleteApiKeyTitle": "Delete", "deleteApiKeyContent": "Are you sure?", "deleteSuccess": "Success", "editSuccess": "Success", "deleteWebhookTitle": "Delete", "deleteWebhookContent": "Are you sure?", "deleteWebhookSuccess": "Success"
     },
@@ -75,6 +528,7 @@ export default {
         "statusSlicing": "视频切片中",
         "statusColmap": "COLMAP 重建中",
         "status3dgs": "3DGS 训练中",
+        "statusLightning": "Lightning 快速重建中",
         "statusBgRemoval": "背景去除处理中",
         "statusPaused": "已暂停",
         "statusResuming": "恢复中",
@@ -131,6 +585,7 @@ export default {
     },
     "statusCodes": {
         "title": "状态码",
+        "code": "Код",
         "desc": "HTTP 状态码说明。",
         "meaning": "含义",
         "scDesc": "说明",
@@ -174,7 +629,11 @@ export default {
       logout: 'Выйти',
       logoutConfirm: 'Вы уверены, что хотите выйти?',
       selectLanguage: 'Выбрать язык',
-      regularAccount: 'Обычный аккаунт'
+      regularAccount: 'Обычный аккаунт',
+      profile: 'Профиль',
+      invite: 'Пригласительная ссылка',
+      contactUsCta: 'Связаться по поводу поинтов',
+      developer: 'Центр разработчика'
     },
     sidebar: {
       webVersion: 'Web',
@@ -190,6 +649,9 @@ export default {
       tutorial: 'Руководство',
       settings: 'Настройки',
       feedback: 'Обратная связь',
+      profile: 'Профиль',
+      invite: 'Пригласительная ссылка',
+      developer: 'Центр разработчика',
       downloadApp: 'Скачать приложение',
       joinCommunity: 'Присоединиться к сообществу'
     },
@@ -205,8 +667,57 @@ export default {
       gs3d: '3DGS',
       gs4d: '4DGS',
       search: 'Поиск',
+      searchPlaceholder: 'Поиск по названию или описанию',
+      searchEmptyTitle: 'Ничего не найдено',
+      searchEmptyDesc: 'Попробуйте более короткий запрос или другие слова из названия/описания',
       select: 'Выбрать',
-      emptyText: 'Как насчет создания проекта прямо сейчас?'
+      emptyText: 'Как насчет создания проекта прямо сейчас?',
+      demo: {
+        meshTaskName: '3D-реконструкция: сад на улице',
+        meshTaskDesc: 'Сцена уличного сада с цветами, скамейкой и забором, высококачественная 3D-реконструкция',
+      }
+    },
+    homeBatch: {
+      selectAll: 'Выбрать все',
+      selectedCount: 'Выбрано: {count}',
+      pauseAction: 'Пауза для выбранного',
+      startAction: 'Запуск выбранного',
+      exportAction: 'Экспорт выбранного',
+      deleteAction: 'Удалить выбранное',
+      exit: 'Выйти',
+      exportModalTitle: 'Пакетный экспорт',
+      exportFormatLabel: 'Формат экспорта',
+      exportFormatPlaceholder: 'Выберите формат экспорта',
+      exportSupportLabel: 'Поддержка:',
+      exportSupportOk: 'PLY и SOG доступны',
+      exportSupportDisabled: 'OBJ, FBX и GLTF пока не поддерживаются',
+      exportStart: 'Начать экспорт',
+      exportingItem: 'Экспорт {current}/{total}: {name}',
+      exportFailed: 'Ошибка экспорта: {taskId}',
+      formats: {
+        objNotSupported: 'OBJ (не поддерживается)',
+        fbxNotSupported: 'FBX (не поддерживается)',
+        gltfNotSupported: 'GLTF (не поддерживается)',
+      },
+      noPausableTasks: 'Нет задач для паузы',
+      pauseConfirmTitle: 'Подтвердить массовую паузу',
+      pauseConfirmContent: 'Приостановить выбранные {count} задач?',
+      pauseSuccess: 'Успешно приостановлено задач: {count}',
+      noStartableTasks: 'Нет задач для запуска',
+      startConfirmTitle: 'Подтвердить массовый запуск',
+      startConfirmContent: 'Запустить выбранные {count} задач?',
+      startSuccess: 'Успешно запущено задач: {count}',
+      selectExportFirst: 'Сначала выберите задачи для экспорта',
+      exportPreparing: 'Подготовка экспорта...',
+      exportTokenFailed: 'Не удалось получить токен загрузки: {taskId}',
+      exportCancelled: 'Экспорт отменен',
+      exportCompleted: 'Экспорт завершен, успешно {success}/{total}',
+      exportSuccess: 'Успешно экспортировано задач: {count}',
+      selectDeleteFirst: 'Сначала выберите задачи для удаления',
+      deleteConfirmTitle: 'Подтвердить массовое удаление',
+      deleteConfirmContent: 'Удалить выбранные {count} задач? Это действие нельзя отменить.',
+      confirmDelete: 'Подтвердить удаление',
+      deleteSuccess: 'Успешно удалено задач: {count}'
     },
     explore: {
       ai3dModels: '3D-модели, созданные ИИ',
@@ -218,7 +729,53 @@ export default {
       discordTitle: 'Присоединиться к сообществу Discord',
       discordDesc: 'Общайтесь с другими пользователями MetaST и задавайте вопросы разработчикам',
       watchLater: 'Смотреть позже',
-      share: 'Поделиться'
+      share: 'Поделиться',
+      untitledModel: 'Модель без названия',
+      noDescription: 'Нет описания',
+      unknown: 'Неизвестно',
+      demo: {
+        meshModel1: {
+          title: 'Странник',
+          description: 'Странник'
+        }
+      },
+      examples: {
+        gardenCourtyard: {
+          title: 'Садовый дворик',
+          description: 'Реконструкция камня и растений на улице'
+        },
+        robotFigure: {
+          title: 'Фигурка робота',
+          description: 'Высокодетализированная hard-surface модель персонажа'
+        },
+        vintageCamera: {
+          title: 'Винтажная камера',
+          description: 'Сканирование настольного объекта с деталями металлической текстуры'
+        },
+        streetCorner: {
+          title: 'Угол улицы',
+          description: 'Городская сцена с вывесками и витринами'
+        },
+        sportsCar: {
+          title: 'Спорткар',
+          description: 'Демонстрация внешнего вида и интерьера'
+        },
+        ancientVase: {
+          title: 'Древняя ваза',
+          description: 'Музейный артефакт с резным орнаментом'
+        }
+      }
+    },
+    exploreSection: {
+      title: 'Исследовать работы сообщества',
+      modelNames: {
+        whiteTiger: 'Скульптура белого тигра',
+        oldTrain: 'Старый поезд',
+        castle: 'Руины замка',
+        electricGuitar: 'Электрогитара',
+        rockSpecimen: 'Образец горной породы',
+        vintageCamera: 'Ретро камера'
+      }
     },
     login: {
       welcome: 'Добро пожаловать в MetaST Engine Web',
@@ -297,7 +854,16 @@ export default {
     },
     create: {
       title: 'Загрузите свои фото или видео, чтобы создать модель!',
-      subtitle: 'Совет профессионала: при съемке объектов или сцен всегда полезно фотографировать с разных ракурсов'
+      subtitle: 'Совет профессионала: при съемке объектов или сцен всегда полезно фотографировать с разных ракурсов',
+      imageUploadConsistencyTip: 'Для изображений: обходите объект вокруг при съемке и не вращайте его. По возможности используйте одно и то же устройство, одинаковое фокусное расстояние, формат и разрешение.',
+      help: {
+        button: 'Инструкция',
+        title: 'Инструкция',
+        supportedFormats: 'Поддерживаемые форматы:',
+        imageSpec: '• Изображения: {minImages}-{maxImages}, JPG/PNG',
+        videoSpec: '• Видео: 30 с до 3 мин, MP4/MOV',
+        qualityTip: 'Используйте четкий и хорошо освещенный материал для лучшего результата.'
+      }
     },
     profile: {
       editAvatar: 'Изменить аватар',
@@ -306,13 +872,23 @@ export default {
       editNickname: 'Изменить никнейм',
       accountStats: 'Статистика аккаунта',
       phone: 'Телефон',
+      email: 'Email',
+      username: 'Имя пользователя',
       lastLogin: 'Последний вход',
       accountStatus: 'Статус аккаунта',
       active: 'Активен',
+      lastActive: '{time} активен',
+      points: 'Баллы',
+      accountOverview: 'Обзор аккаунта',
+      workCount: 'Работы',
+      favoriteCount: 'Избранное',
+      shareCount: 'Поделились',
       accountSecurity: 'Безопасность аккаунта',
       personalDetails: 'Личные данные',
       nickname: 'Никнейм',
+      notSet: 'Не задано',
       accountSettings: 'Настройки аккаунта',
+      notifications: 'Уведомления',
       changePassword: 'Изменить пароль',
       enterNickname: 'Введите никнейм',
       saveSuccess: 'Успешно сохранено',
@@ -328,9 +904,47 @@ export default {
       oldPwdRequired: 'Пожалуйста, введите старый пароль',
       newPwdRequired: 'Пожалуйста, введите новый пароль',
       pwdLength: 'Пароль должен содержать не менее 6 символов',
+      confirmPwdRequired: 'Пожалуйста, подтвердите новый пароль',
+      pwdLengthRule: 'Длина пароля должна быть 8-16 символов',
+      pwdComplexityRule: 'Пароль должен содержать заглавные, строчные буквы и цифры',
       pwdNotMatch: 'Пароли не совпадают',
       pwdChanged: 'Пароль успешно изменен',
-      pwdChangeFailed: 'Не удалось изменить пароль'
+      pwdChangeFailed: 'Не удалось изменить пароль',
+      phoneRequired: 'Введите номер телефона',
+      phoneInvalid: 'Введите корректный номер телефона',
+      emailRequired: 'Введите email',
+      emailInvalid: 'Введите корректный email',
+      code6Required: 'Введите 6-значный код',
+      bindPhone: 'Привязать телефон',
+      bindEmail: 'Привязать email',
+      bindPhoneTitle: 'Привязать номер телефона',
+      bindEmailTitle: 'Привязать email',
+      phoneBound: 'Телефон привязан',
+      emailBound: 'Email привязан',
+      bound: 'Привязано',
+      unbound: 'Не привязано',
+      quickActions: 'Быстрые действия',
+      editNicknameAction: 'Изменить никнейм',
+      changeAvatar: 'Сменить аватар',
+      pointsHistory: 'История баллов',
+      resendCode: 'Отправить код снова',
+      emailPlaceholder: 'Введите адрес email',
+      bindEmailNotAvailable: 'Привязка email пока недоступна в тестовом режиме',
+      bindEmailDemoOnly: 'Отправка привязки email пока недоступна. Сейчас это демонстрация',
+      bindEmailSubmitNotAvailable: 'API привязки email пока недоступно',
+      status: {
+        banned: 'Заблокирован',
+        normal: 'Нормально',
+        deactivating: 'Деактивация',
+        deactivated: 'Деактивирован',
+        unknown: 'Неизвестно',
+      },
+      time: {
+        justNow: 'Только что',
+        minutesAgo: '{n} мин назад',
+        hoursAgo: '{n} ч назад',
+        daysAgo: '{n} дн назад',
+      },
     },
     feedbackLang: {
       contact: 'Контакт',
@@ -350,8 +964,207 @@ export default {
       submitFail: 'Ошибка отправки',
       networkError: 'Ошибка сети'
     },
+    routes: {
+      login: 'Вход',
+      home: 'Главная',
+      projects: 'Проекты',
+      explore: 'Исследовать',
+      explore4d: 'Исследовать 4D',
+      profile: 'Профиль',
+      invite: 'Пригласительная ссылка',
+      settings: 'Настройки',
+      api: 'API',
+      developer: 'Центр разработчика',
+      tutorial: 'Руководство',
+      feedback: 'Обратная связь',
+      create: 'Создать',
+      createMeshScan: 'Mesh-скан',
+      create3dgsScan: '3DGS-скан',
+      shareLink: 'Ссылка для общего доступа',
+      modelDetail: 'Детали модели',
+      officialModelDetail: 'Детали официальной модели',
+      aiModelDetail: 'Детали AI-модели',
+      notFound: 'Страница не найдена'
+    },
+    welcome: {
+      title: 'С возвращением 👋',
+      subtitle: 'Начните создавать 3D-модели и воплощайте идеи'
+    },
+    auth: {
+      logoutSuccess: 'Выход выполнен успешно',
+      logoutFailed: 'Не удалось выйти',
+      emailCodeSent: 'Код отправлен, проверьте почту',
+      phoneBindSuccess: 'Номер телефона успешно привязан'
+    },
+    authErrors: {
+      emailFormat: 'Неверный формат email',
+      invalidCredentials: 'Неверный email или пароль',
+      tooManyRequests: 'Слишком много запросов, попробуйте позже',
+      accountBanned: 'Аккаунт заблокирован',
+      accountDeactivated: 'Аккаунт деактивирован',
+      loginFailedGeneric: 'Не удалось войти, проверьте email и пароль',
+      codeInvalidOrExpired: 'Код неверен или истек',
+      emailAlreadyRegistered: 'Email уже зарегистрирован',
+      passwordComplexity: 'Пароль должен быть не менее 8 символов и содержать буквы верхнего/нижнего регистра и цифры',
+      registerFailedGeneric: 'Регистрация не удалась, попробуйте позже',
+      codeInvalid: 'Неверный код подтверждения',
+      phoneLoginFailed: 'Не удалось войти по телефону'
+    },
+    errors: {
+      missingAuth: 'Отсутствуют данные авторизации',
+      invalidParams: 'Неверные параметры',
+      sessionExpired: 'Вы не вошли в систему или сессия истекла, войдите снова',
+      unauthorized: 'Неавторизовано, пожалуйста, войдите снова',
+      forbidden: 'У вас нет прав на выполнение этого действия',
+      nicknameUpdateFailed: 'Не удалось обновить никнейм',
+      avatarUpdateFailed: 'Не удалось обновить аватар',
+      requestError: 'Ошибка запроса, проверьте введенные данные',
+      oldPasswordIncorrect: 'Старый пароль неверен',
+      userNotFound: 'Пользователь не найден',
+      phoneInvalid: 'Неверный формат номера телефона',
+      sendCodeFailed: 'Не удалось отправить код подтверждения',
+      sendEmailTooOften: 'Слишком частая отправка писем, попробуйте позже',
+      sendEmailFailed: 'Не удалось отправить код, попробуйте позже',
+      phoneAlreadyRegistered: 'Номер телефона уже зарегистрирован',
+      phoneBindFailed: 'Не удалось привязать номер телефона'
+    },
+    imageUpload: {
+      mainText: 'Нажмите для загрузки или перетащите изображение в эту область',
+      subText: 'Поддерживается только один файл изображения. Повторный выбор заменит текущий файл',
+      label: 'Загрузка изображения:',
+      formats: 'Поддерживаемые форматы: jpg, png, webp',
+      recommendedSize: 'Рекомендуемый размер: не менее 512x512 пикселей',
+      onlyOne: 'За одну загрузку поддерживается только 1 изображение'
+    },
+    pointsLogs: {
+      title: 'Детали баллов',
+      loading: 'Загрузка...',
+      retry: 'Перезагрузить',
+      balanceTitle: 'Баланс баллов',
+      totalEarnedMobile: 'Всего +{total}',
+      recordCountMobile: '{count} записей',
+      recentCount: 'Последние {count}',
+      changeRecords: 'История изменений',
+      heroKicker: 'META·ST / LEDGER',
+      heroTitle: 'История баллов',
+      heroDescription: 'Понятно просматривайте каждое изменение и быстро фильтруйте записи',
+      currentBalance: 'Текущий баланс',
+      totalEarned: 'Всего получено',
+      recordCount: 'Количество записей',
+      displayScope: 'Диапазон показа',
+      showingRecentOnly: 'Показаны только последние {count} записей',
+      loadFailed: 'Не удалось загрузить данные. Повторите попытку позже',
+      date: 'Дата',
+      type: 'Тип',
+      amount: 'Количество',
+      balance: 'Баланс',
+      description: 'Описание',
+      recharge: 'Пополнение',
+      consumption: 'Расход',
+      refund: 'Возврат',
+      bonus: 'Бонус',
+      noRecords: 'Записей нет'
+    },
+    modelCard: {
+      viewModel: 'Просмотр модели',
+      createProject: 'Создать проект',
+      author: 'Автор',
+      views: 'Просмотры',
+      badges: {
+        new: 'Новое'
+      },
+      queueBadge: 'В очереди · {count} задач',
+      reviewRejected: 'Проверка не пройдена',
+      viewDetails: 'Подробнее',
+      deleteConfirm: 'Удалить эту модель?',
+      delete: 'Удалить',
+      untitledTask: 'Безымянная задача',
+      workDescription: 'Описание',
+      noDescription: 'Нет описания',
+      workStats: 'Данные работы',
+      techSpecs: 'Технические параметры',
+      unknownError: 'Неизвестная ошибка',
+      unknown: 'Неизвестно',
+      reviewViolation: 'Этот контент содержит запрещенную информацию и не прошёл проверку',
+      stats: {
+        views: 'Просмотры',
+        downloads: 'Загрузки',
+        shares: 'Поделились'
+      },
+      fields: {
+        status: 'Статус',
+        startedAt: 'Время начала',
+        finishedAt: 'Время завершения',
+        errorReason: 'Причина ошибки',
+        reviewResult: 'Результат проверки',
+        frameCount: 'Количество кадров'
+      },
+      status: {
+        received: 'Получено',
+        slicing: 'Извлечение кадров',
+        reconstructingColmap: 'Реконструкция COLMAP',
+        reconstructing3dgs: 'Обучение 3DGS',
+        reconstructingLightning: 'Быстрая реконструкция',
+        processingBgRemoval: 'Удаление фона',
+        paused: 'Приостановлено',
+        resuming: 'Возобновление',
+        completed: 'Завершено',
+        failed: 'Ошибка',
+        processing: 'Обработка'
+      },
+      actions: {
+        start: 'Запустить',
+        starting: 'Запуск...',
+        pause: 'Пауза',
+        pausing: 'Пауза...'
+      },
+      messages: {
+        taskFailed: 'Задача завершилась ошибкой. Нажмите перезапуск',
+        reviewBlocked: 'Эта задача не прошла проверку и недоступна для просмотра',
+        processing: 'Задача обрабатывается и будет доступна после завершения',
+        resumeSuccess: 'Задача перезапущена',
+        resumeFailed: 'Не удалось перезапустить. Повторите позже',
+        pauseSuccess: 'Задача приостановлена',
+        pauseFailed: 'Не удалось приостановить. Повторите позже',
+        deleteSuccess: 'Модель удалена',
+        deleteFailed: 'Не удалось удалить. Повторите позже'
+      }
+    },
+    phoneAuth: {
+      title: 'Вход по телефону',
+      subtitle: 'Введите номер телефона',
+      phonePlaceholder: 'Введите номер телефона',
+      getCode: 'Получить код',
+      nextStep: 'Далее',
+      changePhone: 'Изменить номер',
+      backToEdit: 'Вернуться к редактированию',
+      resendAfter: 'Отправить повторно через {seconds}s',
+      submitVerification: 'Подтвердить',
+      requiredPhone: 'Введите номер телефона',
+      requestErrors: {
+        badRequest: 'Ошибка запроса. Проверьте введённые данные',
+        unauthorized: 'Нет авторизации. Войдите снова',
+        invalidCode: 'Неверный код подтверждения',
+        tooManyRequests: 'Слишком много запросов. Повторите позже',
+        serverError: 'Ошибка сервера. Повторите позже'
+      },
+      invalidPhoneByRegion: {
+        cn: 'Введите действительный номер материкового Китая',
+        us: 'Введите действительный номер США',
+        uk: 'Введите действительный номер Великобритании',
+        jp: 'Введите действительный номер Японии',
+        de: 'Введите действительный номер Германии',
+        fr: 'Введите действительный номер Франции',
+        ru: 'Введите действительный номер России',
+        es: 'Введите действительный номер Испании'
+      }
+    },
     common: {
       confirm: 'Подтвердить',
-      cancel: 'Отмена'
+      close: 'Закрыть',
+      cancel: 'Отмена',
+      loading: 'Загрузка',
+      pro: 'PRO',
+      comingSoon: 'Скоро'
     }
   };

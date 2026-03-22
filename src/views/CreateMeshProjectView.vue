@@ -32,33 +32,33 @@
 
       <a-drawer
         :open="showAdvancedOptions"
-        title="高级选项"
+        :title="t('createMesh.advancedOptions')"
         placement="right"
         :width="drawerWidth"
         @close="closeAdvancedDrawer"
       >
         <div class="advanced-panel">
           <div class="advanced-section">
-            <div class="section-name">基础信息</div>
+            <div class="section-name">{{ t('createMesh.basicInfo') }}</div>
             <a-card class="option-card" size="small">
               <div class="card-line">
                 <FileTextOutlined class="field-icon" />
-                <span class="card-line-label">任务名称</span>
+                <span class="card-line-label">{{ t('createMesh.taskName') }}</span>
               </div>
               <a-input
                 v-model:value="advancedForm.taskName"
-                placeholder="默认取图片文件名"
+                :placeholder="t('createMesh.taskNamePlaceholder')"
                 allow-clear
               />
 
               <div class="card-line card-line-top">
                 <ProfileOutlined class="field-icon" />
-                <span class="card-line-label">模型描述</span>
+                <span class="card-line-label">{{ t('createMesh.modelDescription') }}</span>
               </div>
               <a-textarea
                 v-model:value="advancedForm.userObjectDescription"
                 :rows="4"
-                placeholder="可选，描述图片中的主体内容"
+                :placeholder="t('createMesh.modelDescPlaceholder')"
                 show-count
                 :maxlength="300"
               />
@@ -66,14 +66,14 @@
           </div>
 
           <div class="advanced-section">
-            <div class="section-name">生成选项</div>
+            <div class="section-name">{{ t('createMesh.generateOptions') }}</div>
             <a-card class="option-card" size="small">
               <div class="switch-item">
                 <div class="switch-meta">
                   <ThunderboltOutlined class="switch-icon" />
                   <div>
-                    <div class="switch-title">快速重建</div>
-                    <div class="switch-desc">生成速度更快，适合快速预览</div>
+                    <div class="switch-title">{{ t('createMesh.quickReconstruct') }}</div>
+                    <div class="switch-desc">{{ t('createMesh.quickReconstructDesc') }}</div>
                   </div>
                 </div>
                 <a-switch v-model:checked="advancedForm.lightningReconstruction" />
@@ -85,8 +85,8 @@
                 <div class="switch-meta">
                   <BgColorsOutlined class="switch-icon" />
                   <div>
-                    <div class="switch-title">背景移除</div>
-                    <div class="switch-desc">自动分离主体，减少环境干扰</div>
+                    <div class="switch-title">{{ t('createMesh.backgroundRemoval') }}</div>
+                    <div class="switch-desc">{{ t('createMesh.backgroundRemovalDesc') }}</div>
                   </div>
                 </div>
                 <a-switch v-model:checked="advancedForm.bgRemove" />
@@ -98,8 +98,8 @@
                 <div class="switch-meta">
                   <picture-outlined class="switch-icon" />
                   <div>
-                    <div class="switch-title">多视角重建</div>
-                    <div class="switch-desc">从单张图片生成多个视角</div>
+                    <div class="switch-title">{{ t('createMesh.multiViewReconstruct') }}</div>
+                    <div class="switch-desc">{{ t('createMesh.multiViewReconstructDesc') }}</div>
                   </div>
                 </div>
                 <a-switch v-model:checked="advancedForm.multiView" />
@@ -108,11 +108,11 @@
           </div>
 
           <div class="advanced-section">
-            <div class="section-name">说明</div>
+            <div class="section-name">{{ t('createMesh.instructions') }}</div>
             <a-card class="option-card" size="small">
               <p class="option-tip">
                 <InfoCircleOutlined />
-                <span>建议使用背景简洁、主体清晰的人物或物体图片。</span>
+                <span>{{ t('createMesh.instructionTip') }}</span>
               </p>
             </a-card>
           </div>
@@ -206,7 +206,7 @@ const resolveImageDimensions = (file: File): Promise<{ width: number; height: nu
       resolve({ width: img.width, height: img.height })
     }
     img.onerror = () => {
-      reject(new Error('读取图片尺寸失败'))
+      reject(new Error(String(t('createMesh.readImageFailed'))))
     }
     img.src = URL.createObjectURL(file)
   })
@@ -217,14 +217,14 @@ const handleUpload = async (file: File) => {
 
   const isAcceptedType = ACCEPTED_IMAGE_TYPES.includes(file.type) || /\.(jpg|jpeg|png|webp)$/i.test(file.name)
   if (!isAcceptedType) {
-    message.warning('仅支持 JPG、PNG 或 WEBP 图片')
+    message.warning(String(t('createMesh.onlySupportImage')))
     return
   }
 
   try {
     const dimensions = await resolveImageDimensions(file)
     if (dimensions.width < 128 || dimensions.height < 128) {
-      message.warning('图片尺寸过小，建议使用 ≥ 128x128 像素的图片')
+      message.warning(String(t('createMesh.imageTooSmall')))
       return
     }
 
@@ -249,13 +249,13 @@ const handleUpload = async (file: File) => {
 
     advancedForm.value.taskName = getTaskNameFromFile(file.name)
   } catch (error: any) {
-    message.error(error?.message || '读取图片信息失败')
+    message.error(error?.message || String(t('createMesh.readImageInfoFailed')))
   }
 }
 
 const removeFile = () => {
   if (uploadTask.value?.status === 'uploading') {
-    message.info('上传进行中，请先取消上传')
+    message.info(String(t('createMesh.uploadInProgress')))
     return
   }
   revokePreviewUrl()
@@ -291,7 +291,7 @@ const cancelUpload = () => {
 
 const submitProject = async () => {
   if (!uploadTask.value) {
-    message.warning('请先选择图片文件')
+    message.warning(String(t('createMesh.selectImageFirst')))
     return
   }
 
@@ -341,7 +341,7 @@ const submitProject = async () => {
     uploadTask.value.status = 'success'
     uploadTask.value.progress = 100
     uploadTask.value.abortController = null
-    message.success('上传成功，模型开始生成')
+    message.success(String(t('createMesh.uploadSuccess')))
 
     window.setTimeout(() => {
       if (!uploadTask.value || uploadTask.value.id !== currentTask.id) return
@@ -359,12 +359,12 @@ const submitProject = async () => {
     if (isCanceled) {
       uploadTask.value.status = 'cancelled'
       uploadTask.value.progress = 0
-      message.info('已取消上传')
+      message.info(String(t('createMesh.uploadCanceled')))
       return
     }
 
     uploadTask.value.status = 'failed'
-    message.error(error?.message || '上传失败，请重试')
+    message.error(error?.message || String(t('createMesh.uploadFailed')))
   }
 }
 

@@ -8,14 +8,16 @@ import es from './locales/es';
 import { createI18n } from 'vue-i18n'
 
 // 语言配置
+const englishApiDocs = en.apiDocs
+
 const messages = {
   zh,
   en,
-  de,
-  fr,
-  ja,
-  ru,
-  es
+  de: { ...de, apiDocs: englishApiDocs },
+  fr: { ...fr, apiDocs: englishApiDocs },
+  ja: { ...ja, apiDocs: englishApiDocs },
+  ru: { ...ru, apiDocs: englishApiDocs },
+  es: { ...es, apiDocs: englishApiDocs }
 }
 
 const i18n = createI18n({

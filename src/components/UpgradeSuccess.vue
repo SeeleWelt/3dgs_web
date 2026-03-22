@@ -11,23 +11,27 @@
             <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
           </svg>
         </div>
-        <h2 class="success-title">升级成功</h2>
-        <p class="success-desc">恭喜您已成为 Pro 会员</p>
+        <h2 class="success-title">{{ t('upgradeSuccess.title') }}</h2>
+        <p class="success-desc">{{ t('upgradeSuccess.description') }}</p>
         <div class="benefits-list">
           <div class="benefit-item">
             <span class="benefit-icon">⚡</span>
-            <span>无限算力</span>
+            <span>{{ t('upgradeSuccess.feature1') }}</span>
           </div>
           <div class="benefit-item">
             <span class="benefit-icon">🎁</span>
-            <span>专属折扣</span>
+            <span>{{ t('upgradeSuccess.feature4') }}</span>
           </div>
           <div class="benefit-item">
             <span class="benefit-icon">🚀</span>
-            <span>优先处理</span>
+            <span>{{ t('upgradeSuccess.feature2') }}</span>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon">💎</span>
+            <span>{{ t('upgradeSuccess.feature3') }}</span>
           </div>
         </div>
-        <button class="close-btn" @click="handleClose">太好了</button>
+        <button class="close-btn" @click="handleClose">{{ t('upgradeSuccess.continue') }}</button>
       </div>
       <!-- 背景粒子 -->
       <div class="particles">
@@ -39,6 +43,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 const show = ref(false)
 

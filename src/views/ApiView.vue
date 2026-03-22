@@ -2,15 +2,21 @@
 	<div class="api-docs">
 
 		<!-- Mobile Navigation Toggle -->
-		<button class="mobile-nav-toggle" @click="toggleMobileMenu">
+		<button
+			class="mobile-nav-toggle"
+			type="button"
+			:title="t('apiDocs.tocTitle')"
+			:aria-label="t('apiDocs.tocTitle')"
+			@click="toggleMobileMenu"
+		>
 			<svg t="1773999064213" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="16792" width="20" height="20"><path d="M123.92 555.9a32 32 0 0 1-14.82-60.38l719.19-374.9a32 32 0 0 1 29.59 56.76l-719.2 374.89a31.87 31.87 0 0 1-14.76 3.63z" fill="#ffffff" p-id="16793"></path><path d="M608.6 957.7a32 32 0 0 1-30.6-41.27l234.64-776.34a32 32 0 0 1 61.26 18.52L639.22 935a32 32 0 0 1-30.62 22.7zM505.92 580.44c-0.68 0-1.36 0-2.05-0.07l-381.46-24.12a32 32 0 1 1 4-63.88l381.5 24.13a32 32 0 0 1-2 63.94z" fill="#ffffff" p-id="16794"></path><path d="M608.14 957.32a32 32 0 0 1-30.87-23.63L475 556.82a32 32 0 1 1 61.77-16.76L639 916.93a32 32 0 0 1-22.51 39.26 31.61 31.61 0 0 1-8.35 1.13z" fill="#ffffff" p-id="16795"></path></svg>
 		</button>
 
 		<!-- Mobile Navigation Menu (Drawer) -->
-		<div class="mobile-nav-menu" :class="{ open: isMobileMenuOpen }">
-			<div class="mobile-nav-header">
-				<span>目录</span>
-				<button class="mobile-nav-close" @click="closeMobileMenu">
+			<div class="mobile-nav-menu" :class="{ open: isMobileMenuOpen }">
+				<div class="mobile-nav-header">
+					<span>{{ t('apiDocs.tocTitle') }}</span>
+					<button class="mobile-nav-close" type="button" :aria-label="t('common.close')" @click="closeMobileMenu">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<line x1="18" y1="6" x2="6" y2="18"></line>
 						<line x1="6" y1="6" x2="18" y2="18"></line>
@@ -32,10 +38,10 @@
 		<!-- Mobile Nav Overlay -->
 		<div v-if="isMobileMenuOpen" class="mobile-nav-overlay" @click="closeMobileMenu"></div>
 
-		<div class="docs-layout">
-			<aside class="toc">
-				<div class="toc-title">目录</div>
-				<ul>
+			<div class="docs-layout">
+				<aside class="toc">
+					<div class="toc-title">{{ t('apiDocs.tocTitle') }}</div>
+					<ul>
 					<li v-for="item in toc" :key="item.id" class="toc-item">
 						<a :href="`#${item.id}`">{{ item.label }}</a>
 						<ul v-if="item.children" class="toc-sub">
@@ -50,15 +56,15 @@
 			<main class="docs-content">
 				<section id="overview" class="doc-section">
 					<div class="section-header">
-						<h2>3DGS API</h2>
-						<p>这是通过编程方式与 3DGS 系统交互的 API 参考文档。</p>
+						<h2>{{ t('apiDocs.overview.title') }}</h2>
+						<p>{{ t('apiDocs.overview.desc') }}</p>
 					</div>
 					<div class="info-card">
-						<div class="info-title">基础说明</div>
+						<div class="info-title">{{ t('apiDocs.overview.baseInfo') }}</div>
 						<div class="info-body">
 							<div class="info-grid">
                 <div>
-									<div class="info-label">请求地址</div>
+									<div class="info-label">{{ t('apiDocs.overview.reqUrl') }}</div>
 									<div class="info-value">https://szgm.tenyunn.com:50585/backend/api</div>
 								</div>
 							</div>
@@ -68,49 +74,49 @@
 
 				<section id="quickstart" class="doc-section">
 					<div class="section-header">
-						<h2>快速入门</h2>
-						<p>使用以下流程快速完成 API 调用：创建密钥、上传素材、查询任务并下载模型。</p>
+						<h2>{{ t('apiDocs.quickstart.title') }}</h2>
+						<p>{{ t('apiDocs.quickstart.desc') }}</p>
 					</div>
 					<div class="step-grid">
 						<div class="step-card">
 							<div class="step-index">01</div>
-							<div class="step-title">创建 API 密钥</div>
-							<div class="step-desc">在开发者中心生成密钥，保存后用于鉴权。</div>
+							<div class="step-title">{{ t('apiDocs.quickstart.steps.s1Title') }}</div>
+							<div class="step-desc">{{ t('apiDocs.quickstart.steps.s1Desc') }}</div>
 						</div>
 						<div class="step-card">
 							<div class="step-index">02</div>
-							<div class="step-title">上传视频或图片</div>
-							<div class="step-desc">提交扫描素材，获取任务 ID。</div>
+							<div class="step-title">{{ t('apiDocs.quickstart.steps.s2Title') }}</div>
+							<div class="step-desc">{{ t('apiDocs.quickstart.steps.s2Desc') }}</div>
 						</div>
 						<div class="step-card">
 							<div class="step-index">03</div>
-							<div class="step-title">查询任务状态</div>
-							<div class="step-desc">轮询或通过 Webhook 获取完成状态。</div>
+							<div class="step-title">{{ t('apiDocs.quickstart.steps.s3Title') }}</div>
+							<div class="step-desc">{{ t('apiDocs.quickstart.steps.s3Desc') }}</div>
 						</div>
 						<div class="step-card">
 							<div class="step-index">04</div>
-							<div class="step-title">下载 3D 模型</div>
-							<div class="step-desc">使用任务 ID 获取下载链接或直传文件。</div>
+							<div class="step-title">{{ t('apiDocs.quickstart.steps.s4Title') }}</div>
+							<div class="step-desc">{{ t('apiDocs.quickstart.steps.s4Desc') }}</div>
 						</div>
 					</div>
 				</section>
 
 				<section id="auth" class="doc-section">
 					<div class="section-header">
-						<h2>验证</h2>
-						<p>使用 API 密钥进行请求鉴权。</p>
+						<h2>{{ t('apiDocs.auth.title') }}</h2>
+						<p>{{ t('apiDocs.auth.desc') }}</p>
 					</div>
 
 					<div id="auth-create-key" class="sub-section">
-						<h3>创建 API 密钥</h3>
-						<p>请前往开发者中心创建密钥。注意生成后仅显示一次。</p>
+						<h3>{{ t('apiDocs.auth.createTitle') }}</h3>
+						<p>{{ t('apiDocs.auth.createDesc') }}</p>
 					</div>
 
 					<div id="auth-use-key" class="sub-section">
-						<h3>使用 API 密钥</h3>
-						<p>在请求头中携带密钥。</p>
+						<h3>{{ t('apiDocs.auth.useTitle') }}</h3>
+						<p>{{ t('apiDocs.auth.useDesc') }}</p>
 						<div class="code-card">
-							<div class="code-title">请求头示例</div>
+							<div class="code-title">{{ t('apiDocs.auth.reqExample') }}</div>
 							<pre><code class="language-http">Authorization: Bearer &lt;API_KEY&gt;</code></pre>
 						</div>
 					</div>
@@ -118,26 +124,26 @@
 
 				<section id="scan" class="doc-section">
 					<div class="section-header">
-						<h2>3DGS 扫描</h2>
-						<p>上传视频或图片进行 3DGS 重建。</p>
+						<h2>{{ t('apiDocs.scan.title') }}</h2>
+						<p>{{ t('apiDocs.scan.desc') }}</p>
 					</div>
 
 					<div id="scan-video" class="sub-section">
-						<h3>视频上传</h3>
+						<h3>{{ t('apiDocs.scan.videoUpload') }}</h3>
 						<div class="endpoint-card">
 							<div class="endpoint">POST /v1/open/videoUpload</div>
-							<div class="endpoint-meta">支持 multipart/form-data</div>
+							<div class="endpoint-meta">{{ t('apiDocs.scan.supportMulti') }}</div>
 						</div>
 						<div>
-							<h4>Request</h4>
+							<h4>{{ t('apiDocs.scan.request') }}</h4>
 							<table class="param-table">
 								<thead>
 									<tr>
-										<th>位置</th>
-										<th>字段</th>
-										<th>类型</th>
-										<th>必填</th>
-										<th>说明</th>
+										<th>{{ t('apiDocs.scan.reqPos') }}</th>
+										<th>{{ t('apiDocs.scan.reqField') }}</th>
+										<th>{{ t('apiDocs.scan.reqType') }}</th>
+										<th>{{ t('apiDocs.scan.reqRequired') }}</th>
+										<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -145,27 +151,27 @@
 										<td>Header</td>
 										<td>Authorization</td>
 										<td>String</td>
-										<td>是</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
 										<td>Bearer &lt;API_KEY&gt;</td>
 									</tr>
 									<tr>
 										<td>Form</td>
 										<td>videos</td>
 										<td>File</td>
-										<td>是</td>
-										<td>上传视频文件，字段名固定为 videos，支持 .mp4/.avi/.mov/.mkv/.webm，只支持单文件；最大 1GB</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
+										<td>{{ t('apiDocs.scan.videoDesc') }}</td>
 									</tr>
 									<tr>
 										<td>Form</td>
 										<td>params</td>
 										<td>String(JSON)</td>
-										<td>是</td>
-										<td>JSON 字符串，见 Attributes</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
+										<td>{{ t('apiDocs.scan.paramsDesc') }}</td>
 									</tr>
 								</tbody>
 							</table>
 							<div class="code-card">
-								<div class="code-title">请求示例</div>
+								<div class="code-title">{{ t('apiDocs.scan.reqExample') }}</div>
 								<pre><code class="language-bash">curl -X POST "https://szgm.tenyunn.com:50585/v1/open/videoUpload" \
   -H "Authorization: Bearer &lt;API_KEY&gt;" \
   -F "videos=@/path/to/video.mp4" \
@@ -173,9 +179,9 @@
 							</div>
 						</div>
 						<div>
-							<h4>Response</h4>
+							<h4>{{ t('apiDocs.scan.response') }}</h4>
 							<div class="code-card">
-								<div class="code-title">成功响应示例</div>
+								<div class="code-title">{{ t('apiDocs.scan.resSuccess') }}</div>
 								<pre><code class="language-json">{
   "code": 200,
   "message": "Success",
@@ -185,34 +191,34 @@
 							</div>
 						</div>
 						<div>
-							<h4>Attributes</h4>
+							<h4>{{ t('apiDocs.scan.attributes') }}</h4>
 							<table class="param-table">
 								<thead>
 									<tr>
-										<th>字段</th>
-										<th>类型</th>
-										<th>必填</th>
-										<th>说明</th>
+										<th>{{ t('apiDocs.scan.reqField') }}</th>
+										<th>{{ t('apiDocs.scan.reqType') }}</th>
+										<th>{{ t('apiDocs.scan.reqRequired') }}</th>
+										<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr>
 										<td>task_name</td>
 										<td>String</td>
-										<td>是</td>
-										<td>1-50 字符，仅中文/字母/数字/下划线</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
+										<td>{{ t('apiDocs.scan.taskNameDesc') }}</td>
 									</tr>
 									<tr>
 										<td>bg_remove</td>
 										<td>Boolean</td>
-										<td>否</td>
-										<td>是否开启背景移除</td>
+										<td>{{ t('apiDocs.scan.no') }}</td>
+										<td>{{ t('apiDocs.scan.bgRemoveDesc') }}</td>
 									</tr>
 									<tr>
 										<td>user_object_description</td>
 										<td>String</td>
-										<td>否</td>
-										<td>用户自定义物体描述</td>
+										<td>{{ t('apiDocs.scan.no') }}</td>
+										<td>{{ t('apiDocs.scan.userObjectDesc') }}</td>
 									</tr>
 								</tbody>
 							</table>
@@ -231,26 +237,26 @@
 
 				<section id="model" class="doc-section">
 					<div class="section-header">
-						<h2>模型</h2>
-						<p>查询重建任务状态并下载模型。</p>
+						<h2>{{ t('apiDocs.model.title') }}</h2>
+						<p>{{ t('apiDocs.model.desc') }}</p>
 					</div>
 
 					<div id="model-status" class="sub-section">
-						<h3>获取重建任务状态</h3>
+						<h3>{{ t('apiDocs.model.getStatus') }}</h3>
 						<div class="endpoint-card">
 							<div class="endpoint">GET /v1/open/getModelStatus</div>
-							<div class="endpoint-meta">返回任务状态</div>
+							<div class="endpoint-meta">{{ t('apiDocs.model.statusReturn') }}</div>
 						</div>
 						<div>
-							<h4>Request</h4>
+							<h4>{{ t('apiDocs.scan.request') }}</h4>
 							<table class="param-table">
 								<thead>
 									<tr>
-										<th>位置</th>
-										<th>字段</th>
-										<th>类型</th>
-										<th>必填</th>
-										<th>说明</th>
+										<th>{{ t('apiDocs.scan.reqPos') }}</th>
+										<th>{{ t('apiDocs.scan.reqField') }}</th>
+										<th>{{ t('apiDocs.scan.reqType') }}</th>
+										<th>{{ t('apiDocs.scan.reqRequired') }}</th>
+										<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -258,23 +264,23 @@
 										<td>Header</td>
 										<td>Authorization</td>
 										<td>String</td>
-										<td>是</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
 										<td>Bearer &lt;API_KEY&gt;</td>
 									</tr>
 									<tr>
 										<td>Query</td>
 										<td>task_id</td>
 										<td>String</td>
-										<td>是</td>
-										<td>任务 ID</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
+										<td>{{ t('apiDocs.model.taskIdDesc') }}</td>
 									</tr>
 								</tbody>
 							</table>
 						</div>
 						<div>
-							<h4>Response</h4>
+							<h4>{{ t('apiDocs.scan.response') }}</h4>
 							<div class="code-card">
-								<div class="code-title">成功响应示例</div>
+								<div class="code-title">{{ t('apiDocs.scan.resSuccess') }}</div>
 								<pre><code class="language-json">{
   "code": 200,
   "message": "Success",
@@ -285,83 +291,83 @@
 							</div>
 						</div>
 						<div>
-							<h4>Attributes</h4>
+							<h4>{{ t('apiDocs.scan.attributes') }}</h4>
 							<table class="param-table">
 								<thead>
 									<tr>
-										<th>字段</th>
-										<th>类型</th>
-										<th>说明</th>
+										<th>{{ t('apiDocs.scan.reqField') }}</th>
+										<th>{{ t('apiDocs.scan.reqType') }}</th>
+										<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr>
 										<td>code</td>
 										<td>Number</td>
-										<td>200 表示成功</td>
+										<td>{{ t('apiDocs.model.code200') }}</td>
 									</tr>
 									<tr>
 										<td>message</td>
 										<td>String</td>
-										<td>返回消息</td>
+										<td>{{ t('apiDocs.model.resMsg') }}</td>
 									</tr>
 									<tr>
 										<td>data.status</td>
 										<td>String</td>
-										<td>任务状态</td>
+										<td>{{ t('apiDocs.model.taskStatus') }}</td>
 									</tr>
 								</tbody>
 							</table>
 						</div>
             <div>
-              <h4>任务状态</h4>
+               <h4>{{ t('apiDocs.model.taskStatus') }}</h4>
 						<table class="param-table">
 							<thead>
 								<tr>
-									<th>状态</th>
-									<th>说明</th>
+									<th>{{ t('apiDocs.model.statusTab') }}</th>
+									<th>{{ t('apiDocs.model.statusDesc') }}</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td>received</td>
-									<td>已接收，等待处理</td>
+									<td>{{ t('apiDocs.model.statusReceived') }}</td>
 								</tr>
 								<tr>
 									<td>slicing</td>
-									<td>视频切片中</td>
+									<td>{{ t('apiDocs.model.statusSlicing') }}</td>
 								</tr>
 								<tr>
 									<td>reconstructing_colmap</td>
-									<td>COLMAP 重建中</td>
+									<td>{{ t('apiDocs.model.statusColmap') }}</td>
 								</tr>
 								<tr>
 									<td>reconstructing_3dgs</td>
-									<td>3DGS 训练中</td>
+									<td>{{ t('apiDocs.model.status3dgs') }}</td>
 								</tr>
 								<tr>
 									<td>reconstructing_lightning</td>
-									<td>Lightning 快速重建中</td>
+									<td>{{ t('apiDocs.model.statusLightning') }}</td>
 								</tr>
 								<tr>
 									<td>processing_bg_removal</td>
-									<td>背景去除处理中</td>
+									<td>{{ t('apiDocs.model.statusBgRemoval') }}</td>
 								</tr>
 								<tr>
 									<td>paused</td>
-									<td>已暂停</td>
+									<td>{{ t('apiDocs.model.statusPaused') }}</td>
 								</tr>
 								<tr>
 									<td>resuming</td>
-									<td>恢复中</td>
+									<td>{{ t('apiDocs.model.statusResuming') }}</td>
 								</tr>
 								<tr>
 									<td>completed</td>
-									<td>已完成</td>
+									<td>{{ t('apiDocs.model.statusCompleted') }}</td>
 								</tr>
 								<tr>
 									<td>failed</td>
-									<td>失败</td>
+									<td>{{ t('apiDocs.model.statusFailed') }}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -369,20 +375,20 @@
 					</div>
 
 					<div id="model-download" class="sub-section">
-						<h3>下载 3D 模型</h3>
+						<h3>{{ t('apiDocs.model.downloadMode') }}</h3>
 						<div class="endpoint-card">
 							<div class="endpoint">GET /v1/open/downModel</div>
 						</div>
 						<div>
-							<h4>Request</h4>
+							<h4>{{ t('apiDocs.scan.request') }}</h4>
 							<table class="param-table">
 								<thead>
 									<tr>
-										<th>位置</th>
-										<th>字段</th>
-										<th>类型</th>
-										<th>必填</th>
-										<th>说明</th>
+										<th>{{ t('apiDocs.scan.reqPos') }}</th>
+										<th>{{ t('apiDocs.scan.reqField') }}</th>
+										<th>{{ t('apiDocs.scan.reqType') }}</th>
+										<th>{{ t('apiDocs.scan.reqRequired') }}</th>
+										<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -390,53 +396,53 @@
 										<td>Header</td>
 										<td>Authorization</td>
 										<td>String</td>
-										<td>是</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
 										<td>Bearer &lt;API_KEY&gt;</td>
 									</tr>
 									<tr>
 										<td>Query</td>
 										<td>task_id</td>
 										<td>String</td>
-										<td>是</td>
-										<td>任务 ID</td>
+										<td>{{ t('apiDocs.scan.yes') }}</td>
+										<td>{{ t('apiDocs.model.taskIdDesc') }}</td>
 									</tr>
 								</tbody>
 							</table>
 							<div class="code-card">
-								<div class="code-title">请求示例</div>
+								<div class="code-title">{{ t('apiDocs.scan.reqExample') }}</div>
 								<pre><code class="language-bash">curl -L -o model.sog "https://szgm.tenyunn.com:50585/v1/open/downModel?task_id=YOUR_TASK_ID" \
   -H "Authorization: Bearer &lt;API_KEY&gt;"</code></pre>
 							</div>
 						</div>
 						<div>
-							<h4>Response</h4>
+							<h4>{{ t('apiDocs.scan.response') }}</h4>
 							<div class="code-card">
-								<div class="code-title">成功响应说明</div>
+								<div class="code-title">{{ t('apiDocs.model.downRes') }}</div>
 								<pre><code class="language-text">Content-Type: application/octet-stream
 Content-Disposition: attachment; filename="&lt;task_name&gt;.sog"
 Binary file stream</code></pre>
 							</div>
 						</div>
 						<div>
-							<h4>Attributes</h4>
+							<h4>{{ t('apiDocs.scan.attributes') }}</h4>
 							<table class="param-table">
 								<thead>
 									<tr>
-										<th>字段</th>
-										<th>类型</th>
-										<th>说明</th>
+										<th>{{ t('apiDocs.scan.reqField') }}</th>
+										<th>{{ t('apiDocs.scan.reqType') }}</th>
+										<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr>
 										<td>task_id</td>
 										<td>String</td>
-										<td>任务 ID，任务需已完成且更新不超过 7 天</td>
+										<td>{{ t('apiDocs.model.downTaskId') }}</td>
 									</tr>
 									<tr>
-										<td>响应文件</td>
+										<td>{{ t('apiDocs.model.resFile') }}</td>
 										<td>Binary</td>
-										<td>返回 .sog 文件流</td>
+										<td>{{ t('apiDocs.model.resSog') }}</td>
 									</tr>
 								</tbody>
 							</table>
@@ -446,23 +452,23 @@ Binary file stream</code></pre>
 
 				<section id="quota" class="doc-section">
 					<div class="section-header">
-						<h2>额度</h2>
-						<p>查询剩余算力点额度。</p>
+						<h2>{{ t('apiDocs.quota.title') }}</h2>
+						<p>{{ t('apiDocs.quota.desc') }}</p>
 					</div>
 					<div class="endpoint-card">
 						<div class="endpoint">GET /v1/open/getCredits</div>
-						<div class="endpoint-meta">返回当前算力点余额</div>
+						<div class="endpoint-meta">{{ t('apiDocs.quota.returnCredits') }}</div>
 					</div>
 					<div>
-						<h4>Request</h4>
+						<h4>{{ t('apiDocs.scan.request') }}</h4>
 						<table class="param-table">
 							<thead>
 								<tr>
-									<th>位置</th>
-									<th>字段</th>
-									<th>类型</th>
-									<th>必填</th>
-									<th>说明</th>
+									<th>{{ t('apiDocs.scan.reqPos') }}</th>
+									<th>{{ t('apiDocs.scan.reqField') }}</th>
+									<th>{{ t('apiDocs.scan.reqType') }}</th>
+									<th>{{ t('apiDocs.scan.reqRequired') }}</th>
+									<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -470,16 +476,16 @@ Binary file stream</code></pre>
 									<td>Header</td>
 									<td>Authorization</td>
 									<td>String</td>
-									<td>是</td>
+									<td>{{ t('apiDocs.scan.yes') }}</td>
 									<td>Bearer &lt;API_KEY&gt;</td>
 								</tr>
 							</tbody>
 						</table>
 					</div>
 					<div>
-						<h4>Response</h4>
+						<h4>{{ t('apiDocs.scan.response') }}</h4>
 						<div class="code-card">
-							<div class="code-title">成功响应示例</div>
+							<div class="code-title">{{ t('apiDocs.scan.resSuccess') }}</div>
 							<pre><code class="language-json">{
   "code": 200,
   "data": {
@@ -491,30 +497,30 @@ Binary file stream</code></pre>
 						</div>
 					</div>
 					<div>
-						<h4>Attributes</h4>
+						<h4>{{ t('apiDocs.scan.attributes') }}</h4>
 						<table class="param-table">
 							<thead>
 								<tr>
-									<th>字段</th>
-									<th>类型</th>
-									<th>说明</th>
+									<th>{{ t('apiDocs.scan.reqField') }}</th>
+									<th>{{ t('apiDocs.scan.reqType') }}</th>
+									<th>{{ t('apiDocs.scan.reqDesc') }}</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td>open_credits_total</td>
 									<td>Number</td>
-									<td>总额度</td>
+									<td>{{ t('apiDocs.quota.totalCredits') }}</td>
 								</tr>
 								<tr>
 									<td>open_credits_available</td>
 									<td>Number</td>
-									<td>可用额度</td>
+									<td>{{ t('apiDocs.quota.availCredits') }}</td>
 								</tr>
 								<tr>
 									<td>open_credits_used</td>
 									<td>Number</td>
-									<td>已使用额度</td>
+									<td>{{ t('apiDocs.quota.usedCredits') }}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -523,35 +529,34 @@ Binary file stream</code></pre>
 
 				<section id="webhook" class="doc-section">
 					<div class="section-header">
-						<h2>使用 Webhook</h2>
-						<p>用于接收任务完成等事件通知。</p>
+						<h2>{{ t('apiDocs.webhook.title') }}</h2>
+						<p>{{ t('apiDocs.webhook.desc') }}</p>
 					</div>
 					<div class="info-card">
-						<div class="info-title">Webhook 需要满足以下三项要素</div>
+						<div class="info-title">{{ t('apiDocs.webhook.needsRules') }}</div>
 						<ol class="doc-list">
 							<li>
-								Webhook 可在开发者中心“设置 &gt; Webhooks”中创建与管理。
+								{{ t('apiDocs.webhook.rule1') }}
 							</li>
 							<li>
-								回调地址（Callback URL）：当模型状态变更时，系统会向该地址发送 POST 请求。
+								{{ t('apiDocs.webhook.rule2') }}
 							</li>
 							<li>
-								签名密钥（Secret）：长度 6-50 的随机字符串，用于签名每次请求。
-								用于加密回调内容，请在服务端使用相同密钥解密。
+								{{ t('apiDocs.webhook.rule3') }}
 							</li>
 						</ol>
 					</div>
 
 					<div class="sub-section">
-						<h3>重要说明</h3>
+						<h3>{{ t('apiDocs.webhook.important') }}</h3>
 						<ol class="doc-list emphasis">
-							<li>请确保 NotifyUrl 可被公网访问。</li>
-							<li>回调为 POST JSON，字段为 data/iv/tag，需用 secret 解密。</li>
-							<li>收到通知后请返回 HTTP 200，否则每 30s 重试一次，最多 3 次。</li>
+							<li>{{ t('apiDocs.webhook.warn1') }}</li>
+							<li>{{ t('apiDocs.webhook.warn2') }}</li>
+							<li>{{ t('apiDocs.webhook.warn3') }}</li>
 						</ol>
 					</div>
 					<div class="code-card">
-						<div class="code-title">参数解密示例 (Node.js)</div>
+						<div class="code-title">{{ t('apiDocs.webhook.decryptNode') }}</div>
 						<pre><code class="language-javascript">const crypto = require('crypto');
 
 function decryptWebhookPayload(payload, secret) {
@@ -569,7 +574,7 @@ function decryptWebhookPayload(payload, secret) {
 </code></pre>
 					</div>
 					<div class="code-card">
-						<div class="code-title">参数解密示例 (Python)</div>
+						<div class="code-title">{{ t('apiDocs.webhook.decryptPython') }}</div>
 						<pre><code class="language-python">import base64
 import hashlib
 import json
@@ -589,77 +594,77 @@ def decrypt_webhook_payload(payload, secret):
 
 				<section id="errors" class="doc-section">
 					<div class="section-header">
-						<h2>错误</h2>
-						<p>所有错误返回统一格式。</p>
+						<h2>{{ t('apiDocs.errors.title') }}</h2>
+						<p>{{ t('apiDocs.errors.desc') }}</p>
 					</div>
 					<div class="code-card">
-						<div class="code-title">错误响应示例</div>
+						<div class="code-title">{{ t('apiDocs.errors.errResList') }}</div>
 						<pre><code class="language-json">{
 	"code": 2002,
-	"message": "任务ID格式不正确"
+	"message": "{{ t('apiDocs.errors.err2002') }}"
 }</code></pre>
 					</div>
 					<div>
-						<h4>业务错误码</h4>
+						<h4>{{ t('apiDocs.errors.bizCodes') }}</h4>
 						<table class="param-table">
 							<thead>
 								<tr>
-									<th>错误码</th>
-									<th>说明</th>
+									<th>{{ t('apiDocs.errors.errCode') }}</th>
+									<th>{{ t('apiDocs.errors.errDesc') }}</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td>2001</td>
-									<td>缺少 task_id</td>
+									<td>{{ t('apiDocs.errors.err2001') }}</td>
 								</tr>
 								<tr>
 									<td>2002</td>
-									<td>任务ID格式不正确</td>
+									<td>{{ t('apiDocs.errors.err2002') }}</td>
 								</tr>
 								<tr>
 									<td>2003</td>
-									<td>无权访问此任务</td>
+									<td>{{ t('apiDocs.errors.err2003') }}</td>
 								</tr>
 								<tr>
 									<td>2004</td>
-									<td>任务未找到</td>
+									<td>{{ t('apiDocs.errors.err2004') }}</td>
 								</tr>
 								<tr>
 									<td>2005</td>
-									<td>任务尚未完成</td>
+									<td>{{ t('apiDocs.errors.err2005') }}</td>
 								</tr>
 								<tr>
 									<td>2006</td>
-									<td>模型已超过7天，不提供下载</td>
+									<td>{{ t('apiDocs.errors.err2006') }}</td>
 								</tr>
 								<tr>
 									<td>2007</td>
-									<td>不支持的格式</td>
+									<td>{{ t('apiDocs.errors.err2007') }}</td>
 								</tr>
 								<tr>
 									<td>2008</td>
-									<td>模型文件未找到</td>
+									<td>{{ t('apiDocs.errors.err2008') }}</td>
 								</tr>
 								<tr>
 									<td>2010</td>
-									<td>剩余可用算力点不足</td>
+									<td>{{ t('apiDocs.errors.err2010') }}</td>
 								</tr>
 								<tr>
 									<td>2011</td>
-									<td>任务名称不符合要求</td>
+									<td>{{ t('apiDocs.errors.err2011') }}</td>
 								</tr>
 								<tr>
 									<td>2012</td>
-									<td>参数不合格</td>
+									<td>{{ t('apiDocs.errors.err2012') }}</td>
 								</tr>
 								<tr>
 									<td>2500</td>
-									<td>服务器错误</td>
+									<td>{{ t('apiDocs.errors.err2500') }}</td>
 								</tr>
 								<tr>
 									<td>2501</td>
-									<td>上传失败</td>
+									<td>{{ t('apiDocs.errors.err2501') }}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -668,52 +673,52 @@ def decrypt_webhook_payload(payload, secret):
 
 				<section id="status-codes" class="doc-section">
 					<div class="section-header">
-						<h2>状态码</h2>
-						<p>HTTP 状态码说明。</p>
+						<h2>{{ t('apiDocs.statusCodes.title') }}</h2>
+						<p>{{ t('apiDocs.statusCodes.desc') }}</p>
 					</div>
 					<table class="param-table">
 						<thead>
 							<tr>
-								<th>状态码</th>
-								<th>含义</th>
-								<th>说明</th>
+								<th>{{ t('apiDocs.statusCodes.code') }}</th>
+								<th>{{ t('apiDocs.statusCodes.meaning') }}</th>
+								<th>{{ t('apiDocs.statusCodes.scDesc') }}</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
 								<td>200</td>
 								<td>OK</td>
-								<td>请求成功</td>
+								<td>{{ t('apiDocs.statusCodes.sc200') }}</td>
 							</tr>
 							<tr>
 								<td>400</td>
 								<td>Bad Request</td>
-								<td>请求参数错误</td>
+								<td>{{ t('apiDocs.statusCodes.sc400') }}</td>
 							</tr>
 							<tr>
 								<td>401</td>
 								<td>Unauthorized</td>
-								<td>鉴权失败</td>
+								<td>{{ t('apiDocs.statusCodes.sc401') }}</td>
 							</tr>
 							<tr>
 								<td>403</td>
 								<td>Forbidden</td>
-								<td>无权访问资源</td>
+								<td>{{ t('apiDocs.statusCodes.sc403') }}</td>
 							</tr>
 							<tr>
 								<td>404</td>
 								<td>Not Found</td>
-								<td>资源未找到</td>
+								<td>{{ t('apiDocs.statusCodes.sc404') }}</td>
 							</tr>
 							<tr>
 								<td>420</td>
 								<td>Insufficient Credits</td>
-								<td>算力点不足</td>
+								<td>{{ t('apiDocs.statusCodes.sc420') }}</td>
 							</tr>
 							<tr>
 								<td>500</td>
 								<td>Server Error</td>
-								<td>服务器错误</td>
+								<td>{{ t('apiDocs.statusCodes.sc500') }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -733,7 +738,7 @@ type TocItem = {
 	children?: TocItem[]
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const isMobileMenuOpen = ref(false)
 
@@ -745,37 +750,40 @@ const closeMobileMenu = () => {
 	isMobileMenuOpen.value = false
 }
 
-const toc = computed<TocItem[]>(() => [
-	{ id: 'overview', label: t('apiDocs.overview.title') },
-	{ id: 'quickstart', label: t('apiDocs.quickstart.title') },
-	{
-		id: 'auth',
-		label: t('apiDocs.auth.title'),
-		children: [
-			{ id: 'auth-create-key', label: t('apiDocs.auth.createTitle') },
-			{ id: 'auth-use-key', label: t('apiDocs.auth.useTitle') }
-		]
-	},
-	{
-		id: 'scan',
-		label: t('apiDocs.scan.title'),
-		children: [
-			{ id: 'scan-video', label: t('apiDocs.scan.videoUpload') }
-		]
-	},
-	{
-		id: 'model',
-		label: t('apiDocs.model.title'),
-		children: [
-			{ id: 'model-status', label: t('apiDocs.model.getStatus') },
-			{ id: 'model-download', label: t('apiDocs.model.downloadMode') }
-		]
-	},
-	{ id: 'quota', label: t('apiDocs.quota.title') },
-	{ id: 'webhook', label: t('apiDocs.webhook.title') },
-	{ id: 'errors', label: t('apiDocs.errors.title') },
-	{ id: 'status-codes', label: t('apiDocs.statusCodes.title') }
-])
+const toc = computed<TocItem[]>(() => {
+	// Ensure TOC reacts to language switching in all build modes.
+	locale.value
+
+	return [
+		{ id: 'overview', label: t('apiDocs.tocItems.overview') },
+		{ id: 'quickstart', label: t('apiDocs.tocItems.quickstart') },
+		{
+			id: 'auth',
+			label: t('apiDocs.tocItems.auth'),
+			children: [
+				{ id: 'auth-create-key', label: t('apiDocs.tocItems.createApiKey') },
+				{ id: 'auth-use-key', label: t('apiDocs.tocItems.useApiKey') }
+			]
+		},
+		{
+			id: 'scan',
+			label: t('apiDocs.tocItems.scan'),
+			children: [{ id: 'scan-video', label: t('apiDocs.tocItems.videoUpload') }]
+		},
+		{
+			id: 'model',
+			label: t('apiDocs.tocItems.model'),
+			children: [
+				{ id: 'model-status', label: t('apiDocs.tocItems.modelStatus') },
+				{ id: 'model-download', label: t('apiDocs.tocItems.modelDownload') }
+			]
+		},
+		{ id: 'quota', label: t('apiDocs.tocItems.quota') },
+		{ id: 'webhook', label: t('apiDocs.tocItems.webhook') },
+		{ id: 'errors', label: t('apiDocs.tocItems.errors') },
+		{ id: 'status-codes', label: t('apiDocs.tocItems.statusCodes') }
+	]
+})
 </script>
 
 <style scoped>

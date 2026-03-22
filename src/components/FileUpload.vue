@@ -9,8 +9,8 @@
     <!-- Compact Mode (Re-upload) -->
     <div v-if="props.compact" class="compact-zone" :class="{ 'disabled': props.disabled }">
       <UploadOutlined />
-      <span class="desktop-only">点击或拖拽重新上传文件</span>
-      <span class="mobile-only">点击重新上传</span>
+      <span class="desktop-only">{{ t('fileUpload.compact.desktopHint') }}</span>
+      <span class="mobile-only">{{ t('fileUpload.compact.mobileHint') }}</span>
       <input
         ref="fileInput"
         type="file"
@@ -44,8 +44,8 @@
 
         <!-- Upload Text -->
         <div class="upload-text">
-          <p class="main-text">点击上传或将视频/图片拖入此区域</p>
-          <p class="sub-text">支持视频（mp4, mov, avi, mvk, webm）或图片（jpg, png,jpeg）</p>
+          <p class="main-text">{{ t('fileUpload.mainText') }}</p>
+          <p class="sub-text">{{ t('fileUpload.subText') }}</p>
         </div>
 
         <!-- Hidden Input -->
@@ -62,27 +62,40 @@
       <!-- Upload Info -->
       <div class="upload-info desktop-only">
         <div class="info-row">
-          <span class="info-label">视频上传：</span>
+          <span class="info-label">{{ t('fileUpload.video.label') }}</span>
           <span class="info-content">
-            · 支持的格式：mp4, mov, avi, mvk, webm
-            · 最少 {{ props.minVideoDurationSeconds || 30 }} 秒，最多 {{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }} 分钟
-            · 一次仅支持 1 个视频
-            · 分辨率限制：8K（7680x4320）及以下
+            · {{ t('fileUpload.video.formats') }}
+            · {{ t('fileUpload.video.duration', { min: props.minVideoDurationSeconds || 30, max: props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }) }}
+            · {{ t('fileUpload.video.onlyOne') }}
+            · {{ t('fileUpload.video.resolutionLimit') }}
           </span>
         </div>
         <div class="info-row">
-          <span class="info-label">图片上传：</span>
+          <span class="info-label">{{ t('fileUpload.image.label') }}</span>
           <span class="info-content">
-            · 支持的格式：jpg, png, jpeg
-            · 最少 {{ props.minImageCount || 30 }} 张，最多 {{ props.maxImageCount || 150 }} 张
-            · 分辨率限制：8K（7680x4320）及以下
+            · {{ t('fileUpload.image.formats') }}
+            · {{ t('fileUpload.image.count', { min: props.minImageCount || 30, max: props.maxImageCount || 150 }) }}
+            · {{ t('fileUpload.image.resolutionLimit') }}
           </span>
         </div>
       </div>
 
       <!-- Mobile simplified info -->
       <div class="upload-info mobile-only">
-        <span class="mobile-info-text">视频：{{ props.minVideoDurationSeconds || 30 }}秒~{{ props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2 }}分钟 | 图片：{{ props.minImageCount || 30 }}~{{ props.maxImageCount || 150 }}张</span>
+        <div class="mobile-info-text">
+          <span class="mobile-info-line">
+            {{ t('fileUpload.mobileVideoSummary', {
+            videoMinSec: props.minVideoDurationSeconds || 30,
+            videoMaxMin: props.maxVideoDurationSeconds ? props.maxVideoDurationSeconds / 60 : 2
+          }) }}
+          </span>
+          <span class="mobile-info-line">
+            {{ t('fileUpload.mobileImageSummary', {
+            imageMin: props.minImageCount || 30,
+            imageMax: props.maxImageCount || 150
+          }) }}
+          </span>
+        </div>
       </div>
     </template>
   </div>
@@ -92,6 +105,9 @@
 import { message } from 'ant-design-vue'
 import { UploadOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   upload: [files: File[]]
@@ -138,7 +154,7 @@ const handleFileSelect = (e: Event) => {
     return file.type === type;
   });
   if(!isvValidFiles) {
-    message.warning('上传的文件内容类型不一致，请重新选择')
+    message.warning(t('fileUpload.messages.mixedTypes'))
     target.value = ''
     return
   }
@@ -353,6 +369,15 @@ const handleFileSelect = (e: Event) => {
   padding: 12px;
   background: var(--glass-surface);
   border-radius: 8px;
+}
+
+.mobile-info-line {
+  display: block;
+  line-height: 1.6;
+}
+
+.mobile-info-line + .mobile-info-line {
+  margin-top: 4px;
 }
 
 /* Responsive */

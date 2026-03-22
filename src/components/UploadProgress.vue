@@ -6,21 +6,21 @@
         <!-- 算力点不足警告 -->
         <div v-if="isPointsInsufficient" class="points-warning">
           <ExclamationCircleOutlined />
-          <span>算力点不足</span>
+          <span>{{ t('uploadProgress.points.insufficient') }}</span>
         </div>
         <a-tooltip>
           <template #title>
             <div class="points-tooltip-content">
-              <p>当前算力点: {{ currentPoints }}</p>
-              <p>本次消耗: -{{ consumedPoints }}</p>
-              <p>剩余算力点: {{ remainingPoints }}</p>
+              <p>{{ t('uploadProgress.pointsTooltip.current', { points: currentPoints }) }}</p>
+              <p>{{ t('uploadProgress.pointsTooltip.consumed', { points: consumedPoints }) }}</p>
+              <p>{{ t('uploadProgress.pointsTooltip.remaining', { points: remainingPoints }) }}</p>
             </div>
           </template>
           <ExclamationCircleOutlined class="points-help-icon" />
         </a-tooltip>
         <button class="advanced-btn" @click="$emit('open-advanced')">
           <SettingOutlined />
-          <span>高级选项</span>
+          <span>{{ t('uploadProgress.actions.advancedOptions') }}</span>
         </button>
       </div>
     </div>
@@ -31,7 +31,7 @@
         <div class="video-preview" v-if="task.previewUrl">
           <button
             class="preview-remove"
-            title="移除视频"
+            :title="t('uploadProgress.actions.removeVideo')"
             :disabled="task.status === 'uploading' || props.disabled"
             @click.stop="$emit('remove')"
           >
@@ -61,11 +61,11 @@
           <div class="meta-tags">
             <span class="meta-tag">
               <ClockCircleOutlined />
-              时长 {{ formatDuration(task.durationSec) }}
+              {{ t('uploadProgress.meta.duration', { value: formatDuration(task.durationSec) }) }}
             </span>
             <span class="meta-tag">
               <FileOutlined />
-              大小 {{ formatSize(task.size) }}
+              {{ t('uploadProgress.meta.size', { value: formatSize(task.size) }) }}
             </span>
           </div>
 
@@ -78,11 +78,11 @@
           </div>
 
           <div class="file-status">
-            <span v-if="task.status === 'uploading'">上传中... {{ Math.round(task.progress) }}%</span>
-            <span v-else-if="task.status === 'pending'">待上传，点击"开始生成模型"后上传</span>
-            <span v-else-if="task.status === 'success'" class="completed-text">上传完成</span>
-            <span v-else-if="task.status === 'cancelled'" class="cancelled-text">已取消</span>
-            <span v-else class="error-text">上传失败</span>
+            <span v-if="task.status === 'uploading'">{{ t('uploadProgress.fileStatus.uploading', { percent: Math.round(task.progress) }) }}</span>
+            <span v-else-if="task.status === 'pending'">{{ t('uploadProgress.fileStatus.pendingHint') }}</span>
+            <span v-else-if="task.status === 'success'" class="completed-text">{{ t('uploadProgress.fileStatus.completed') }}</span>
+            <span v-else-if="task.status === 'cancelled'" class="cancelled-text">{{ t('uploadProgress.fileStatus.cancelled') }}</span>
+            <span v-else class="error-text">{{ t('uploadProgress.fileStatus.failed') }}</span>
           </div>
         </div>
       </div>
@@ -92,9 +92,9 @@
     <div v-if="imageFiles && imageFiles.length > 0" class="file-list image-list">
       <!-- 图片数量统计 -->
       <div class="image-count-info">
-        <span>已选择 <strong>{{ imageFiles.length }}</strong> 张图片</span>
+        <span>{{ t('uploadProgress.image.selectedCount', { count: imageFiles.length }) }}</span>
         <span v-if="imageFiles.length > getMaxDisplayImages() && !showAllImages" class="expand-hint" @click="showAllImages = true">
-          <span>点击展开全部</span>
+          <span>{{ t('uploadProgress.image.expandAll') }}</span>
           <DownOutlined />
         </span>
       </div>
@@ -115,7 +115,7 @@
               />
               <button
                 class="preview-remove"
-                title="移除图片"
+                :title="t('uploadProgress.actions.removeImage')"
                 :disabled="imageUploadStatus?.status === 'uploading' || props.disabled"
                 @click.stop="$emit('remove-image', image.id)"
               >
@@ -134,7 +134,7 @@
           >
             <div class="collapse-content">
               <UpOutlined />
-              <span>收起</span>
+              <span>{{ t('uploadProgress.image.collapse') }}</span>
             </div>
           </div>
         </template>
@@ -153,7 +153,7 @@
               />
               <button
                 class="preview-remove"
-                title="移除图片"
+                :title="t('uploadProgress.actions.removeImage')"
                 :disabled="imageUploadStatus?.status === 'uploading' || props.disabled"
                 @click.stop="$emit('remove-image', image.id)"
               >
@@ -180,13 +180,13 @@
           @click="$emit('add-image')"
         >
           <PlusOutlined />
-          <span class="add-more-text">添加更多图像</span>
+          <span class="add-more-text">{{ t('uploadProgress.image.addMore') }}</span>
         </div>
 
         <!-- 处理中的动画遮罩 -->
         <div v-if="props.isProcessing" class="image-processing-overlay">
           <a-spin size="large" />
-          <span>处理中...</span>
+          <span>{{ t('uploadProgress.processing') }}</span>
         </div>
       </div>
 
@@ -197,7 +197,7 @@
             {{ statusTextMap[imageUploadStatus.status] }}
           </span>
           <span v-if="imageUploadStatus.status === 'uploading'" class="upload-percent">
-            上传中... {{ Math.round(imageUploadStatus.progress) }}%
+            {{ t('uploadProgress.fileStatus.uploading', { percent: Math.round(imageUploadStatus.progress) }) }}
           </span>
         </div>
         <div class="progress-bar">
@@ -213,7 +213,7 @@
     <div class="action-buttons">
       <div v-if="queueLength > 0" class="queue-bar-left">
         <span class="queue-icon">⚡</span>
-        <span>{{ queueLength }}个任务进行中</span>
+        <span>{{ t('uploadProgress.queue.inProgress', { count: queueLength }) }}</span>
       </div>
       <div v-else></div>
       <div class="btn-group">
@@ -222,14 +222,14 @@
           :disabled="!hasFiles || ((task && task.status === 'uploading') ?? false) || props.disabled"
           @click="$emit('remove')"
         >
-          {{ isVideoMode ? '移除视频' : '移除全部图片' }}
+          {{ isVideoMode ? t('uploadProgress.actions.removeVideo') : t('uploadProgress.actions.removeAllImages') }}
         </button>
         <button
           v-if="isUploading"
           class="btn btn-danger"
           @click="$emit('cancel')"
         >
-          取消上传
+          {{ t('uploadProgress.actions.cancelUpload') }}
         </button>
         <button
           v-else
@@ -237,7 +237,7 @@
           :disabled="!canSubmit"
           @click="$emit('submit')"
         >
-          开始生成模型
+          {{ t('uploadProgress.actions.startGenerate') }}
         </button>
       </div>
     </div>
@@ -246,9 +246,12 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import { Spin as aSpin } from 'ant-design-vue'
 import { ClockCircleOutlined, CloseOutlined, FileOutlined, SettingOutlined, ExclamationCircleOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons-vue'
+
+const { t, locale } = useI18n()
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'failed' | 'cancelled'
 
@@ -336,9 +339,10 @@ const hasFiles = computed(() => {
 
 // 判断当前上传类型
 const uploadTypeText = computed(() => {
-  if (props.task) return '视频任务'
-  if (props.imageFiles && props.imageFiles.length > 0) return '图片任务'
-  return '任务'
+  locale.value
+  if (props.task) return t('uploadProgress.type.videoTask')
+  if (props.imageFiles && props.imageFiles.length > 0) return t('uploadProgress.type.imageTask')
+  return t('uploadProgress.type.task')
 })
 
 // 判断是否为视频模式
@@ -380,13 +384,16 @@ const remainingPoints = computed(() => {
   return Math.max(0, props.currentPoints - props.consumedPoints)
 })
 
-const statusTextMap: Record<UploadTaskStatus, string> = {
-  pending: '待上传',
-  uploading: '上传中',
-  success: '已完成',
-  failed: '失败',
-  cancelled: '已取消',
-}
+const statusTextMap = computed<Record<UploadTaskStatus, string>>(() => {
+  locale.value
+  return {
+    pending: t('uploadProgress.status.pending'),
+    uploading: t('uploadProgress.status.uploading'),
+    success: t('uploadProgress.status.success'),
+    failed: t('uploadProgress.status.failed'),
+    cancelled: t('uploadProgress.status.cancelled'),
+  }
+})
 
 const formatSize = (bytes: number): string => {
   if (bytes === 0) return '0 B'
@@ -424,23 +431,23 @@ const handleVideoError = (e: Event) => {
   // 3 = MEDIA_ERR_DECODE - 解码错误
   // 4 = MEDIA_ERR_SRC_NOT_SUPPORTED - 资源不支持
 
-  let errorMessage = '视频无法播放'
+  let errorMessage = t('uploadProgress.videoErrors.playback')
 
   switch (error.code) {
     case 3:
-      errorMessage = '视频编码不支持，无法解码播放（可能是 H.265/HEVC 等格式）'
+      errorMessage = t('uploadProgress.videoErrors.decode')
       break
     case 4:
-      errorMessage = '视频格式不支持'
+      errorMessage = t('uploadProgress.videoErrors.formatNotSupported')
       break
     case 2:
-      errorMessage = '视频加载失败，请检查网络'
+      errorMessage = t('uploadProgress.videoErrors.network')
       break
     case 1:
-      errorMessage = '视频加载被中断'
+      errorMessage = t('uploadProgress.videoErrors.aborted')
       break
     default:
-      errorMessage = '视频无法播放'
+      errorMessage = t('uploadProgress.videoErrors.playback')
   }
 
   message.warning(errorMessage)
@@ -448,7 +455,7 @@ const handleVideoError = (e: Event) => {
 
 const handleVideoStalled = () => {
   // 视频加载卡顿时提示
-  message.info('视频加载中，请稍候...')
+  message.info(t('uploadProgress.video.loading'))
 }
 
 // 检测视频画面是否正常（黑屏检测）
@@ -470,7 +477,7 @@ const handleVideoLoadedData = (e: Event) => {
 
 const handleVideoTimeout = () => {
   // 视频加载超时
-  message.warning('视频加载超时')
+  message.warning(t('uploadProgress.video.timeout'))
 }
 
 const checkVideoBlackScreen = (video: HTMLVideoElement) => {
@@ -507,7 +514,7 @@ const checkVideoBlackScreen = (video: HTMLVideoElement) => {
 
     // 如果平均亮度很低（小于 5），很可能是黑屏
     if (avgBrightness < 5) {
-      videoWarning.value = '视频无法正常播放（可能是编码不支持），仍然可以生成模型'
+      videoWarning.value = t('uploadProgress.video.blackScreenWarning')
     }
   } catch (err) {
     // 跨域等问题导致的检测失败，静默处理

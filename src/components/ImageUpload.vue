@@ -28,8 +28,8 @@
 
       <!-- Upload Text -->
       <div class="upload-text">
-        <p class="main-text">点击上传或将图片拖入此区域</p>
-        <p class="sub-text">仅支持单张图片文件，重新选择会覆盖原文件</p>
+        <p class="main-text">{{ t('imageUpload.mainText') }}</p>
+        <p class="sub-text">{{ t('imageUpload.subText') }}</p>
       </div>
 
       <!-- Hidden Input -->
@@ -45,11 +45,11 @@
     <!-- Upload Info -->
     <div class="upload-info">
       <div class="info-row">
-        <span class="info-label">图片上传：</span>
+        <span class="info-label">{{ t('imageUpload.label') }}</span>
         <span class="info-content">
-          · 支持的格式：jpg, png, webp
-          · 图片尺寸建议：≥ 512x512 像素
-          · 一次仅支持 1 张图片
+          {{ t('imageUpload.formats') }}
+          · {{ t('imageUpload.recommendedSize') }}
+          · {{ t('imageUpload.onlyOne') }}
         </span>
       </div>
     </div>
@@ -58,6 +58,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   upload: [file: File]

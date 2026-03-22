@@ -1,4 +1,468 @@
 export default {
+    avatarCropper: {
+      title: "剪裁图片",
+      okText: "确定",
+      cancelText: "取消",
+      flipHorizontal: "水平翻转",
+      flipVertically: "垂直翻转",
+      rotateRight: "右旋90°",
+      rotateLeft: "左旋90°",
+      originalImage: "原图",
+      quality: "品质",
+      reset: "重置"
+    },
+    embedCode: {
+      title: "嵌入代码",
+      copyCode: "复制代码",
+      close: "关闭",
+      embedCodeLabel: "可嵌入网页代码",
+      embedTip: "将以上代码粘贴到你的网页 HTML 中即可。",
+      noCode: "暂无可复制的嵌入代码",
+      codeCopied: "嵌入代码已复制",
+      copyFailed: "复制失败，请手动复制"
+    },
+    customMotion: {
+      title: "自定义运镜",
+      previewArea: "预览区域",
+      loading: "加载中...{progress}%",
+      loadingSuccess: "加载成功！",
+      loadingFailed: "加载失败，请重试",
+      retryLoad: "重试加载",
+      controlBar: "控制栏",
+      progressBar: "进度条",
+      play: "播放",
+      pause: "暂停",
+      resetView: "重置视角",
+      reset: "重置",
+      flightMode: "切换飞行模式",
+      orbit: "轨道",
+      flight: "飞行",
+      flightModeHint: "飞行模式",
+      configArea: "配置区域",
+      camera: "镜头",
+      keyframes: "关键帧",
+      settings: "设置",
+      currentCameraPosition: "当前相机位置",
+      snapshot: "快照保存当前位置",
+      keyframeCount: "{count}/{max} 关键帧",
+      duration: "{duration}秒",
+      openTrajectory: "开放轨迹",
+      closedLoop: "闭环",
+      keyframeList: "关键帧列表",
+      selectedKeyframe: "当前选中第 {index} 帧",
+      clickKeyframe: "点击关键帧进行预览或修改",
+      scrollToSort: "列表支持独立滚动，拖拽即可调整顺序",
+      dragToSort: "支持拖拽排序，右侧按钮可快速预览、更新和删除",
+      editing: "编辑中",
+      previewing: "预览中",
+      returnToStart: "返回起点",
+      toNextFrame: "到下一帧:",
+      seconds: "秒",
+      preview: "预览",
+      updatePosition: "更新位置",
+      delete: "删除",
+      noKeyframes: "暂无关键帧",
+      clickSnapshotHint: "点击上方「快照保存当前位置」按钮添加关键帧",
+      motionSettings: "运镜设置",
+      interpolation: "插值方式",
+      linear: "线性",
+      easeIn: "缓入",
+      easeOut: "缓出",
+      easeInOut: "缓入缓出",
+      loopPlay: "循环播放",
+      closedLoopPlay: "闭环播放",
+      autoReturn: "自动回到起点",
+      totalDuration: "总时长",
+      stopPreview: "停止预览",
+      previewTrajectory: "预览轨迹",
+      cancel: "取消",
+      confirm: "确认",
+      noTrajectory: "未生成轨迹",
+      toastDefault: "操作提示",
+      minKeyframesWarning: "请至少添加2个关键帧",
+      maxKeyframesWarning: "关键帧数量已达上限({max}个)",
+      unsavedChangesTitle: "运镜设置已修改",
+      unsavedChangesContent: "运镜设置相比进入时发生了变化，是否保存更改？",
+      discardChanges: "不保存",
+      getCanvasFailed: "获取渲染画布失败",
+      initRendererFailed: "初始化渲染器失败：{message}",
+      defaultAnnotation: "默认标注",
+      keyframeAnnotation: "关键帧 {index}"
+    },
+    createMesh: {
+      advancedOptions: "高级选项",
+      basicInfo: "基础信息",
+      taskName: "任务名称",
+      taskNamePlaceholder: "默认取图片文件名",
+      modelDescription: "模型描述",
+      modelDescPlaceholder: "可选，描述图片中的主体内容",
+      generateOptions: "生成选项",
+      quickReconstruct: "快速重建",
+      quickReconstructDesc: "生成速度更快，适合快速预览",
+      backgroundRemoval: "背景移除",
+      backgroundRemovalDesc: "自动分离主体，减少环境干扰",
+      multiViewReconstruct: "多视角重建",
+      multiViewReconstructDesc: "从单张图片生成多个视角",
+      instructions: "说明",
+      instructionTip: "建议使用背景简洁、主体清晰的人物或物体图片。",
+      readImageFailed: "读取图片尺寸失败",
+      onlySupportImage: "仅支持 JPG、PNG 或 WEBP 图片",
+      imageTooSmall: "图片尺寸过小，建议使用 ≥ 128x128 像素的图片",
+      readImageInfoFailed: "读取图片信息失败",
+      uploadInProgress: "上传进行中，请先取消上传",
+      selectImageFirst: "请先选择图片文件",
+      uploadSuccess: "上传成功，模型开始生成",
+      uploadCanceled: "已取消上传",
+      uploadFailed: "上传失败，请重试"
+    },
+    uploadTutorial: {
+      title: "上传教程",
+      desc: "了解如何正确拍摄照片以获得最佳效果",
+      tipsTitle: "拍摄技巧",
+      tip1Title: "光线充足",
+      tip1Desc: "确保拍摄环境光线充足，避免逆光",
+      tip2Title: "多角度拍摄",
+      tip2Desc: "从不同角度拍摄主体，覆盖360度",
+      tip3Title: "稳定拍摄",
+      tip3Desc: "保持相机稳定，避免模糊",
+      tip4Title: "背景简洁",
+      tip4Desc: "选择简洁的背景，突出主体",
+      uploadPhotos: "上传照片",
+      viewExamples: "查看示例"
+    },
+    tutorialGuide: {
+      title: "使用教程",
+      videoPlaceholder: "演示视频正在制作中...",
+      mustComplete: "请先完成引导流程",
+      actions: {
+        prev: "上一步",
+        next: "下一步",
+        start: "开始使用"
+      },
+      steps: {
+        step1: {
+          title: "上传视频/图片",
+          description: "上传需要建模的视频或图片素材"
+        },
+        step2: {
+          title: "填写基本信息",
+          description: "设置任务名称和模型描述（可选）"
+        },
+        step3: {
+          title: "配置生成选项",
+          description: "选择是否开启背景移除功能"
+        },
+        step4: {
+          title: "开始生成",
+          description: "消耗算力点，开始AI 3D模型生成"
+        }
+      }
+    },
+    uploadProgress: {
+      title: "上传进度",
+      uploading: "上传中...",
+      processing: "处理中...",
+      success: "完成",
+      failed: "失败",
+      cancel: "取消",
+      retry: "重试",
+      uploadSpeed: "上传速度",
+      estimatedTime: "预计剩余时间",
+      points: {
+        insufficient: "算力点不足"
+      },
+      pointsTooltip: {
+        current: "当前算力点: {points}",
+        consumed: "本次消耗: -{points}",
+        remaining: "剩余算力点: {points}"
+      },
+      actions: {
+        advancedOptions: "高级选项",
+        removeVideo: "移除视频",
+        removeImage: "移除图片",
+        removeAllImages: "移除全部图片",
+        cancelUpload: "取消上传",
+        startGenerate: "开始生成模型"
+      },
+      meta: {
+        duration: "时长 {value}",
+        size: "大小 {value}"
+      },
+      fileStatus: {
+        uploading: "上传中... {percent}%",
+        pendingHint: "待上传，点击“开始生成模型”后上传",
+        completed: "上传完成",
+        cancelled: "已取消",
+        failed: "上传失败"
+      },
+      image: {
+        selectedCount: "已选择 {count} 张图片",
+        expandAll: "点击展开全部",
+        collapse: "收起",
+        addMore: "添加更多图像"
+      },
+      queue: {
+        inProgress: "{count}个任务进行中"
+      },
+      type: {
+        videoTask: "视频任务",
+        imageTask: "图片任务",
+        task: "任务"
+      },
+      status: {
+        pending: "待上传",
+        uploading: "上传中",
+        success: "已完成",
+        failed: "失败",
+        cancelled: "已取消"
+      },
+      videoErrors: {
+        playback: "视频无法播放",
+        decode: "视频编码不支持，无法解码播放（可能是 H.265/HEVC 等格式）",
+        formatNotSupported: "视频格式不支持",
+        network: "视频加载失败，请检查网络",
+        aborted: "视频加载被中断"
+      },
+      video: {
+        loading: "视频加载中，请稍候...",
+        timeout: "视频加载超时",
+        blackScreenWarning: "视频无法正常播放（可能是编码不支持），仍然可以生成模型"
+      }
+    },
+    fileUpload: {
+      compact: {
+        desktopHint: "点击或拖拽重新上传文件",
+        mobileHint: "点击重新上传"
+      },
+      mainText: "点击上传或将视频/图片拖入此区域",
+      subText: "支持视频（mp4, mov, avi, mkv, webm）或图片（jpg, png, jpeg）",
+      video: {
+        label: "视频上传：",
+        formats: "支持的格式：mp4, mov, avi, mkv, webm",
+        duration: "最少 {min} 秒，最多 {max} 分钟",
+        onlyOne: "一次仅支持 1 个视频",
+        resolutionLimit: "分辨率限制：8K（7680x4320）及以下"
+      },
+      image: {
+        label: "图片上传：",
+        formats: "支持的格式：jpg, png, jpeg",
+        count: "最少 {min} 张，最多 {max} 张",
+        resolutionLimit: "分辨率限制：8K（7680x4320）及以下"
+      },
+      mobileSummary: "视频：{videoMinSec}秒~{videoMaxMin}分钟 | 图片：{imageMin}~{imageMax}张",
+      mobileVideoSummary: "视频：{videoMinSec}秒~{videoMaxMin}分钟，MP4/MOV/AVI/MKV/WEBM",
+      mobileImageSummary: "图片：{imageMin}~{imageMax}张，JPG/PNG/JPEG",
+      messages: {
+        mixedTypes: "上传的文件内容类型不一致，请重新选择"
+      }
+    },
+    emptyStateErrors: {
+      retry: "重新加载",
+      network: {
+        title: "网络连接失败",
+        description: "请检查网络后重试"
+      },
+      server: {
+        title: "服务器错误",
+        description: "服务暂时不可用，请稍后重试"
+      },
+      unknown: {
+        title: "加载失败",
+        description: "请稍后重试"
+      }
+    },
+    emptyState: {
+      title: "暂无内容",
+      description: "这里还没有任何内容，快来创建吧！",
+      createNow: "立即创建"
+    },
+    createCard: {
+      title: "创建新项目",
+      aiScan: "AI扫描",
+      mesh: "Mesh",
+      description: "选择创建方式"
+    },
+    pointsLogsLite: {
+      title: "算力点明细",
+      date: "日期",
+      type: "类型",
+      amount: "数量",
+      balance: "余额",
+      description: "描述",
+      recharge: "充值",
+      consumption: "消费",
+      refund: "退款",
+      bonus: "奖励",
+      noRecords: "暂无记录"
+    },
+    officialModel: {
+      title: "官方模型",
+      viewModel: "查看模型",
+      createProject: "创建项目"
+    },
+    modelCardLite: {
+      viewModel: "查看模型",
+      createProject: "创建项目",
+      author: "作者",
+      views: "浏览",
+      badges: {
+        new: "新"
+      }
+    },
+    shareDialog: {
+      title: "分享",
+      copyLink: "复制链接",
+      linkCopied: "链接已复制",
+      shareTo: "分享到",
+      embed: "嵌入",
+      close: "关闭",
+      copyFailed: "复制失败，请手动复制",
+      shareTitle: "来看看这个3D模型",
+      shareSummary: "来看看这个3D模型",
+      qqTitle: "3D模型分享",
+      wechatHint: "请使用微信扫一扫分享",
+      platforms: {
+        wechat: "微信",
+        bilibili: "B站",
+        twitter: "X",
+        qq: "QQ",
+        weibo: "微博",
+        linkedin: "LinkedIn"
+      }
+    },
+    exportDialog: {
+      title: "导出模型",
+      formatLabel: "导出格式",
+      formatPlaceholder: "请选择导出格式",
+      supportLabel: "支持情况：",
+      supportedTip: "PLY、SOG 可导出",
+      unsupportedTip: "OBJ、FBX、GLTF 暂不支持",
+      actions: {
+        close: "关闭",
+        cancelExport: "取消导出",
+        startExport: "开始导出"
+      },
+      status: {
+        preparing: "正在准备导出...",
+        exporting: "正在导出 {format}...",
+        completed: "导出完成",
+        cancelled: "导出已取消",
+        failed: "导出失败"
+      },
+      formats: {
+        ply: "PLY",
+        sog: "SOG",
+        sogUnsupported: "SOG（暂不支持）",
+        objUnsupported: "OBJ（暂不支持）",
+        fbxUnsupported: "FBX（暂不支持）",
+        gltfUnsupported: "GLTF（暂不支持）"
+      },
+      messages: {
+        missingTaskId: "缺少任务 ID，无法导出",
+        formatNotSupported: "当前格式暂不支持导出",
+        exportSuccess: "模型导出成功",
+        exportCancelled: "已取消导出",
+        sessionExpired: "登录已过期，请重新登录后导出",
+        exportFailed: "导出失败，请重试"
+      },
+      errors: {
+        tokenFailed: "下载令牌获取失败"
+      }
+    },
+    upgradeSuccess: {
+      title: "升级成功",
+      description: "您已成功升级到Pro版本",
+      features: "Pro版本特权",
+      feature1: "无限项目数量",
+      feature2: "优先处理",
+      feature3: "高清导出",
+      feature4: "专属客服",
+      continue: "继续体验",
+      goPro: "查看Pro详情"
+    },
+    socialLogin: {
+      continueWithGoogle: "使用Google继续",
+      continueWithApple: "使用Apple继续"
+    },
+    phoneAuthLite: {
+      title: "手机号登录",
+      subtitle: "请输入您的手机号",
+      phonePlaceholder: "请输入手机号",
+      getCode: "获取验证码",
+      nextStep: "下一步",
+      changePhone: "更换手机号"
+    },
+    contactUs: {
+      title: "联系我们",
+      email: "邮箱",
+      emailPlaceholder: "your@email.com",
+      message: "留言",
+      messagePlaceholder: "请输入您的留言...",
+      submit: "提交",
+      success: "提交成功",
+      failed: "提交失败",
+      wechat: {
+        title: "扫码添加微信",
+        subtitle: "合作咨询 / 售前支持 / 方案交流",
+        qrAlt: "微信二维码",
+        qrPlaceholder: "二维码待上传",
+        wechatIdLabel: "微信号",
+        copyWechatId: "复制微信号",
+        copySuccess: "已复制微信号",
+        copyFailed: "复制失败，请手动复制",
+        note: "添加时请备注“MetaST”"
+      }
+    },
+    wechatQrLogin: {
+      title: "微信扫码登录",
+      qrAlt: "微信登录二维码",
+      loading: "二维码加载中...",
+      successRedirect: "登录成功！正在跳转...",
+      refresh: "刷新二维码",
+      unknownError: "未知错误",
+      status: {
+        scanToLogin: "请使用微信扫码登录",
+        fetching: "正在获取二维码...",
+        fetchFailed: "获取二维码失败：{msg}",
+        errorMessage: "错误：{message}",
+        loginExpired: "登录已过期，请重新登录",
+        tooFrequent: "请求过于频繁，请稍后重试",
+        serverError: "服务器错误，请稍后重试",
+        networkError: "网络异常，请刷新重试",
+        scannedConfirm: "已扫码，请在微信中确认登录",
+        expired: "二维码已过期，请刷新重试",
+        cancelled: "你已取消登录",
+        queryFailed: "查询登录状态失败"
+      }
+    },
+    projects: {
+      title: "我的项目",
+      all: "全部",
+      processing: "处理中",
+      completed: "已完成",
+      failed: "失败",
+      empty: "暂无项目",
+      emptyDesc: "开始创建您的第一个3D项目吧！",
+      createFirst: "创建第一个项目",
+      delete: "删除",
+      deleteConfirm: "确定要删除这个项目吗？",
+      view: "查看",
+      download: "下载",
+      share: "分享"
+    },
+    settings: {
+      title: "设置",
+      account: "账号",
+      security: "安全",
+      notifications: "通知",
+      language: "语言",
+      theme: "主题",
+      dark: "深色",
+      light: "浅色",
+      system: "跟随系统",
+      save: "保存",
+      saved: "已保存"
+    },
     developerLang: {
       "api": "API",
       "webhook": "Webhook",
@@ -157,6 +621,7 @@ export default {
         "statusSlicing": "视频切片中",
         "statusColmap": "COLMAP 重建中",
         "status3dgs": "3DGS 训练中",
+        "statusLightning": "Lightning 快速重建中",
         "statusBgRemoval": "背景去除处理中",
         "statusPaused": "已暂停",
         "statusResuming": "恢复中",
@@ -213,6 +678,7 @@ export default {
     },
     "statusCodes": {
         "title": "状态码",
+        "code": "状态码",
         "desc": "HTTP 状态码说明。",
         "meaning": "含义",
         "scDesc": "说明",
@@ -258,7 +724,9 @@ export default {
       logoutConfirm: '确定要退出登录吗？',
       selectLanguage: '选择语言',
       regularAccount: '普通账号',
-      invite: '邀请链接'
+      invite: '邀请链接',
+      contactUsCta: '联系我们获取算力点',
+      developer: '开发者中心'
     },
     sidebar: {
       webVersion: '网页版',
@@ -275,6 +743,8 @@ export default {
       settings: '设置',
       feedback: '意见与反馈',
       profile: '个人中心',
+      invite: '邀请链接',
+      developer: '开发者中心',
       downloadApp: '下载App',
       joinCommunity: '加入社区'
     },
@@ -290,8 +760,57 @@ export default {
       gs3d: '3DGS',
       gs4d: '4DGS',
       search: '搜索',
+      searchPlaceholder: '按作品名称或描述进行搜索',
+      searchEmptyTitle: '没有找到对应结果',
+      searchEmptyDesc: '试试更短的关键词，或搜索作品名称/描述中的其他词',
       select: '选择',
-      emptyText: '现在创建一个项目怎么样？'
+      emptyText: '现在创建一个项目怎么样？',
+      demo: {
+        meshTaskName: '户外花园3D重建',
+        meshTaskDesc: '户外花园场景，包含花卉、长椅、围栏，要求高清3D重建',
+      }
+    },
+    homeBatch: {
+      selectAll: '全选',
+      selectedCount: '已选 {count} 项',
+      pauseAction: '批量暂停',
+      startAction: '批量开始',
+      exportAction: '批量导出',
+      deleteAction: '批量删除',
+      exit: '退出',
+      exportModalTitle: '批量导出',
+      exportFormatLabel: '导出格式',
+      exportFormatPlaceholder: '请选择导出格式',
+      exportSupportLabel: '支持情况：',
+      exportSupportOk: 'PLY、SOG 可导出',
+      exportSupportDisabled: 'OBJ、FBX、GLTF 暂不支持',
+      exportStart: '开始导出',
+      exportingItem: '正在导出 {current}/{total}: {name}',
+      exportFailed: '导出失败: {taskId}',
+      formats: {
+        objNotSupported: 'OBJ（暂不支持）',
+        fbxNotSupported: 'FBX（暂不支持）',
+        gltfNotSupported: 'GLTF（暂不支持）',
+      },
+      noPausableTasks: '没有可暂停的任务',
+      pauseConfirmTitle: '确认批量暂停',
+      pauseConfirmContent: '确定要暂停选中的 {count} 个任务吗？',
+      pauseSuccess: '成功暂停 {count} 个任务',
+      noStartableTasks: '没有可开始的任务',
+      startConfirmTitle: '确认批量开始',
+      startConfirmContent: '确定要开始选中的 {count} 个任务吗？',
+      startSuccess: '成功开始 {count} 个任务',
+      selectExportFirst: '请先选择要导出的任务',
+      exportPreparing: '正在准备导出...',
+      exportTokenFailed: '获取下载令牌失败: {taskId}',
+      exportCancelled: '导出已取消',
+      exportCompleted: '导出完成，成功 {success}/{total}',
+      exportSuccess: '成功导出 {count} 个任务',
+      selectDeleteFirst: '请先选择要删除的任务',
+      deleteConfirmTitle: '确认批量删除',
+      deleteConfirmContent: '确定要删除选中的 {count} 个任务吗？此操作不可恢复。',
+      confirmDelete: '确认删除',
+      deleteSuccess: '成功删除 {count} 个任务'
     },
     explore: {
       ai3dModels: 'AI生成的3D模型',
@@ -303,7 +822,53 @@ export default {
       discordTitle: '加入Discord，与其他人一起交流',
       discordDesc: '在我们的Discord服务器上与其他MetaST用户聊天，并直接向MetaST开发者提问',
       watchLater: '稍后观看',
-      share: '分享'
+      share: '分享',
+      untitledModel: '未命名模型',
+      noDescription: '暂无描述',
+      unknown: '未知',
+      demo: {
+        meshModel1: {
+          title: '流浪者号',
+          description: '流浪者号'
+        }
+      },
+      examples: {
+        gardenCourtyard: {
+          title: '花园庭院',
+          description: '户外石材与植物重建'
+        },
+        robotFigure: {
+          title: '机器人手办',
+          description: '高细节硬表面角色模型'
+        },
+        vintageCamera: {
+          title: '复古相机',
+          description: '桌面物体扫描，金属纹理细节'
+        },
+        streetCorner: {
+          title: '街角',
+          description: '带有招牌与店铺的城市场景'
+        },
+        sportsCar: {
+          title: '跑车',
+          description: '外观与内饰展示'
+        },
+        ancientVase: {
+          title: '古代花瓶',
+          description: '博物馆藏品，雕刻纹样细节'
+        }
+      }
+    },
+    exploreSection: {
+      title: '探索社区作品',
+      modelNames: {
+        whiteTiger: '白虎雕塑',
+        oldTrain: '老式火车',
+        castle: '古堡遗迹',
+        electricGuitar: '电吉他',
+        rockSpecimen: '岩石标本',
+        vintageCamera: '复古相机'
+      }
     },
     login: {
       welcome: '欢迎来到MetaST Engine',
@@ -383,6 +948,15 @@ export default {
     create: {
       title: '上传你的照片或视频以生成你的模型！',
       subtitle: '专业提示：捕捉物体或场景时，始终以不同角度拍摄是一个好习惯',
+      imageUploadConsistencyTip: '图片上传建议绕着物体拍摄，不要转动物体；并尽量使用同一设备拍摄，保持同一焦段、相同格式和分辨率一致。',
+      help: {
+        button: '说明',
+        title: '使用说明',
+        supportedFormats: '支持格式：',
+        imageSpec: '• 图片：{minImages}-{maxImages}张，JPG/PNG',
+        videoSpec: '• 视频：30秒~3分钟，MP4/MOV',
+        qualityTip: '建议使用清晰度高、光线充足的素材，效果更佳'
+      },
       meshTitle: '上传单张图片生成3D模型',
       meshSubtitle: '专业提示：建议使用背景简洁、主体清晰的人物或物体图片'
     },
@@ -392,14 +966,24 @@ export default {
       noNickname: '未设置昵称',
       editNickname: '编辑昵称',
       accountStats: '账户统计',
-      phone: '电话',
+      phone: '手机号',
+      email: '邮箱',
+      username: '用户名',
       lastLogin: '最后登录',
       accountStatus: '账户状态',
       active: '活跃',
+      lastActive: '{time}活跃',
+      points: '算力点',
+      accountOverview: '账户概览',
+      workCount: '作品数',
+      favoriteCount: '收藏数',
+      shareCount: '分享数',
       accountSecurity: '账户安全',
       personalDetails: '个人信息',
       nickname: '昵称',
+      notSet: '未设置',
       accountSettings: '账户设置',
+      notifications: '消息通知',
       changePassword: '修改密码',
       enterNickname: '输入昵称',
       saveSuccess: '保存成功',
@@ -415,9 +999,47 @@ export default {
       oldPwdRequired: '请输入旧密码',
       newPwdRequired: '请输入新密码',
       pwdLength: '密码长度至少6位',
+      confirmPwdRequired: '请确认新密码',
+      pwdLengthRule: '密码长度应为8-16位',
+      pwdComplexityRule: '密码必须包含大写字母、小写字母和数字',
       pwdNotMatch: '两次密码不一致',
       pwdChanged: '密码修改成功',
-      pwdChangeFailed: '密码修改失败'
+      pwdChangeFailed: '密码修改失败',
+      phoneRequired: '请输入手机号',
+      phoneInvalid: '请输入有效的手机号',
+      emailRequired: '请输入邮箱',
+      emailInvalid: '请输入有效的邮箱地址',
+      code6Required: '请输入6位验证码',
+      bindPhone: '绑定手机',
+      bindEmail: '绑定邮箱',
+      bindPhoneTitle: '绑定手机号',
+      bindEmailTitle: '绑定邮箱',
+      phoneBound: '已绑定手机',
+      emailBound: '已绑定邮箱',
+      bound: '已绑定',
+      unbound: '未绑定',
+      quickActions: '快速操作',
+      editNicknameAction: '修改昵称',
+      changeAvatar: '更换头像',
+      pointsHistory: '算力记录',
+      resendCode: '重新发送验证码',
+      emailPlaceholder: '请输入邮箱地址',
+      bindEmailNotAvailable: '目前处于测试阶段，绑定邮箱功能暂未开放',
+      bindEmailDemoOnly: '绑定邮箱提交接口暂未开放，当前为流程演示',
+      bindEmailSubmitNotAvailable: '绑定邮箱接口暂未开放，暂无法提交绑定',
+      status: {
+        banned: '封禁',
+        normal: '正常',
+        deactivating: '注销中',
+        deactivated: '已注销',
+        unknown: '未知',
+      },
+      time: {
+        justNow: '刚刚',
+        minutesAgo: '{n}分钟前',
+        hoursAgo: '{n}小时前',
+        daysAgo: '{n}天前',
+      },
     },
     feedbackLang: {
       contact: '联系方式',
@@ -437,9 +1059,208 @@ export default {
       submitFail: '提交失败',
       networkError: '网络错误'
     },
+    routes: {
+      login: '登录',
+      home: '首页',
+      projects: '项目',
+      explore: '探索',
+      explore4d: '4D探索',
+      profile: '个人资料',
+      invite: '邀请链接',
+      settings: '设置',
+      api: 'API',
+      developer: '开发者中心',
+      tutorial: '教程',
+      feedback: '反馈',
+      create: '创建',
+      createMeshScan: 'Mesh扫描',
+      create3dgsScan: '3DGS扫描',
+      shareLink: '分享链接',
+      modelDetail: '模型详情',
+      officialModelDetail: '官方模型详情',
+      aiModelDetail: 'AI模型详情',
+      notFound: '页面不存在'
+    },
+    welcome: {
+      title: '欢迎回来 👋',
+      subtitle: '开始创建你的 3D 模型，让创意变为现实'
+    },
+    auth: {
+      logoutSuccess: '登出成功',
+      logoutFailed: '登出失败',
+      emailCodeSent: '验证码已发送，请查收邮箱',
+      phoneBindSuccess: '手机号绑定成功'
+    },
+    authErrors: {
+      emailFormat: '邮件格式错误',
+      invalidCredentials: '错误的邮箱或密码',
+      tooManyRequests: '请求过于频繁，请稍后再试',
+      accountBanned: '账号已被封禁',
+      accountDeactivated: '账号已注销，无法登录',
+      loginFailedGeneric: '登录失败，请检查您的邮箱和密码',
+      codeInvalidOrExpired: '验证码错误或已过期',
+      emailAlreadyRegistered: '邮箱已注册',
+      passwordComplexity: '密码必须至少8个字符，包含大写字母、小写字母和数字',
+      registerFailedGeneric: '注册失败，请稍后再试',
+      codeInvalid: '验证码错误',
+      phoneLoginFailed: '手机号登录失败'
+    },
+    errors: {
+      missingAuth: '缺少认证信息',
+      invalidParams: '参数有误',
+      sessionExpired: '未登录或登录状态已过期，请重新登录',
+      unauthorized: '未授权，请重新登录',
+      forbidden: '没有权限执行此操作',
+      nicknameUpdateFailed: '修改昵称失败',
+      avatarUpdateFailed: '修改头像失败',
+      requestError: '请求错误，请检查输入',
+      oldPasswordIncorrect: '原密码错误',
+      userNotFound: '对应用户不存在',
+      phoneInvalid: '手机号格式错误',
+      sendCodeFailed: '发送验证码失败',
+      sendEmailTooOften: '发送邮件过于频繁',
+      sendEmailFailed: '验证码发送失败，请稍后重试',
+      phoneAlreadyRegistered: '手机号已经注册了',
+      phoneBindFailed: '绑定手机号失败'
+    },
+    imageUpload: {
+      mainText: '点击上传或将图片拖入此区域',
+      subText: '仅支持单张图片文件，重新选择会覆盖原文件',
+      label: '图片上传：',
+      formats: '支持的格式：jpg, png, webp',
+      recommendedSize: '图片尺寸建议：≥ 512x512 像素',
+      onlyOne: '一次仅支持 1 张图片'
+    },
+    pointsLogs: {
+      title: '算力点记录',
+      loading: '加载中...',
+      retry: '重新加载',
+      balanceTitle: '算力点余额',
+      totalEarnedMobile: '累计 +{total}',
+      recordCountMobile: '{count} 条记录',
+      recentCount: '最近 {count} 条',
+      changeRecords: '变动记录',
+      heroKicker: 'META·ST / LEDGER',
+      heroTitle: '算力点流水',
+      heroDescription: '清晰查看每一笔变动，支持快速筛选',
+      currentBalance: '当前余额',
+      totalEarned: '累计获得',
+      recordCount: '记录数量',
+      displayScope: '展示范围',
+      showingRecentOnly: '仅显示最近 {count} 条记录',
+      loadFailed: '加载数据失败，请稍后重试',
+      date: '日期',
+      type: '类型',
+      amount: '数量',
+      balance: '余额',
+      description: '描述',
+      recharge: '充值',
+      consumption: '消费',
+      refund: '退款',
+      bonus: '奖励',
+      noRecords: '暂无算力点记录'
+    },
+    modelCard: {
+      viewModel: '查看模型',
+      createProject: '创建项目',
+      author: '作者',
+      views: '浏览',
+      badges: {
+        new: '新'
+      },
+      queueBadge: '队列中 · {count}个任务',
+      reviewRejected: '审核不通过',
+      viewDetails: '查看详情',
+      deleteConfirm: '确认删除该模型吗？',
+      delete: '删除',
+      untitledTask: '未命名任务',
+      workDescription: '作品描述',
+      noDescription: '无描述',
+      workStats: '作品数据',
+      techSpecs: '技术参数',
+      unknownError: '未知错误',
+      unknown: '未知',
+      reviewViolation: '内容包含违规信息，审核不通过',
+      stats: {
+        views: '查看数',
+        downloads: '下载量',
+        shares: '转发量'
+      },
+      fields: {
+        status: '状态',
+        startedAt: '开始时间',
+        finishedAt: '结束时间',
+        errorReason: '错误原因',
+        reviewResult: '审核结果',
+        frameCount: '帧数'
+      },
+      status: {
+        received: '已接收',
+        slicing: '视频切帧中',
+        reconstructingColmap: 'COLMAP 重建中',
+        reconstructing3dgs: '3DGS 训练中',
+        reconstructingLightning: '快速重建中',
+        processingBgRemoval: '背景去除中',
+        paused: '已暂停',
+        resuming: '恢复中',
+        completed: '已完成',
+        failed: '已失败',
+        processing: '处理中'
+      },
+      actions: {
+        start: '开始',
+        starting: '开始中...',
+        pause: '暂停',
+        pausing: '暂停中...'
+      },
+      messages: {
+        taskFailed: '任务失败，请点击“重新开始”',
+        reviewBlocked: '该任务审核未通过，无法查看',
+        processing: '任务处理中，完成后可查看',
+        resumeSuccess: '任务已重新开始',
+        resumeFailed: '重新开始失败，请稍后重试',
+        pauseSuccess: '任务已暂停',
+        pauseFailed: '暂停失败，请稍后重试',
+        deleteSuccess: '模型已删除',
+        deleteFailed: '删除失败，请稍后重试'
+      }
+    },
+    phoneAuth: {
+      title: '手机号登录',
+      subtitle: '请输入您的手机号',
+      phonePlaceholder: '请输入手机号',
+      getCode: '获取验证码',
+      nextStep: '下一步',
+      changePhone: '更换手机号',
+      backToEdit: '返回修改',
+      resendAfter: '{seconds}s 后重发',
+      submitVerification: '提交验证',
+      requiredPhone: '请输入手机号',
+      requestErrors: {
+        badRequest: '请求错误，请检查输入',
+        unauthorized: '未授权，请重新登录',
+        invalidCode: '验证码错误',
+        tooManyRequests: '请求过于频繁，请稍后再试',
+        serverError: '服务器错误，请稍后重试'
+      },
+      invalidPhoneByRegion: {
+        cn: '请输入有效的中国大陆手机号',
+        us: '请输入有效的美国手机号',
+        uk: '请输入有效的英国手机号',
+        jp: '请输入有效的日本手机号',
+        de: '请输入有效的德国手机号',
+        fr: '请输入有效的法国手机号',
+        ru: '请输入有效的俄罗斯手机号',
+        es: '请输入有效的西班牙手机号'
+      }
+    },
     common: {
       confirm: '确认',
+      close: '关闭',
       cancel: '取消',
+      loading: '加载中',
+      pro: 'PRO',
       save: "保存",
+      comingSoon: '敬请期待',
     }
   };

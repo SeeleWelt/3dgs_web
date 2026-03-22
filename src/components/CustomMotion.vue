@@ -11,7 +11,7 @@
     <template #title>
       <div class="custom-modal-title">
         <CameraOutlined class="title-icon" />
-        <span>自定义运镜</span>
+        <span>{{ $t('customMotion.title') }}</span>
       </div>
     </template>
     <div class="custom-motion-container" ref="containerRef" @mousemove="handleMouseMove" @touchstart.passive="handleMouseMove">
@@ -26,11 +26,11 @@
           <div v-if="isViewerLoading" class="loading-overlay">
             <div class="loading-spinner" :class="{ 'success': loading_status === 'success', 'fail': loading_status === 'fail' }"></div>
             <p class="loading-text">
-              <template v-if="loading_status === ''">加载中...{{ loading_progress }}%</template>
-              <template v-else-if="loading_status === 'success'">加载成功！</template>
-              <template v-else-if="loading_status === 'fail'">加载失败，请重试</template>
+              <template v-if="loading_status === ''">{{ $t('customMotion.loading', { progress: loading_progress }) }}</template>
+              <template v-else-if="loading_status === 'success'">{{ $t('customMotion.loadingSuccess') }}</template>
+              <template v-else-if="loading_status === 'fail'">{{ $t('customMotion.loadingFailed') }}</template>
             </p>
-            <button v-if="loading_status === 'fail'" class="retry-btn" @click="retryLoadModel">重试加载</button>
+            <button v-if="loading_status === 'fail'" class="retry-btn" @click="retryLoadModel">{{ $t('customMotion.retryLoad') }}</button>
           </div>
         </div>
 
@@ -56,27 +56,27 @@
 
           <div class="control-buttons">
             <div class="btn-group left">
-              <a-tooltip :title="isLoopPlaying ? '暂停' : '播放'">
+              <a-tooltip :title="isLoopPlaying ? $t('customMotion.pause') : $t('customMotion.play')">
                 <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleLoopPlay" :disabled="!skullEntity || !viewerControls.isOrbitMode">
                   <template #icon>
                     <PauseOutlined v-if="isLoopPlaying" />
                     <CaretRightOutlined v-else />
                   </template>
-                  {{ isLoopPlaying ? '暂停' : '播放' }}
+                  {{ isLoopPlaying ? $t('customMotion.pause') : $t('customMotion.play') }}
                 </a-button>
               </a-tooltip>
-              <a-tooltip title="重置视角">
+              <a-tooltip :title="$t('customMotion.resetView')">
                 <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="resetCamera" :disabled="!skullEntity">
                   <template #icon><ReloadOutlined /></template>
-                  重置
+                  {{ $t('customMotion.reset') }}
                 </a-button>
               </a-tooltip>
             </div>
             <div class="btn-group right">
-              <a-tooltip title="切换飞行模式">
+              <a-tooltip :title="$t('customMotion.flightMode')">
                 <a-button type="text" class="control-icon-btn" tabindex="-1" @click.stop="toggleMode" :disabled="!skullEntity">
                   <template #icon><AimOutlined /></template>
-                  {{ viewerControls.isOrbitMode ? '轨道' : '飞行' }}
+                  {{ viewerControls.isOrbitMode ? $t('customMotion.orbit') : $t('customMotion.flight') }}
                 </a-button>
               </a-tooltip>
             </div>
@@ -86,7 +86,7 @@
         <!-- 模式提示 -->
         <div v-if="!viewerControls.isOrbitMode" class="mode-tip fly-mode">
           <span class="mode-icon">✈️</span>
-          <span>飞行模式</span>
+          <span>{{ $t('customMotion.flightModeHint') }}</span>
         </div>
       </div>
 
@@ -100,7 +100,7 @@
             @click="mobileConfigSection = 'camera'"
           >
             <CameraOutlined />
-            <span>镜头</span>
+            <span>{{ $t('customMotion.camera') }}</span>
           </button>
           <button
             type="button"
@@ -109,7 +109,7 @@
             @click="mobileConfigSection = 'keyframes'"
           >
             <ToolOutlined />
-            <span>关键帧</span>
+            <span>{{ $t('customMotion.keyframes') }}</span>
           </button>
           <button
             type="button"
@@ -118,14 +118,14 @@
             @click="mobileConfigSection = 'settings'"
           >
             <SettingOutlined />
-            <span>设置</span>
+            <span>{{ $t('customMotion.settings') }}</span>
           </button>
         </div>
 
         <div class="config-content" :class="{ 'mobile-config-content': isMobile }">
           <!-- 当前相机位置 -->
           <div v-if="!isMobile || mobileConfigSection === 'camera'" class="config-section config-section-camera">
-            <div class="section-title">当前相机位置</div>
+            <div class="section-title">{{ $t('customMotion.currentCameraPosition') }}</div>
             <div class="camera-position-display">
               <div class="position-item">
                 <span class="position-label">X:</span>
@@ -142,19 +142,19 @@
             </div>
             <a-button type="primary" block @click="saveCurrentPosition" class="snapshot-btn" :disabled="isPreviewMode || keyframes.length >= maxKeyframesNum">
               <template #icon><CameraOutlined /></template>
-              快照保存当前位置
+              {{ $t('customMotion.snapshot') }}
             </a-button>
             <div v-if="!isMobile" class="desktop-motion-stats">
-              <span class="motion-stat-pill">{{ keyframes.length }}/{{ maxKeyframesNum }} 关键帧</span>
-              <span class="motion-stat-pill">{{ totalDuration > 0 ? `${totalDuration.toFixed(1)}s` : '未生成轨迹' }}</span>
-              <span class="motion-stat-pill" :class="{ active: closedLoop }">{{ closedLoop ? '闭环' : '开放轨迹' }}</span>
+              <span class="motion-stat-pill">{{ $t('customMotion.keyframeCount', { count: keyframes.length, max: maxKeyframesNum }) }}</span>
+              <span class="motion-stat-pill">{{ totalDuration > 0 ? $t('customMotion.duration', { duration: totalDuration.toFixed(1) }) : $t('customMotion.noTrajectory') }}</span>
+              <span class="motion-stat-pill" :class="{ active: closedLoop }">{{ closedLoop ? $t('customMotion.closedLoop') : $t('customMotion.openTrajectory') }}</span>
             </div>
           </div>
 
           <!-- 关键帧列表 -->
           <div v-if="!isMobile || mobileConfigSection === 'keyframes'" class="config-section config-section-keyframes">
             <div class="section-title">
-              <span>关键帧</span>
+              <span>{{ $t('customMotion.keyframes') }}</span>
               <span class="keyframes-count" :class="{ 'has-keyframes': displayKeyframes.length > 0 }">
                 {{ displayKeyframes.length }}/{{ maxKeyframesNum }}
               </span>
@@ -162,14 +162,14 @@
             <div v-if="!isMobile" class="desktop-keyframe-toolbar">
               <div class="desktop-keyframe-summary">
                 <div class="desktop-keyframe-title">
-                  {{ selectedKeyframe ? `当前选中第 ${selectedKeyframeIndex + 1} 帧` : '点击关键帧进行预览或修改' }}
+                  {{ selectedKeyframe ? $t('customMotion.selectedKeyframe', { index: selectedKeyframeIndex + 1 }) : $t('customMotion.clickKeyframe') }}
                 </div>
                 <div class="desktop-keyframe-hint">
-                  {{ displayKeyframes.length > 6 ? '列表支持独立滚动，拖拽即可调整顺序' : '支持拖拽排序，右侧按钮可快速预览、更新和删除' }}
+                  {{ displayKeyframes.length > 6 ? $t('customMotion.scrollToSort') : $t('customMotion.dragToSort') }}
                 </div>
               </div>
               <div class="desktop-keyframe-state" :class="{ active: isPreviewMode }">
-                {{ isPreviewMode ? '预览中' : '编辑中' }}
+                {{ isPreviewMode ? $t('customMotion.previewing') : $t('customMotion.editing') }}
               </div>
             </div>
             <div class="keyframes-list" :class="{ 'keyframes-list-dense': !isMobile && displayKeyframes.length > 6 }" v-if="displayKeyframes.length > 0">
@@ -212,11 +212,11 @@
                     </div>
                   </div>
                   <div v-if="closedLoop && index === keyframes.length" class="keyframes-loop-label">
-                    返回起点
+                    {{ $t('customMotion.returnToStart') }}
                   </div>
                   <div v-if="index < keyframes.length" class="keyframes-meta">
                     <div v-if="kf.time !== undefined && kf.time !== null" class="keyframes-duration">
-                      <span class="duration-label">到下一帧:</span>
+                      <span class="duration-label">{{ $t('customMotion.toNextFrame') }}</span>
                       <a-input-number
                         v-model:value="keyframes[index].time"
                         :min="0.5"
@@ -228,20 +228,20 @@
                         @click.stop
                         @change="handleTimeChange"
                       />
-                      <span class="duration-unit">秒</span>
+                      <span class="duration-unit">{{ $t('customMotion.seconds') }}</span>
                     </div>
                     <div class="keyframes-actions">
-                      <a-tooltip title="预览">
+                      <a-tooltip :title="$t('customMotion.preview')">
                         <a-button type="text" size="small" class="keyframe-action-btn" @click.stop="previewKeyframe(index)" :disabled="isPreviewMode">
                           <template #icon><EyeOutlined /></template>
                         </a-button>
                       </a-tooltip>
-                      <a-tooltip title="更新位置">
+                      <a-tooltip :title="$t('customMotion.updatePosition')">
                         <a-button type="text" size="small" class="keyframe-action-btn" @click.stop="updateKeyframePosition(index)" :disabled="isPreviewMode">
                           <template #icon><CameraOutlined /></template>
                         </a-button>
                       </a-tooltip>
-                      <a-tooltip title="删除">
+                      <a-tooltip :title="$t('customMotion.delete')">
                         <a-button type="text" size="small" class="keyframe-action-btn" danger @click.stop="deleteKeyframe(index)" :disabled="isPreviewMode">
                           <template #icon><DeleteOutlined /></template>
                         </a-button>
@@ -252,34 +252,34 @@
               </div>
             </div>
             <div v-else class="keyframes-empty">
-              <p>暂无关键帧</p>
-              <p class="empty-hint">点击上方"快照保存当前位置"按钮添加关键帧</p>
+              <p>{{ $t('customMotion.noKeyframes') }}</p>
+              <p class="empty-hint">{{ $t('customMotion.clickSnapshotHint') }}</p>
             </div>
           </div>
 
           <!-- 运镜设置 -->
           <div v-if="!isMobile || mobileConfigSection === 'settings'" class="config-section config-section-settings">
-            <div class="section-title">运镜设置</div>
+            <div class="section-title">{{ $t('customMotion.motionSettings') }}</div>
             <div class="setting-row">
-              <span class="setting-label">插值方式</span>
+              <span class="setting-label">{{ $t('customMotion.interpolation') }}</span>
               <a-select v-model:value="interpolationType" style="width: 120px" size="small">
-                <a-select-option value="linear">线性</a-select-option>
-                <a-select-option value="easeIn">缓入</a-select-option>
-                <a-select-option value="easeOut">缓出</a-select-option>
-                <a-select-option value="easeInOut">缓入缓出</a-select-option>
+                <a-select-option value="linear">{{ $t('customMotion.linear') }}</a-select-option>
+                <a-select-option value="easeIn">{{ $t('customMotion.easeIn') }}</a-select-option>
+                <a-select-option value="easeOut">{{ $t('customMotion.easeOut') }}</a-select-option>
+                <a-select-option value="easeInOut">{{ $t('customMotion.easeInOut') }}</a-select-option>
               </a-select>
             </div>
             <div class="setting-row">
-              <span class="setting-label">循环播放</span>
+              <span class="setting-label">{{ $t('customMotion.loopPlay') }}</span>
               <a-switch v-model:checked="loopPlay" />
             </div>
             <div class="setting-row">
-              <span class="setting-label">闭环播放</span>
-              <a-checkbox v-model:checked="closedLoop" :disabled="keyframes.length < 3">自动回到起点</a-checkbox>
+              <span class="setting-label">{{ $t('customMotion.closedLoopPlay') }}</span>
+              <a-checkbox v-model:checked="closedLoop" :disabled="keyframes.length < 3">{{ $t('customMotion.autoReturn') }}</a-checkbox>
             </div>
             <!-- <div class="setting-row" v-if="keyframes.length >= 2">
-              <span class="setting-label">总时长</span>
-              <span class="total-duration">{{ totalDuration.toFixed(1) }}秒</span>
+              <span class="setting-label">{{ $t('customMotion.totalDuration') }}</span>
+              <span class="total-duration">{{ totalDuration.toFixed(1) }}{{ $t('customMotion.seconds') }}</span>
             </div> -->
             <div class="preview-btn-wrapper">
               <a-button
@@ -292,15 +292,15 @@
                   <PauseCircleOutlined v-if="isPreviewMode" />
                   <PlayCircleOutlined v-else />
                 </template>
-                {{ isPreviewMode ? '停止预览' : '预览轨迹' }}
+                {{ isPreviewMode ? $t('customMotion.stopPreview') : $t('customMotion.previewTrajectory') }}
               </a-button>
             </div>
           </div>
         </div>
 
         <div class="config-footer">
-          <a-button @click="handleCancel" >取消</a-button>
-          <a-button type="primary" @click="handleConfirm">确认</a-button>
+          <a-button @click="handleCancel" >{{ $t('customMotion.cancel') }}</a-button>
+          <a-button type="primary" @click="handleConfirm">{{ $t('customMotion.confirm') }}</a-button>
         </div>
       </div>
     </div>
@@ -332,6 +332,7 @@ import {
   SettingOutlined,
 } from '@ant-design/icons-vue';
 import axios from 'axios';
+import i18n from '@/i18n';
 // 最大关键帧数量限制
 const MAX_KEYFRAMES_NUM = 20;
 
@@ -341,7 +342,7 @@ const showToast = (input) => {
     message.info(input, defaultDuration);
     return;
   }
-  const content = input?.message || '操作提示';
+  const content = input?.message || String(i18n.global.t('customMotion.toastDefault'));
   const duration = typeof input?.duration === 'number' ? input.duration / 1000 : defaultDuration;
   switch (input?.type) {
     case 'success':
@@ -634,7 +635,7 @@ export default {
     handleConfirm() {
       console.log("keyframes", this.keyframes)
       if (this.keyframes.length < 2) {
-        showToast({ type: 'warning', message: '请至少添加2个关键帧' });
+        showToast({ type: 'warning', message: String(i18n.global.t('customMotion.minKeyframesWarning')) });
         return;
       }
       const motionData = {
@@ -652,10 +653,10 @@ export default {
       this.visible = true
       if (this.hasMotionDataChanged()) {
         Modal.confirm({
-          title: '运镜设置已修改',
-          content: '运镜设置相比进入时发生了变化，是否保存更改？',
-          okText: '保存',
-          cancelText: '不保存',
+          title: String(i18n.global.t('customMotion.unsavedChangesTitle')),
+          content: String(i18n.global.t('customMotion.unsavedChangesContent')),
+          okText: String(i18n.global.t('common.save')),
+          cancelText: String(i18n.global.t('customMotion.discardChanges')),
           onOk: () => {
             this.handleConfirm();
           },
@@ -730,7 +731,7 @@ export default {
 
       this.canvas = document.getElementById('custom-motion-canvas');
       if (!this.canvas) {
-        showToast({ type: 'error', message: '获取渲染画布失败' });
+        showToast({ type: 'error', message: String(i18n.global.t('customMotion.getCanvasFailed')) });
         return;
       }
 
@@ -811,7 +812,7 @@ export default {
         // 快照motionData，用于检测变化
         this.snapshotMotionData();
       } catch (error) {
-        showToast({ type: 'error', message: `初始化渲染器失败：${error.message}` });
+        showToast({ type: 'error', message: String(i18n.global.t('customMotion.initRendererFailed', { message: error.message })) });
         console.error('PlayCanvas初始化失败：', error);
       }
     },
@@ -965,7 +966,7 @@ export default {
           this.defaultAnnotationEntity.script.create(Annotation, {
             properties: {
               label: String(0),
-              title: '默认标注',
+              title: String(i18n.global.t('customMotion.defaultAnnotation')),
               text: '',
               size: 0.01
             }
@@ -998,7 +999,7 @@ export default {
             annotationEntity.script.create(Annotation, {
               properties: {
                 label: String(index + 1),
-                title: `关键帧 ${index + 1}`,
+                title: String(i18n.global.t('customMotion.keyframeAnnotation', { index: index + 1 })),
                 text: '',
                 size: 1
               }
@@ -1076,7 +1077,7 @@ export default {
     // 保存当前相机位置
     saveCurrentPosition() {
       if (this.keyframes.length >= MAX_KEYFRAMES_NUM) {
-        showToast({ type: 'warning', message: `关键帧数量已达上限(${MAX_KEYFRAMES_NUM}个)` });
+        showToast({ type: 'warning', message: String(i18n.global.t('customMotion.maxKeyframesWarning', { max: MAX_KEYFRAMES_NUM })) });
         return;
       }
       const pos = { ...this.currentCameraPos };
@@ -1343,7 +1344,7 @@ export default {
     // 播放/暂停
     toggleLoopPlay() {
       if (this.keyframes.length < 2) {
-        showToast({ type: 'warning', message: '请至少添加2个关键帧' });
+        showToast({ type: 'warning', message: String(i18n.global.t('customMotion.minKeyframesWarning')) });
         return;
       }
 
@@ -1357,7 +1358,7 @@ export default {
     // 切换预览模式
     async togglePreviewMode() {
       if (this.keyframes.length < 2) {
-        showToast({ type: 'warning', message: '请至少添加2个关键帧' });
+        showToast({ type: 'warning', message: String(i18n.global.t('customMotion.minKeyframesWarning')) });
         return;
       }
 

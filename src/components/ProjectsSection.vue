@@ -4,41 +4,51 @@
       <div class="tabs">
         <div
           v-for="tab in typeTabs"
-          :key="tab"
+          :key="tab.value"
           class="tab"
-          :class="{ active: activeTypeTab === tab }"
-          @click="activeTypeTab = tab"
+          :class="{ active: activeTypeTab === tab.value }"
+          @click="activeTypeTab = tab.value"
         >
-          {{ tab }}
+          {{ tab.label }}
         </div>
       </div>
       <div class="tabs" style="margin-bottom: 0;">
         <div
           v-for="tab in statusTabs"
-          :key="tab"
+          :key="tab.value"
           class="tab"
-          :class="{ active: activeStatusTab === tab }"
-          @click="activeStatusTab = tab"
+          :class="{ active: activeStatusTab === tab.value }"
+          @click="activeStatusTab = tab.value"
         >
-          {{ tab }}
+          {{ tab.label }}
         </div>
       </div>
     </div>
 
-    <EmptyState v-if="!hasProjects" :type="activeTypeTab === '扫描' ? 'mesh-scan' : '3dgs-scan'" />
+    <EmptyState v-if="!hasProjects" :type="activeTypeTab === 'mesh' ? 'mesh-scan' : '3dgs-scan'" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import EmptyState from './EmptyState.vue'
 
-const activeTypeTab = ref('3DGS')
-const activeStatusTab = ref('全部')
+const { t } = useI18n()
+
+const activeTypeTab = ref('3dgs')
+const activeStatusTab = ref('all')
 const hasProjects = ref(false)
 
-const typeTabs = ['3DGS']
-const statusTabs = ['全部', '已完成', '处理中']
+const typeTabs = computed(() => [
+  { value: '3dgs', label: '3DGS' }
+])
+
+const statusTabs = computed(() => [
+  { value: 'all', label: t('projects.all') },
+  { value: 'completed', label: t('projects.completed') },
+  { value: 'processing', label: t('projects.processing') },
+])
 </script>
 
 <style scoped>

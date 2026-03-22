@@ -93,10 +93,10 @@ const handleClick = (id: string) => {
   if (id === '3dgs-scan') {
     router.push('/create/3dgs-scan')
   } else if (id === 'ai-scan') {
-    message.info('敬请期待')
+    message.info(String(t('common.comingSoon')))
     // router.push('/create/mesh-scan')
   } else if (id === '4dgs-scan') {
-    message.info('敬请期待')
+    message.info(String(t('common.comingSoon')))
   }
 }
 </script>

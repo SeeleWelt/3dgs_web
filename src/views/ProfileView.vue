@@ -49,7 +49,7 @@
               </span>
               <span class="meta-item" v-if="user?.loginTime">
                 <ClockCircleOutlined />
-                <span>{{ formatLoginTime(user.loginTime) }}活跃</span>
+                <span>{{ t('profile.lastActive', { time: formatLoginTime(user.loginTime) }) }}</span>
               </span>
             </div>
           </div>
@@ -60,7 +60,7 @@
   <svg t="1773797006800" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10840" width="48" height="48"><path d="M256 256v149.674667L158.976 512 256 618.325333V768h149.674667L512 865.024 618.325333 768H768v-149.674667L865.024 512 768 405.674667V256h-149.674667L512 158.976 405.674667 256H256zM170.666667 371.626667V170.666667h200.96L512 42.666667l140.373333 128H853.333333v200.96L981.333333 512l-128 140.373333V853.333333h-200.96L512 981.333333l-140.373333-128H170.666667v-200.96L42.666667 512l128-140.373333z" fill="#2E2F30" p-id="10841"></path><path d="M625.706667 384L682.666667 443.136 493.056 640 384 526.805333l56.96-59.178666 52.053333 54.101333z" fill="#2E2F30" p-id="10842"></path></svg>            </div>
             <div class="points-content">
               <div class="points-value">{{ currentPoints }}</div>
-              <div class="points-label">算力点</div>
+              <div class="points-label">{{ t('profile.points') }}</div>
             </div>
             <RightOutlined class="points-arrow" />
           </div>
@@ -75,20 +75,20 @@
           <div class="sidebar-card account-overview" v-if="false"> 
             <h3 class="sidebar-title">
               <BarChartOutlined />
-              账户概览
+              {{ t('profile.accountOverview') }}
             </h3>
             <div class="overview-stats">
               <div class="overview-stat">
                 <div class="stat-number">0</div>
-                <div class="stat-label">作品数</div>
+                <div class="stat-label">{{ t('profile.workCount') }}</div>
               </div>
               <div class="overview-stat">
                 <div class="stat-number">0</div>
-                <div class="stat-label">收藏数</div>
+                <div class="stat-label">{{ t('profile.favoriteCount') }}</div>
               </div>
               <div class="overview-stat">
                 <div class="stat-number">0</div>
-                <div class="stat-label">分享数</div>
+                <div class="stat-label">{{ t('profile.shareCount') }}</div>
               </div>
             </div>
           </div>
@@ -97,26 +97,26 @@
           <div class="sidebar-card security-section">
             <h3 class="sidebar-title">
               <SafetyOutlined />
-              账户安全
+              {{ t('profile.accountSecurity') }}
             </h3>
             <div class="security-list">
               <div class="security-item" @click="showChangePwdModal = true">
                 <LockOutlined class="security-icon" />
-                <span class="security-text">修改密码</span>
+                <span class="security-text">{{ t('profile.changePassword') }}</span>
                 <RightOutlined class="security-arrow" />
               </div>
               <div class="security-item" @click="openBindPhoneModal" >
                 <MobileOutlined class="security-icon" />
-                <span class="security-text">{{ hasBoundPhone ? '已绑定手机' : '绑定手机' }}</span>
+                <span class="security-text">{{ hasBoundPhone ? t('profile.phoneBound') : t('profile.bindPhone') }}</span>
                 <a-tag :color="hasBoundPhone ? 'success' : 'default'" size="small">
-                  {{ hasBoundPhone ? '已绑定' : '未绑定' }}
+                  {{ hasBoundPhone ? t('profile.bound') : t('profile.unbound') }}
                 </a-tag>
               </div>
               <div class="security-item" @click="openBindEmailModal">
                 <MailOutlined class="security-icon" />
-                <span class="security-text">{{ hasBoundEmail ? '已绑定邮箱' : '绑定邮箱' }}</span>
+                <span class="security-text">{{ hasBoundEmail ? t('profile.emailBound') : t('profile.bindEmail') }}</span>
                 <a-tag :color="hasBoundEmail ? 'success' : 'default'" size="small">
-                  {{ hasBoundEmail ? '已绑定' : '未绑定' }}
+                  {{ hasBoundEmail ? t('profile.bound') : t('profile.unbound') }}
                 </a-tag>
               </div>
             </div>
@@ -126,17 +126,17 @@
           <div class="sidebar-card quick-actions">
             <h3 class="sidebar-title">
               <ThunderboltOutlined />
-              快速操作
+              {{ t('profile.quickActions') }}
             </h3>
             <div class="action-buttons">
               <a-button class="action-btn" block @click="toggleEditName">
-                <EditOutlined />修改昵称
+                <EditOutlined />{{ t('profile.editNicknameAction') }}
               </a-button>
               <a-button class="action-btn" block @click="triggerFile">
-                <CameraOutlined />更换头像
+                <CameraOutlined />{{ t('profile.changeAvatar') }}
               </a-button>
               <a-button class="action-btn" block @click="showPointsLogs = true">
-                <HistoryOutlined />算力记录
+                <HistoryOutlined />{{ t('profile.pointsHistory') }}
               </a-button>
             </div>
           </div>
@@ -149,30 +149,30 @@
             <div class="card-header">
               <h3 class="card-title">
                 <UserOutlined />
-                个人信息
+                {{ t('profile.personalDetails') }}
               </h3>
             </div>
             <div class="info-grid">
               <div class="info-item">
-                <div class="info-label">用户名</div>
+                <div class="info-label">{{ t('profile.username') }}</div>
                 <div class="info-value">{{ user?.username || '-' }}</div>
               </div>
               <div class="info-item">
-                <div class="info-label">昵称</div>
-                <div class="info-value">{{ user?.nickname || '未设置' }}</div>
+                <div class="info-label">{{ t('profile.nickname') }}</div>
+                <div class="info-value">{{ user?.nickname || t('profile.notSet') }}</div>
               </div>
               <div class="info-item">
-                <div class="info-label">手机号</div>
+                <div class="info-label">{{ t('profile.phone') }}</div>
                 <div class="info-value" v-if="hasBoundPhone">{{ user?.phone }}</div>
                 <a-button v-else type="text" size="small" class="bind-link-btn" @click="openBindPhoneModal">
-                  <PlusOutlined />绑定手机
+                  <PlusOutlined />{{ t('profile.bindPhone') }}
                 </a-button>
               </div>
               <div class="info-item">
-                <div class="info-label">邮箱</div>
+                <div class="info-label">{{ t('profile.email') }}</div>
                 <div class="info-value" v-if="hasBoundEmail">{{ displayEmail }}</div>
                 <a-button v-else type="text" size="small" class="bind-link-btn" @click="openBindEmailModal">
-                  <PlusOutlined />绑定邮箱
+                  <PlusOutlined />{{ t('profile.bindEmail') }}
                 </a-button>
               </div>
               <!-- <div class="info-item">
@@ -182,7 +182,7 @@
                 </div>
               </div> -->
               <div class="info-item">
-                <div class="info-label">上次登录</div>
+                <div class="info-label">{{ t('profile.lastLogin') }}</div>
                 <div class="info-value">{{ formatLoginTime(user?.loginTime || '') || '-' }}</div>
               </div>
             </div>
@@ -193,14 +193,14 @@
             <div class="card-header">
               <h3 class="card-title">
                 <SettingOutlined />
-                账户设置
+                {{ t('profile.accountSettings') }}
               </h3>
             </div>
             <div class="settings-list">
               <div class="settings-item">
                 <div class="settings-left">
                   <BellOutlined class="settings-icon" />
-                  <span>消息通知</span>
+                  <span>{{ t('profile.notifications') }}</span>
                 </div>
                 <a-switch v-model:checked="settings.notifications" />
               </div>
@@ -266,7 +266,7 @@
     <!-- 绑定手机弹窗 -->
     <a-modal
       v-model:open="showBindPhoneModal"
-      title="绑定手机号"
+      :title="t('profile.bindPhoneTitle')"
       :footer="null"
       @cancel="closeBindPhoneModal"
       :width="420"
@@ -281,12 +281,12 @@
             layout="vertical"
             class="form-fields"
           >
-            <a-form-item name="phone" label="手机号" class="form-group">
+            <a-form-item name="phone" :label="t('profile.phone')" class="form-group">
               <a-input
                 v-model:value="bindPhoneForm.phone"
                 type="tel"
                 class="form-input phone-input"
-                placeholder="请输入手机号"
+                :placeholder="t('phoneAuth.phonePlaceholder')"
                 :maxlength="16"
                 @keypress.enter="goBindPhoneNext"
               >
@@ -332,7 +332,7 @@
             :disabled="!isBindPhoneValid"
             @click="goBindPhoneNext"
           >
-            获取验证码
+            {{ t('phoneAuth.getCode') }}
           </a-button>
         </div>
 
@@ -340,7 +340,7 @@
         <div v-else class="step-container" >
           <div class="phone-info">
             <span class="info-value">{{ selectedBindAreaCode }} {{ bindPhoneForm.phone }}</span>
-            <a class="back-btn" @click="backToBindPhoneStep">返回修改</a>
+            <a class="back-btn" @click="backToBindPhoneStep">{{ t('phoneAuth.backToEdit') }}</a>
           </div>
 
           <div class="code-input-section">
@@ -358,8 +358,8 @@
               :class="{ disabled: bindCountdown > 0 }"
               @click.prevent="bindCountdown <= 0 && sendBindPhoneCode()"
             >
-              <span v-if="bindCountdown > 0">{{ bindCountdown }}s 后重发</span>
-              <span v-else>重新发送验证码</span>
+              <span v-if="bindCountdown > 0">{{ t('phoneAuth.resendAfter', { seconds: bindCountdown }) }}</span>
+              <span v-else>{{ t('profile.resendCode') }}</span>
             </a>
           </div>
 
@@ -370,7 +370,7 @@
             :disabled="!bindPhoneForm.code || bindPhoneForm.code.length !== 6"
             @click="submitBindPhone"
           >
-            绑定手机号
+            {{ t('profile.bindPhoneTitle') }}
           </a-button>
         </div>
       </div>
@@ -379,7 +379,7 @@
     <!-- 绑定邮箱弹窗 -->
     <a-modal
       v-model:open="showBindEmailModal"
-      title="绑定邮箱"
+      :title="t('profile.bindEmailTitle')"
       :footer="null"
       @cancel="closeBindEmailModal"
       :width="420"
@@ -394,12 +394,12 @@
             layout="vertical"
             class="form-fields"
           >
-            <a-form-item name="email" label="邮箱" class="form-group">
+            <a-form-item name="email" :label="t('profile.email')" class="form-group">
               <a-input
                 v-model:value="bindEmailForm.email"
                 type="email"
                 class="form-input"
-                placeholder="请输入邮箱地址"
+                :placeholder="t('profile.emailPlaceholder')"
                 @keypress.enter="goBindEmailNext"
               />
             </a-form-item>
@@ -410,7 +410,7 @@
             :loading="isBindEmailLoading"
             @click="goBindEmailNext"
           >
-            获取验证码
+            {{ t('phoneAuth.getCode') }}
           </a-button>
         </div>
 
@@ -418,7 +418,7 @@
         <div v-else class="step-container" :class="{ 'is-loading': isBindEmailLoading }">
           <div class="phone-info">
             <span class="info-value">{{ bindEmailForm.email }}</span>
-            <a class="back-btn" @click="backToBindEmailStep">返回修改</a>
+            <a class="back-btn" @click="backToBindEmailStep">{{ t('phoneAuth.backToEdit') }}</a>
           </div>
 
           <div class="code-input-section">
@@ -437,7 +437,7 @@
             :disabled="!bindEmailForm.code || bindEmailForm.code.length !== 6"
             @click="submitBindEmail"
           >
-            绑定邮箱
+            {{ t('profile.bindEmailTitle') }}
           </a-button>
         </div>
       </div>
@@ -493,11 +493,11 @@ const userStore = useUserStore()
 const pointsStore = usePointsStore()
 const user = computed(() => userStore.userInfo || null)
 const userStatus = computed(() => {
-  if (user.value?.userStatus === 0) return '封禁'
-  if (user.value?.userStatus === 1) return '正常'
-  if (user.value?.userStatus === 2) return '注销中'
-  if (user.value?.userStatus === 3) return '已注销'
-  return '未知'
+  if (user.value?.userStatus === 0) return t('profile.status.banned')
+  if (user.value?.userStatus === 1) return t('profile.status.normal')
+  if (user.value?.userStatus === 2) return t('profile.status.deactivating')
+  if (user.value?.userStatus === 3) return t('profile.status.deactivated')
+  return t('profile.status.unknown')
 })
 
 // 账户设置
@@ -528,10 +528,10 @@ const formatLoginTime = (time: string) => {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return '刚刚'
-  if (diffMins < 60) return `${diffMins}分钟前`
-  if (diffHours < 24) return `${diffHours}小时前`
-  if (diffDays < 7) return `${diffDays}天前`
+  if (diffMins < 1) return t('profile.time.justNow')
+  if (diffMins < 60) return t('profile.time.minutesAgo', { n: diffMins })
+  if (diffHours < 24) return t('profile.time.hoursAgo', { n: diffHours })
+  if (diffDays < 7) return t('profile.time.daysAgo', { n: diffDays })
 
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -594,7 +594,7 @@ const displayEmail = computed(() => {
   const username = user.value?.username || ''
   const prefixedEmailMatch = username.match(/^user_(.+@[^\s@]+\.[^\s@]+)$/i)
   if (prefixedEmailMatch?.[1]) return prefixedEmailMatch[1]
-  return '未绑定'
+  return t('profile.unbound')
 })
 
 // 密码正则
@@ -641,22 +641,22 @@ const pwdRules = computed(() => ({
     {
       validator(_: any, value: string) {
         if (isPhoneLoginUser.value) return Promise.resolve()
-        if (!value || !value.trim()) return Promise.reject(new Error('请输入原密码'))
+        if (!value || !value.trim()) return Promise.reject(new Error(t('profile.oldPwdRequired')))
         return Promise.resolve()
       },
       trigger: 'blur'
     }
   ],
   newPwd: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 8, max: 16, message: '密码长度应为8-16位', trigger: 'blur' },
-    { pattern: passwordRegex, message: '密码必须包含大写字母、小写字母和数字', trigger: 'blur' }
+    { required: true, message: t('profile.newPwdRequired'), trigger: 'blur' },
+    { min: 8, max: 16, message: t('profile.pwdLengthRule'), trigger: 'blur' },
+    { pattern: passwordRegex, message: t('profile.pwdComplexityRule'), trigger: 'blur' }
   ],
   confirmPwd: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
+    { required: true, message: t('profile.confirmPwdRequired'), trigger: 'blur' },
     {
       validator(_: any, value: string) {
-        if (value !== pwdForm.value.newPwd) return Promise.reject(new Error('两次输入的密码不一致'))
+        if (value !== pwdForm.value.newPwd) return Promise.reject(new Error(t('profile.pwdNotMatch')))
         return Promise.resolve()
       },
       trigger: 'blur'
@@ -666,12 +666,12 @@ const pwdRules = computed(() => ({
 
 const bindPhoneRules = computed(() => ({
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { required: true, message: t('profile.phoneRequired'), trigger: 'blur' },
     {
       validator(_: any, value: string) {
         if (!value || !value.trim()) return Promise.resolve()
         const pattern = resolveBindPhonePattern()
-        if (!pattern.test(value.trim())) return Promise.reject(new Error('请输入有效的手机号'))
+        if (!pattern.test(value.trim())) return Promise.reject(new Error(t('profile.phoneInvalid')))
         return Promise.resolve()
       },
       trigger: 'blur'
@@ -681,8 +681,8 @@ const bindPhoneRules = computed(() => ({
 
 const bindEmailRules = computed(() => ({
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: t('profile.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('profile.emailInvalid'), trigger: 'blur' }
   ]
 }))
 
@@ -831,7 +831,7 @@ const sendBindPhoneCode = async () => {
   isBindLoading.value = true
   const phone = bindPhoneForm.value.phone.trim()
   if (!resolveBindPhonePattern().test(phone)) {
-    message.warning('请输入有效的手机号')
+    message.warning(t('profile.phoneInvalid'))
     isBindLoading.value = false
     return
   }
@@ -844,7 +844,7 @@ const submitBindPhone = async () => {
   const code = bindPhoneForm.value.code.trim()
   const phone = bindPhoneForm.value.phone.trim()
   if (!code || code.length !== 6) {
-    message.warning('请输入6位验证码')
+    message.warning(t('profile.code6Required'))
     return
   }
   isBindLoading.value = true
@@ -858,7 +858,7 @@ const openBindEmailModal = () => {
   if (hasBoundEmail.value) {
     return
   }
-  message.info('目前处于测试阶段，绑定邮箱功能暂未开放')
+  message.info(t('profile.bindEmailNotAvailable'))
   // bindEmailStep.value = 'email'
   // bindEmailForm.value = { email: '', code: '' }
   // showBindEmailModal.value = true
@@ -889,15 +889,15 @@ const goBindEmailNext = async () => {
   bindEmailForm.value.code = ''
   isBindEmailLoading.value = false
   if (!ok) return
-  message.info('绑定邮箱提交接口暂未开放，当前为流程演示')
+  message.info(t('profile.bindEmailDemoOnly'))
 }
 
 const submitBindEmail = () => {
   if (!bindEmailForm.value.code || bindEmailForm.value.code.trim().length !== 6) {
-    message.warning('请输入6位验证码')
+    message.warning(t('profile.code6Required'))
     return
   }
-  message.info('绑定邮箱接口暂未开放，暂无法提交绑定')
+  message.info(t('profile.bindEmailSubmitNotAvailable'))
 }
 
 onBeforeUnmount(() => {

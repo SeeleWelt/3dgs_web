@@ -52,8 +52,7 @@
       <div v-else class="loading-grid">
         <div v-for="i in meshSkeletonCount" :key="i" class="skeleton-card">
           <div class="skeleton-image"></div>
-          <div class="skeleton-title"></div>
-          <div class="skeleton-desc"></div>
+          <div class="skeleton-line"></div>
         </div>
       </div>
     </section>
@@ -114,8 +113,7 @@
       <div v-else class="loading-grid">
         <div v-for="i in gaussianSkeletonCount" :key="i" class="skeleton-card">
           <div class="skeleton-image"></div>
-          <div class="skeleton-title"></div>
-          <div class="skeleton-desc"></div>
+          <div class="skeleton-line"></div>
         </div>
       </div>
 
@@ -134,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
@@ -144,7 +142,7 @@ import { ApiServer, type GetTaskListParams, type TaskModel } from '@/utils/taskS
 import API from '@/utils/api'
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const MOBILE_BREAKPOINT = 1023
 const MIN_CAROUSEL_ITEMS = 12
@@ -161,8 +159,8 @@ interface Model extends TaskModel {
 
 const defaultExampleSeeds = [
   {
-    taskName: 'Garden Courtyard',
-    objectDescription: 'Outdoor stone and plants reconstruction',
+    taskNameKey: 'explore.examples.gardenCourtyard.title',
+    objectDescriptionKey: 'explore.examples.gardenCourtyard.description',
     ownerUsername: 'demo_lab',
     nickname: 'demo_lab',
     preview: 'https://picsum.photos/400/400?random=1101',
@@ -172,8 +170,8 @@ const defaultExampleSeeds = [
     shareCount: 9
   },
   {
-    taskName: 'Robot Figure',
-    objectDescription: 'High-detail hard-surface character model',
+    taskNameKey: 'explore.examples.robotFigure.title',
+    objectDescriptionKey: 'explore.examples.robotFigure.description',
     ownerUsername: 'studio_x',
     nickname: 'studio_x',
     preview: 'https://picsum.photos/400/400?random=1102',
@@ -183,8 +181,8 @@ const defaultExampleSeeds = [
     shareCount: 18
   },
   {
-    taskName: 'Vintage Camera',
-    objectDescription: 'Desk object scan with metal texture details',
+    taskNameKey: 'explore.examples.vintageCamera.title',
+    objectDescriptionKey: 'explore.examples.vintageCamera.description',
     ownerUsername: 'scan_room',
     nickname: 'scan_room',
     preview: 'https://picsum.photos/400/400?random=1103',
@@ -194,8 +192,8 @@ const defaultExampleSeeds = [
     shareCount: 11
   },
   {
-    taskName: 'Street Corner',
-    objectDescription: 'Urban scene with signs and storefronts',
+    taskNameKey: 'explore.examples.streetCorner.title',
+    objectDescriptionKey: 'explore.examples.streetCorner.description',
     ownerUsername: 'city_capture',
     nickname: 'city_capture',
     preview: 'https://picsum.photos/400/400?random=1104',
@@ -205,8 +203,8 @@ const defaultExampleSeeds = [
     shareCount: 42
   },
   {
-    taskName: 'Sports Car',
-    objectDescription: 'Exterior and interior appearance showcase',
+    taskNameKey: 'explore.examples.sportsCar.title',
+    objectDescriptionKey: 'explore.examples.sportsCar.description',
     ownerUsername: 'auto_lab',
     nickname: 'auto_lab',
     preview: 'https://picsum.photos/400/400?random=1105',
@@ -216,8 +214,8 @@ const defaultExampleSeeds = [
     shareCount: 56
   },
   {
-    taskName: 'Ancient Vase',
-    objectDescription: 'Museum artifact with carved pattern details',
+    taskNameKey: 'explore.examples.ancientVase.title',
+    objectDescriptionKey: 'explore.examples.ancientVase.description',
     ownerUsername: 'history_3d',
     nickname: 'history_3d',
     preview: 'https://picsum.photos/400/400?random=1106',
@@ -232,7 +230,7 @@ const buildDefaultExamples = (type: 'mesh' | 'gaussian'): Model[] => {
   const now = Date.now()
   return defaultExampleSeeds.map((seed, index) => ({
     taskId: `demo-${type}-${index + 1}`,
-    taskName: seed.taskName,
+    taskName: t(seed.taskNameKey),
     status: 'completed',
     isPublic: true,
     nsfwBlocked: false,
@@ -247,7 +245,7 @@ const buildDefaultExamples = (type: 'mesh' | 'gaussian'): Model[] => {
     lightning: true,
     fps: 30,
     videoCount: 1,
-    objectDescription: seed.objectDescription,
+    objectDescription: t(seed.objectDescriptionKey),
     ownerUsername: seed.ownerUsername,
     authorAvatar: '',
     preview: seed.preview,
@@ -263,7 +261,7 @@ const mapToModels = (tasks: any[], type: 'mesh' | 'gaussian'): Model[] =>
     const views = Number(task.viewCount ?? task.views_count ?? 0)
     return {
       taskId: String(task.taskId ?? task.task_id ?? task.id ?? ''),
-      taskName: String(task.taskName ?? task.task_name ?? 'Untitled Model'),
+      taskName: String(task.taskName ?? task.task_name ?? t('explore.untitledModel')),
       status: String(task.status ?? 'completed'),
       isPublic: Boolean(task.isPublic ?? task.is_public ?? true),
       nsfwBlocked: Boolean(task.nsfwBlocked ?? task.nsfw_blocked ?? false),
@@ -278,12 +276,12 @@ const mapToModels = (tasks: any[], type: 'mesh' | 'gaussian'): Model[] =>
       lightning: Boolean(task.lightning ?? false),
       fps: task.fps ? Number(task.fps) : undefined,
       videoCount: task.videoCount ?? task.video_count,
-      objectDescription: String(task.objectDescription ?? task.object_description ?? task.user_object_description ?? '暂无描述'),
-      ownerUsername: String(task.ownerUsername ?? task.owner_username ?? '未知'),
+      objectDescription: String(task.objectDescription ?? task.object_description ?? task.user_object_description ?? t('explore.noDescription')),
+      ownerUsername: String(task.ownerUsername ?? task.owner_username ?? t('explore.unknown')),
       authorAvatar: String(task.authorAvatar ?? task.author_avatar ?? ''),
       preview: String(task.preview ?? task.preview_image ?? ''),
       headimg: String(task.headimg ?? 'assets/logo.png'),
-      nickname: String(task.nickname ?? task.owner_username ?? '未知'),
+      nickname: String(task.nickname ?? task.owner_username ?? t('explore.unknown')),
       id: task.id ? String(task.id) : undefined,
       preview_image: task.preview_image ? String(task.preview_image) : undefined,
       task_name: task.task_name ? String(task.task_name) : undefined,
@@ -453,10 +451,10 @@ const createCarouselControls = (scrollRef: Ref<HTMLElement | null>) => {
   }
 }
 
-const meshServerModels = ref<Model[]>([
+const buildMeshServerModels = (): Model[] => [
   {
     taskId: 'task_001',
-    taskName: '流浪者号',
+    taskName: t('explore.demo.meshModel1.title'),
     status: 'reconstructing_3dgs',
     isPublic: true,
     nsfwBlocked: false,
@@ -471,7 +469,7 @@ const meshServerModels = ref<Model[]>([
     lightning: true,
     fps: 30,
     videoCount: 1,
-    objectDescription: '流浪者号',
+    objectDescription: t('explore.demo.meshModel1.description'),
     ownerUsername: 'ric',
     authorAvatar: undefined,
     preview: 'https://3dgs-web.metast.xyz/aimodel/test.jpg',
@@ -480,7 +478,9 @@ const meshServerModels = ref<Model[]>([
     isNew: true,
     type: 'mesh'
   }
-])
+]
+
+const meshServerModels = ref<Model[]>(buildMeshServerModels())
 const meshScrollRef = ref<HTMLElement | null>(null)
 const gaussianScrollRef = ref<HTMLElement | null>(null)
 const gaussianSectionRef = ref<HTMLElement | null>(null)
@@ -527,6 +527,11 @@ const fetchModels = async () => {
   fetchMeshModels()
   await fetchGaussianModels()
 }
+
+watch(locale, () => {
+  meshServerModels.value = buildMeshServerModels()
+  fetchMeshModels()
+})
 
 const openModelDetail = (model: Model) => {
   const routeData = router.resolve(`/officialModel/${model.taskId}`)
@@ -581,9 +586,9 @@ onMounted(async () => {
 
     const statusCode = err?.statusCode
     if (statusCode === 401) {
-      message.error('Unauthorized access (401)')
+      message.error(t('errors.unauthorized'))
     } else if (statusCode === 403) {
-      message.error('Access denied (403)')
+      message.error(t('errors.forbidden'))
     }
   }
 })
@@ -764,17 +769,9 @@ onBeforeUnmount(() => {
   aspect-ratio: 1;
 }
 
-.skeleton-title {
-  height: 14px;
-  width: 70%;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  background: var(--glass-border);
-}
-
-.skeleton-desc {
+.skeleton-line {
   height: 12px;
-  width: 50%;
+  width: 65%;
   border-radius: 4px;
   background: var(--glass-border);
 }

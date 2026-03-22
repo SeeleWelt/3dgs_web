@@ -1,10 +1,10 @@
 <template>
   <a-modal
     :open="open"
-    title="剪裁图片"
+    :title="$t('avatarCropper.title')"
     width="860px"
-    :ok-text="'确定'"
-    :cancel-text="'取消'"
+    :ok-text="$t('avatarCropper.okText')"
+    :cancel-text="$t('avatarCropper.cancelText')"
     @ok="cropImage"
     @cancel="close"
   >
@@ -14,10 +14,10 @@
       </div>
 
       <div class="cutter-tool">
-        <a-button class="tool-btn" @click="flipHorizontal">水平翻转</a-button>
-        <a-button class="tool-btn" @click="flipVertically">垂直翻转</a-button>
-        <a-button class="tool-btn" @click="turnImg(90)">右旋90°</a-button>
-        <a-button class="tool-btn" @click="turnImg(-90)">左旋90°</a-button>
+        <a-button class="tool-btn" @click="flipHorizontal">{{ $t('avatarCropper.flipHorizontal') }}</a-button>
+        <a-button class="tool-btn" @click="flipVertically">{{ $t('avatarCropper.flipVertically') }}</a-button>
+        <a-button class="tool-btn" @click="turnImg(90)">{{ $t('avatarCropper.rotateRight') }}</a-button>
+        <a-button class="tool-btn" @click="turnImg(-90)">{{ $t('avatarCropper.rotateLeft') }}</a-button>
       </div>
 
       <div class="rotation-row">
@@ -37,9 +37,9 @@
       </div>
 
       <div class="dialog-footer">
-        <a-tag color="processing">原图 {{ quality }}</a-tag>
+        <a-tag color="processing">{{ $t('avatarCropper.originalImage') }} {{ quality }}</a-tag>
         <div class="quality-area">
-          <span class="quality-label">品质</span>
+          <span class="quality-label">{{ $t('avatarCropper.quality') }}</span>
           <a-slider
             v-model:value="imageQuality"
             :min="0"
@@ -47,7 +47,7 @@
             :tooltip="{ formatter: formatTooltip }"
             class="quality-slider"
           />
-          <a-button @click="reset">重置</a-button>
+          <a-button @click="reset">{{ $t('avatarCropper.reset') }}</a-button>
         </div>
       </div>
     </div>
